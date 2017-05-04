@@ -17,114 +17,58 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 
 /**
- *
+ * Builds config classes from suplied config file.
  * @author F.I.D.O.
  */
 public class ConfigBuilder {
 	
+    /**
+     * Configuration file
+     */
 	private final File configFile;
-	
-//	private final File configPackageDir;
-	
-	private final File outputParentDir;
-	
-	private final String configPackageName;
-    
-//    private final Class callerclass;
 
+	/**
+     * Src dir of the project where all config files will be created. Most time the ...src/main/java/ dir.
+     */
+	private final File outputSrcDir;
+	
+    /**
+     * Name of the config package - for example projectrootpackage.someotherpackage.config
+     */
+	private final String configPackageName;
+
+    
+    
+    
+    /**
+     * Constructor.
+     * @param configFile Config file.
+     * @param outputSrcDir Src dir of the project where all config files will be created.
+     * Most time the ...src/main/java/ dir.
+     * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
+     */
 	public ConfigBuilder(File configFile, File outputSrcDir, String configPackageName) {
 		this.configFile = configFile;
-//        callerclass = getCallerClass();
-//		configPackageDir = getConfigPackageDir();
-//		configPackageName = getMainClassName();
 		this.configPackageName = configPackageName;
-//		this.configPackageName = "config";
-		//		outputParentDir = getSrcDir();
-		this.outputParentDir = outputSrcDir;
+		this.outputSrcDir = outputSrcDir;
 	}
 	
 	
 	
+    
+    /**
+     * Starts the building process.
+     */
 	public void buildConfig(){
 		try {
 			Config config = new ConfigParser().parseConfigFile(configFile);
 			HashMap<String,Object> configMap = config.getConfig();
-		
 			generateConfig(configMap, "config", true);
 		} catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		
-		
 	}
 
-//	private File getConfigPackageDir() {
-//		String path = determinePath();
-//		
-//		File directory = new File(path);
-//		if (!directory.exists()){
-//			directory.mkdir();
-//		}
-//		return directory;
-//	}
-
-//	private String determinePath() {
-//		String path = null;
-//		String pathToClassDir = getMainClassDir();
-//		String pathToSourceDir = pathToClassDir.replace("target/classes", "src/main/java");
-//		path = pathToSourceDir + "config";
-//		return path;
-//	}
-	
-//	private String getMainClassDir(){
-//		String path = null;
-////		try {
-////			Class mainClass = findMainClass();
-//            Class mainClass = callerclass;
-//			String mainClassFilename = mainClass.getSimpleName() + ".class";
-//			path = mainClass.getResource(mainClassFilename).getPath().replace(mainClassFilename, "");
-////		} catch (ClassNotFoundException ex) {
-////			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-////		}
-//		return path;
-//	}
-	
-	public static Class findMainClass() throws ClassNotFoundException{
-//        for (Entry<Thread, StackTraceElement[]> entry : Thread.getAllStackTraces().entrySet()) {
-//            Thread thread = entry.getKey();
-//            if (thread.getThreadGroup() != null && thread.getThreadGroup().getName().equals("main")) {
-//                for (StackTraceElement stackTraceElement : entry.getValue()) {
-//                    if (stackTraceElement.getMethodName().equals("main")) {
-//                        try {
-//                            Class<?> c = Class.forName(stackTraceElement.getClassName());
-//                            Class[] argTypes = new Class[] { String[].class };
-//                            //This will throw NoSuchMethodException in case of fake main methods
-//                            c.getDeclaredMethod("main", argTypes);
-////                            return stackTraceElement.getClassName();
-//							return c;
-//                        } catch (NoSuchMethodException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            }
-//        }
-        StackTraceElement[] stack = Thread.currentThread ().getStackTrace();
-        StackTraceElement main = stack[stack.length - 1];
-        return Class.forName(main.getClassName());
-    }
-    
-    public static Class getCallerClass(){
-        Class callerClass = null;
-        
-        try {
-            callerClass = Class.forName(new Exception().getStackTrace()[2].getClassName());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return callerClass;
-    }
 
 	private void generateConfig(HashMap<String, Object> configMap, String mapName, boolean isRoot) {
 		
@@ -142,7 +86,7 @@ public class ConfigBuilder {
 				.returns(ClassName.get(configPackageName, getClassName(mapName)));
 			
 			// root class implements BuildedConfig interface
-			objectBuilder.addSuperinterface(BuildedConfig.class);
+			objectBuilder.addSuperinterface(GeneratedConfig.class);
 		}
 
 		parametrBuilder.addParameter(HashMap.class, mapParamName);
@@ -179,35 +123,12 @@ public class ConfigBuilder {
 
 		JavaFile javaFile = JavaFile.builder(configPackageName, object).build();
 		try {
-			javaFile.writeTo(outputParentDir);
+			javaFile.writeTo(outputSrcDir);
 		} catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-//	private String getConfigPackageName() {
-//		String packageName = null;
-////		try {
-////			Class mainClass = findMainClass();
-//            Class mainClass = callerclass;
-//			packageName = mainClass.getPackage().getName() + ".config";
-////		} catch (ClassNotFoundException ex) {
-////			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-////		}
-//		return packageName;
-//	}
-	
-//	private String getConfigPackageName() {
-//		String packageName = null;
-////		try {
-////			Class mainClass = findMainClass();
-//            Class mainClass = callerclass;
-//			packageName = mainClass.getPackage().getName() + ".config";
-////		} catch (ClassNotFoundException ex) {
-////			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-////		}
-//		return packageName;
-//	}
 	
 	private String getClassName(String name){
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
@@ -217,7 +138,4 @@ public class ConfigBuilder {
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name);
 	}
 
-//	private File getSrcDir() {
-//        return new File(getMainClassDir().replaceFirst("target/classes.*", "src/main/java"));
-//	}
 }

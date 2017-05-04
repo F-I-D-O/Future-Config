@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Config file parser
  * @author fido
  */
 public class ConfigParser {
@@ -48,7 +48,9 @@ public class ConfigParser {
 	
     
     
-    
+    /**
+     * Constructor.
+     */
     public ConfigParser() {
         config = new HashMap<>();
 		currentObject = config;
@@ -57,7 +59,13 @@ public class ConfigParser {
     }
     
     
-    
+    /**
+     * Main method for parsing config file.
+     * @param configFile Config file.
+     * @return Config object containing all variables from config file.
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public Config parseConfigFile(File configFile) throws FileNotFoundException, IOException{
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
             String line;
