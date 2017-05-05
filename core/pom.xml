@@ -11,7 +11,81 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <name>FutureConfig - core</name>
-	
+    <description>FutureConfig format core. It contains java parser and java class builder for the format, and a 
+        configuration class for loading the config in your project
+    </description>
+    <url>https://github.com/F-I-D-O/Future-Config</url>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>David Fiedler</name>
+            <email>david.fido.fiedler@gmail.com</email>
+            <url>http://fido.ninja/</url>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/F-I-D-O/Future-Config.git</connection>
+        <developerConnection>scm:git:ssh://github.com:F-I-D-O/Future-Config.git</developerConnection>
+        <url>https://github.com/F-I-D-O/Future-Config</url>
+    </scm>
+    
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.squareup</groupId>
@@ -23,15 +97,5 @@
 			<artifactId>guava</artifactId>
 			<version>21.0</version>
 		</dependency>
-<!--		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-model</artifactId>
-			<version>3.5.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.maven</groupId>
-			<artifactId>maven-core</artifactId>
-			<version>3.5.0</version>
-		</dependency>-->
 	</dependencies>
 </project>
