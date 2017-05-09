@@ -1,7 +1,6 @@
 package ninja.fido.config.plugin;
 
 import java.io.File;
-import java.util.List;
 import ninja.fido.config.ConfigBuilder;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -36,7 +35,7 @@ public class Plugin extends AbstractMojo
 	@Override
     public void execute() throws MojoExecutionException
     {
-		File configFile = new File(path);
+		File configFile = getConfigFile();
 		String srcPath = (String) project.getCompileSourceRoots().get(0);
 		String mainPackageName = getMainPackageName();
 		
@@ -46,4 +45,16 @@ public class Plugin extends AbstractMojo
 	private String getMainPackageName() {
 		return project.getArtifact().getGroupId() + "." + project.getArtifact().getArtifactId();
 	}
+    
+    private File getConfigFile(){
+        File configFile = null;
+        if(path.startsWith("./")){
+            String finalPath = project.getFile().getPath().replace("pom.xml", "") + path.replace("./", "");
+            configFile = new File(finalPath);
+        }
+        else{
+            configFile = new File(path);
+        }
+        return configFile;
+    }
 }
