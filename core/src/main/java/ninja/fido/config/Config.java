@@ -6,6 +6,7 @@
 package ninja.fido.config;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class for encapsulating parsed configuration data.
@@ -59,5 +60,22 @@ public class Config {
             }
         }
         return null;
+    }
+    
+    public void override(Config config){
+        overrideLevel(this.config, config.getConfig());
+    }
+    
+    private void overrideLevel(HashMap<String, Object> currentMap, HashMap<String, Object> overridingMap){
+        for (Map.Entry<String, Object> entry : overridingMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+            if(value instanceof HashMap){
+                overrideLevel((HashMap<String,Object>) currentMap.get(key), (HashMap<String,Object>) value);
+            }
+            else{
+                currentMap.put(key, value);
+            }
+        }
     }
 }
