@@ -49,7 +49,7 @@ public class Plugin extends AbstractMojo
     private File getConfigFile(){
         File configFile = null;
         if(path.startsWith("./")){
-            String finalPath = project.getFile().getPath().replace("pom.xml", "") + path.replace("./", "");
+            String finalPath = project.getFile().getPath().replace("pom.xml", "") + path.replaceFirst(".", "src/main/resources");
             configFile = new File(finalPath);
         }
         else{
