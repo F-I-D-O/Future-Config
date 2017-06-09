@@ -13,9 +13,9 @@ import java.util.logging.Logger;
  */
 public class Configuration {
 	
-	private static final String DEFAULT_CONFIG_PATH_LOCATION = "config-location.txt";
+	private static final String DEFAULT_CONFIG_LOCATION_FILENAME = "config-location.txt";
     
-    private static final String DEFAULT_LOCAL_CONFIG_PATH_LOCATION = "local-config-location.txt";
+    private static final String DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME = "local-config-location.txt";
     
     
     /**
@@ -25,40 +25,10 @@ public class Configuration {
      * @return Config root class containig all variable and object of variables defined by config file.
      */
     public static <C extends GeneratedConfig<C>> C load(C generatedConfig){
-        
-        // config path
-		String configPath = getConfigPath(DEFAULT_CONFIG_PATH_LOCATION, generatedConfig);
-        if(configPath == null){
-            String path = new File(generatedConfig.getClass().getClassLoader()
-                    .getResource(DEFAULT_CONFIG_PATH_LOCATION).getFile()).getAbsolutePath();
-            try {
-                throw new FileNotFoundException("Base config file not found in: " + path);
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            }
-        }
-        
-        // local config path
-        String localConfigPath = getConfigPath(DEFAULT_LOCAL_CONFIG_PATH_LOCATION, generatedConfig);
-        
-        Config baseConfig = null;
-        try {
-            baseConfig = new ConfigParser().parseConfigFile(new File(configPath));
-        } catch (IOException ex) {
-            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        Config baseConfig = getConfig(generatedConfig, DEFAULT_CONFIG_LOCATION_FILENAME);
         
         // load local config
-        Config localConfig = null;
-        if(localConfigPath != null){
-            try {
-                localConfig = new ConfigParser().parseConfigFile(new File(localConfigPath));
-            } catch (IOException ex) {
-                Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
+        Config localConfig = getConfig(generatedConfig, DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME);
         
         if(localConfig != null){
             baseConfig.override(localConfig);
@@ -67,12 +37,44 @@ public class Configuration {
         C config = generatedConfig.fill(baseConfig.getConfig());
 		return config;
     }
+    
+    private static Config getConfig(GeneratedConfig generatedConfig, String configLocationFilename){
+        String configPath 
+                = getConfigPath(getConfigLocationFilePath(generatedConfig, configLocationFilename));
+        
+        if(configPath == null){
+            return null;
+        }
+        
+        Config config;
+        File configFile;
+        if(isRelativePath(configPath)){
+             configFile = new File(Configuration.class.getResource(configPath.replaceFirst(".", "")).getFile());
+        }
+        else{
+            configFile = new File(configPath);
+        }
+        try {
+            config = new ConfigParser().parseConfigFile(configFile);
+        } catch (IOException ex) {
+            System.err.println("Config file not found at location: " + configFile.getAbsolutePath());
+//            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
+        }
+        return config;
+    }
 
-	private static String getConfigPath(String pathToConfigPathFile, GeneratedConfig buildedConfig) {
+    /**
+     * Search resources for config path.
+     * @param pathToConfigPathFile Relative path to config file.
+     * @return Returns path to config file if the config location file is in resources.
+     */
+	private static String getConfigPath(String pathToConfigPathFile) {
         File file = null;
         try{
-            file = new File(
-                    buildedConfig.getClass().getClassLoader().getResource(pathToConfigPathFile).getFile());
+//            file = new File(
+//                    buildedConfig.getClass().getClassLoader().getResource(pathToConfigPathFile).getFile());
+            file = new File(Configuration.class.getResource(pathToConfigPathFile).getFile());
         }
         catch(NullPointerException npe){
             return null;
@@ -88,4 +90,23 @@ public class Configuration {
 
 		return path;
 	}
+    
+    private static String getConfigLocationFilePath(GeneratedConfig generatedConfig, String filename){
+        return File.separator + getPackageStructure(generatedConfig.getClass()) + File.separator + filename;
+    }
+    
+    private static String getPackageStructure(Class type){
+        String cannonicalName = type.getCanonicalName();
+        String packageName = cannonicalName.substring(0, cannonicalName.lastIndexOf('.'));
+        return packageName.replace('.', File.separatorChar);
+    }
+    
+//    private static String buildAbsolutePath(Class type, String relativePath){
+//        
+//    }
+
+    private static boolean isRelativePath(String path) {
+        return path.startsWith(".");
+    }
+    
 }
