@@ -1,9 +1,12 @@
 package ninja.fido.config;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Scanner;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,10 +15,20 @@ import java.util.logging.Logger;
  * @author F.I.D.O.
  */
 public class Configuration {
+    
+    private static final Logger LOGGER = Logger.getLogger(Configuration.class.getName());
 	
 	private static final String DEFAULT_CONFIG_LOCATION_FILENAME = "config-location.txt";
     
     private static final String DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME = "local-config-location.txt";
+    
+    static {
+        Handler handlerObj = new ConsoleHandler();
+        handlerObj.setLevel(Level.ALL);
+        LOGGER.addHandler(handlerObj);
+        LOGGER.setLevel(Level.ALL);
+        LOGGER.setUseParentHandlers(false);
+    }
     
     
     /**
@@ -40,7 +53,9 @@ public class Configuration {
     
     private static Config getConfig(GeneratedConfig generatedConfig, String configLocationFilename){
         String configPath 
-                = getConfigPath(getConfigLocationFilePath(generatedConfig, configLocationFilename));
+                = getConfigPath(generatedConfig, getConfigLocationFilePath(generatedConfig, configLocationFilename));
+        
+        LOGGER.log(Level.FINE, "Config file location: {0}", configPath);
         
         if(configPath == null){
             return null;
@@ -49,18 +64,29 @@ public class Configuration {
         Config config;
         File configFile;
         if(isRelativePath(configPath)){
-             configFile = new File(Configuration.class.getResource(configPath.replaceFirst(".", "")).getFile());
+            configPath = configPath.replaceFirst("\\.", "");
+            LOGGER.log(Level.FINE, "Relative config file location, changed to: {0}", configPath);
+//            configFile = new File(Configuration.class.getResource(configPath.replaceFirst(".", "")).getFile());
+            InputStream inputStream = generatedConfig.getClass().getResourceAsStream(configPath);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            try {
+                config = new ConfigParser().parseConfigFile(reader);
+            } catch (IOException ex) {
+                LOGGER.log(Level.SEVERE, "Error loading config file: {0}", configPath);
+                return null;
+            }
         }
         else{
             configFile = new File(configPath);
+            try {
+                config = new ConfigParser().parseConfigFile(configFile);
+            } catch (IOException ex) {
+                System.err.println("Config file not found at location: " + configFile.getAbsolutePath());
+    //            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
+                return null;
+            }
         }
-        try {
-            config = new ConfigParser().parseConfigFile(configFile);
-        } catch (IOException ex) {
-            System.err.println("Config file not found at location: " + configFile.getAbsolutePath());
-//            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        
         return config;
     }
 
@@ -69,25 +95,55 @@ public class Configuration {
      * @param pathToConfigPathFile Relative path to config file.
      * @return Returns path to config file if the config location file is in resources.
      */
-	private static String getConfigPath(String pathToConfigPathFile) {
+	private static String getConfigPath(GeneratedConfig generatedConfig, String pathToConfigPathFile) {
+        LOGGER.log(Level.FINE, "Config location file path: {0}", pathToConfigPathFile);
+        
         File file = null;
+        
         try{
-//            file = new File(
-//                    buildedConfig.getClass().getClassLoader().getResource(pathToConfigPathFile).getFile());
-            file = new File(Configuration.class.getResource(pathToConfigPathFile).getFile());
+            file = new File(
+                    generatedConfig.getClass().getResource(pathToConfigPathFile).getFile());
+            LOGGER.log(Level.FINE, "Config location file found at: {0}", file);
         }
         catch(NullPointerException npe){
+            LOGGER.log(Level.SEVERE, "Config location file not found");
             return null;
         }
-		String path = null;
-		try (Scanner scanner = new Scanner(file)) {
-			path = scanner.nextLine();
-			scanner.close();
-		}
-        catch(FileNotFoundException fileNotFoundException){
-            return null;
+        
+        InputStream inputStream = generatedConfig.getClass().getResourceAsStream(pathToConfigPathFile);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        
+        String path = null;
+        try {
+            path = reader.readLine();
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, "Failed to load config file location from: {0}", file);
         }
-
+                    
+//        File file = null;
+//        
+//        System.out.println("Config location file path: " + pathToConfigPathFile);
+//        
+//        System.out.println("Resource from class: " + generatedConfig.getClass());
+//        
+//        try{
+//            file = new File(
+//                    generatedConfig.getClass().getResource(pathToConfigPathFile).getFile());
+////            file = new File(Configuration.class.getResource(pathToConfigPathFile).getFile());
+//        }
+//        catch(NullPointerException npe){
+//            return null;
+//        }
+//        System.out.println("Config location file loaded from: " + file);
+//		String path = null;
+//		try (Scanner scanner = new Scanner(file)) {
+//			path = scanner.nextLine();
+//			scanner.close();
+//		}
+//        catch(FileNotFoundException fileNotFoundException){
+//            return null;
+//        }
+//
 		return path;
 	}
     

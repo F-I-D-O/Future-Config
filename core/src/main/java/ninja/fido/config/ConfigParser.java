@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class ConfigParser {
     private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
     private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    )*");
-    private static final Pattern KEY_PATTERN = Pattern.compile("^([a-zA-Z_]+)(:)");
+    private static final Pattern KEY_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_]+)(:)");
     private static final Pattern SIMPLE_VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^([0-9])");
     private static final Pattern BOOLEAN_PATTERN = Pattern.compile("^(true|false)");
@@ -68,29 +68,34 @@ public class ConfigParser {
      */
     public Config parseConfigFile(File configFile) throws FileNotFoundException, IOException{
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                Matcher matcher = WHITESPACE_LINE_PATTERN.matcher(line);
-                if(matcher.find()){
-                    continue;
-                }
-                
-                if(line.contains("{")){
-                    continue;
-                }
-                if(line.contains("}")){
-                    currentObject = objectStack.pop();
-                    continue;
-                }
-                if(line.contains("#")){
-                    // possibel comment processing
-                }
-                else{
-                    parseLine(line);
-                }
-            }
-            processQueue();
+            return parseConfigFile(br);
         }
+    }
+    
+    public Config parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
+        String line;
+        while ((line = configFileReader.readLine()) != null) {
+            Matcher matcher = WHITESPACE_LINE_PATTERN.matcher(line);
+            if(matcher.find()){
+                continue;
+            }
+
+            if(line.contains("{")){
+                continue;
+            }
+            if(line.contains("}")){
+                currentObject = objectStack.pop();
+                continue;
+            }
+            if(line.contains("#")){
+                // possibel comment processing
+            }
+            else{
+                parseLine(line);
+            }
+        }
+        processQueue();
+        
         return new Config(config);
     }
 
