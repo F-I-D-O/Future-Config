@@ -104,7 +104,7 @@ public class ConfigBuilder {
 				generateConfig((HashMap<String, Object>) value, key, false);
 				fieldBuilder = FieldSpec.builder(newObjectType, propertyName);
 				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType, 
-						HashMap.class, mapName, key);
+						HashMap.class, mapParamName, key);
 			}
 			else{
 				fieldBuilder = FieldSpec.builder(value.getClass(), propertyName);
