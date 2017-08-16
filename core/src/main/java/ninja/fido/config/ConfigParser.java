@@ -36,7 +36,9 @@ public class ConfigParser {
     
     private final HashMap<String,Object> config;
 	
-	private final Stack<HashMap<String,Object>> objectStack;
+	private final Stack<Object> objectStack;
+    
+//    private final Stack<HashMap<String,Object>> arrayStack;
     
     private final Queue<QueueEntry> referenceQueue;
     
@@ -55,6 +57,7 @@ public class ConfigParser {
         config = new HashMap<>();
 		currentObject = config;
 		objectStack = new Stack<>();
+//        arrayStack = new Stack<>();
         referenceQueue = new LinkedList<>();
     }
     
@@ -75,11 +78,14 @@ public class ConfigParser {
     public Config parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
         String line;
         while ((line = configFileReader.readLine()) != null) {
+            
+            /* skip blank lines */
             Matcher matcher = WHITESPACE_LINE_PATTERN.matcher(line);
             if(matcher.find()){
                 continue;
             }
 
+            /* inside object */
             if(line.contains("{")){
                 continue;
             }
@@ -87,6 +93,8 @@ public class ConfigParser {
                 currentObject = objectStack.pop();
                 continue;
             }
+            
+            /* comment line */
             if(line.contains("#")){
                 // possibel comment processing
             }
