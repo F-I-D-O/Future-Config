@@ -10,9 +10,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -42,12 +44,17 @@ public class ConfigParser {
     
     private final Queue<QueueEntry> referenceQueue;
     
-    private HashMap currentObject;
+    private HashMap<String,Object> currentObject;
+    
+    private ArrayList <Object> currentArray;
+    
+    private Object currentContext;
     
     private String currentKey;
     
     private Object currentValue;
 	
+    private boolean inArray;
     
     
     /**
@@ -56,9 +63,11 @@ public class ConfigParser {
     public ConfigParser() {
         config = new HashMap<>();
 		currentObject = config;
+        currentContext = currentObject;
 		objectStack = new Stack<>();
 //        arrayStack = new Stack<>();
         referenceQueue = new LinkedList<>();
+        inArray = false;
     }
     
     
@@ -84,19 +93,63 @@ public class ConfigParser {
             if(matcher.find()){
                 continue;
             }
+            
+            /* new array or object */
+            if(line.contains("{") || line.contains("[")){
+                
+                /* push old context to stack */
+                if(inArray){
+                    objectStack.push(currentArray);
+                }
+                else{
+                    objectStack.push(currentObject);
+                }
+                
+                boolean lastInArray = inArray;
+                
+                /* new object */
+                if(line.contains("{")){
+                    currentObject = new HashMap<>();
+                    currentContext = currentObject;
+                    inArray = false;
+                }
 
-            /* inside object */
-            if(line.contains("{")){
+                /* new array */
+                if(line.contains("[")){
+                    currentArray = new ArrayList<>();
+                    currentContext = currentArray;
+                    inArray = true;
+                }
+                
+                if(lastInArray){
+                    ((List<Object>) objectStack.peek()).add(currentContext);
+                }
+                else{
+                    ((Map<String,Object>) objectStack.peek()).put(currentKey, currentContext);
+                }
+                
                 continue;
             }
-            if(line.contains("}")){
-                currentObject = objectStack.pop();
+
+           
+            
+            if(line.contains("}") || line.contains("]")){
+                Object currentContext = objectStack.pop();
+                if(currentContext instanceof HashMap){
+                    currentObject = (HashMap<String, Object>) currentContext;
+                    inArray = false;
+                }
+                else{
+                    currentArray = (ArrayList<Object>) currentContext;
+                    inArray = true;
+                }
+                
                 continue;
             }
             
             /* comment line */
             if(line.contains("#")){
-                // possibel comment processing
+                // possible comment processing
             }
             else{
                 parseLine(line);
@@ -109,15 +162,18 @@ public class ConfigParser {
 
     private void parseLine(String line) {
         line = stripIndention(line);
-        line = parseKey(line);
-        if(parseValue(line)){
-            currentObject.put(currentKey, currentValue);
+        
+        if(!inArray){
+            line = parseKey(line);
         }
-        else{
-            HashMap<String, Object> newObject = new HashMap<>();
-            currentObject.put(currentKey, newObject);
-            objectStack.push(currentObject); // TODO enable hierarchy
-            currentObject = newObject; 
+        
+        if(parseValue(line)){
+            if(inArray){
+                currentArray.add(currentValue);
+            }
+            else{
+                currentObject.put(currentKey, currentValue);
+            }
         }
     }
 
