@@ -9,7 +9,9 @@ import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeSpec;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -76,7 +78,7 @@ public class ConfigBuilder {
 		TypeSpec.Builder objectBuilder 
 				= TypeSpec.classBuilder(getClassName(mapName)).addModifiers(Modifier.PUBLIC);
 		
-		String mapParamName = getPropertyName(mapName);
+		String mapParamName = JavaLanguageUtil.getPropertyName(mapName);
 		
 		Builder parametrBuilder = constructorBuilder;
 		
@@ -95,7 +97,7 @@ public class ConfigBuilder {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
-			String propertyName = getPropertyName(key);
+			String propertyName = JavaLanguageUtil.getPropertyName(key);
 
 			FieldSpec.Builder fieldBuilder;
 
@@ -106,6 +108,36 @@ public class ConfigBuilder {
 				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType, 
 						HashMap.class, mapParamName, key);
 			}
+            else if(value instanceof List){
+                List list = (List) value;
+                fieldBuilder = FieldSpec.builder(List.class, propertyName);
+                
+                
+                
+                Object representative = list.get(0);
+                if(representative instanceof Map){
+                    /* representative generation */
+                    ClassName newObjectType = ClassName.get(configPackageName, getClassName(key));
+                    generateConfig((HashMap<String, Object>) representative, key, false);
+                    
+                    parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
+                    
+                    String inputListName = propertyName + "List";
+                    parametrBuilder.addStatement("$T $N = ($T) $N.get($N)", List.class, inputListName, List.class,
+                            mapParamName, key);
+                    String representativeObjectName = "object";
+                    String representativeMapName = "map";
+                    parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName, 
+                            inputListName);
+                    parametrBuilder.addStatement("$N.add(new $T(($T)$N))", propertyName, newObjectType, Map.class,
+                            representativeObjectName);        
+                    parametrBuilder.endControlFlow();
+                }
+                else{
+                    parametrBuilder.addStatement("$N = ($T) $N.get($N)", propertyName, List.class, 
+                                mapParamName, key);
+                }
+            }
 			else{
 				fieldBuilder = FieldSpec.builder(value.getClass(), propertyName);
 				parametrBuilder.addStatement("this.$N = ($T) $N.get(\"$N\")", propertyName, value.getClass(), 
@@ -134,8 +166,5 @@ public class ConfigBuilder {
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
 	}
 	
-	private String getPropertyName(String name){
-		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name);
-	}
-
+	
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config;
+package ninja.fido.config.parser;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,31 +28,19 @@ import static org.junit.Assert.assertTrue;
  *
  * @author David Fiedler
  */
-public class ParserTwoLevelArrayTest {
+public class ParserSimpleArrayTest {
     
     @Test
     public void test() throws IOException{
-        Map<String,Object> config = ParserTester.tryParseFile("twoLevelArray.cfg");
+        Map<String,Object> config = ParserTester.tryParseFile("simpleArray.cfg");
         
         assertNotNull(config.get("array"));
         assertTrue(config.get("array") instanceof List);
         
         List array = (List) config.get("array");
-        
-        assertNotNull(array.get(0));
-        assertNotNull(array.get(1));
-        
-        assertTrue(array.get(0) instanceof Map);
-        assertTrue(array.get(1) instanceof Map);
-        
-        Map<String,Object> innerMap = (Map<String,Object>) array.get(0);
 
-        assertEquals(1, innerMap.get("start"));
-        assertEquals(2, innerMap.get("end"));
-        
-        innerMap = (Map<String,Object>) array.get(1);
-
-        assertEquals(3, innerMap.get("start"));
-        assertEquals(4, innerMap.get("end"));
+        assertEquals(1, array.get(0));
+        assertEquals(3, array.get(2));
+        assertEquals(6, array.get(5));
     }
 }

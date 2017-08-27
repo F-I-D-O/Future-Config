@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config;
+package ninja.fido.config.parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import ninja.fido.config.Config;
+import ninja.fido.config.ConfigParser;
 
 /**
  *

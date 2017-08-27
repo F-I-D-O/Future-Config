@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config;
+package builder;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import ninja.fido.config.ConfigBuilder;
 
 /**
  *
  * @author David Fiedler
  */
-public class ParserDataTypeTest {
-    
-    @Test
-    public void test() throws IOException{
-        Map<String,Object> config = ParserTester.tryParseFile("dataTypes.cfg");
-        
-        assertEquals("String", config.get("string"));
-        assertEquals(1, config.get("int"));
-        assertEquals(1.0, config.get("double"));
-        
+public class BuilderTester {
+    public static void tryParseFile(String configFilePath) throws IOException{
+        configFilePath = "./src/test/resources/ninja/fido/config/" + configFilePath;
+        ConfigBuilder configBuilder = new ConfigBuilder(new File(configFilePath), new File("./temp"), "ninja.fido.config.test");
+        configBuilder.buildConfig();
     }
 }
