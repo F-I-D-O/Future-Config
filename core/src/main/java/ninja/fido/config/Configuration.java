@@ -21,6 +21,8 @@ public class Configuration {
 	private static final String DEFAULT_CONFIG_LOCATION_FILENAME = "config-location.txt";
     
     private static final String DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME = "local-config-location.txt";
+	
+	private static final char DIR_SEPARATOR = '/';
     
     static {
         Handler handlerObj = new ConsoleHandler();
@@ -148,13 +150,13 @@ public class Configuration {
 	}
     
     private static String getConfigLocationFilePath(GeneratedConfig generatedConfig, String filename){
-        return File.separator + getPackageStructure(generatedConfig.getClass()) + File.separator + filename;
+        return DIR_SEPARATOR + getPackageStructure(generatedConfig.getClass()) + DIR_SEPARATOR + filename;
     }
     
     private static String getPackageStructure(Class type){
         String cannonicalName = type.getCanonicalName();
         String packageName = cannonicalName.substring(0, cannonicalName.lastIndexOf('.'));
-        return packageName.replace('.', File.separatorChar);
+        return packageName.replace('.', DIR_SEPARATOR);
     }
     
 //    private static String buildAbsolutePath(Class type, String relativePath){
