@@ -19,12 +19,16 @@ import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Config file parser
  * @author fido
  */
 public class ConfigParser {
+    private static Logger logger = LoggerFactory.getLogger(ConfigParser.class);
+    
     private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
     private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    )*");
     private static final Pattern KEY_PATTERN = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_]+)(:)");
@@ -39,8 +43,6 @@ public class ConfigParser {
     private final HashMap<String,Object> config;
 	
 	private final Stack<Object> objectStack;
-    
-//    private final Stack<HashMap<String,Object>> arrayStack;
     
     private final Queue<QueueEntry> referenceQueue;
     
@@ -192,7 +194,13 @@ public class ConfigParser {
     private String parseKey(String line) {
         Matcher matcher = KEY_PATTERN.matcher(line);
         matcher.find();
-        currentKey = matcher.group(1);
+        try{
+            currentKey = matcher.group(1);
+        }
+        catch(IllegalStateException ex){
+            logger.error("No key can be parsed from string '{}', parsing will terminate.", line);
+            terminate();
+        }
         return matcher.replaceAll("");
     }
     
@@ -328,6 +336,10 @@ public class ConfigParser {
             resultSting += operand.toString();
         }
         return resultSting;
+    }
+
+    private void terminate() {
+        System.exit(1);
     }
     
     private class QueueEntry{

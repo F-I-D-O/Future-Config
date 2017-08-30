@@ -117,8 +117,9 @@ public class ConfigBuilder {
                 Object representative = list.get(0);
                 if(representative instanceof Map){
                     /* representative generation */
-                    ClassName newObjectType = ClassName.get(configPackageName, getClassName(key));
-                    generateConfig((HashMap<String, Object>) representative, key, false);
+                    String itemName = key + "_item";
+                    ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
+                    generateConfig((HashMap<String, Object>) representative, itemName, false);
                     
                     parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
                     
@@ -126,7 +127,6 @@ public class ConfigBuilder {
                     parametrBuilder.addStatement("$T $N = ($T) $N.get($N)", List.class, inputListName, List.class,
                             mapParamName, key);
                     String representativeObjectName = "object";
-                    String representativeMapName = "map";
                     parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName, 
                             inputListName);
                     parametrBuilder.addStatement("$N.add(new $T(($T)$N))", propertyName, newObjectType, Map.class,

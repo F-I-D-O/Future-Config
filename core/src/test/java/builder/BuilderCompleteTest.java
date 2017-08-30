@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config.parser;
+package builder;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Map;
-import ninja.fido.config.Config;
-import ninja.fido.config.ConfigParser;
+import org.junit.Test;
 
 /**
  *
  * @author David Fiedler
  */
-public class ParserTester {
-    public static Map<String,Object> tryParseFile(String resourcePath) throws IOException{
-        InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        Config config = new ConfigParser().parseConfigFile(reader);
-        return config.getConfig();
+public class BuilderCompleteTest {
+     @Test
+    public void test() throws IOException{
+        BuilderTester.tryParseFile("complete.cfg");
+        
     }
 }
