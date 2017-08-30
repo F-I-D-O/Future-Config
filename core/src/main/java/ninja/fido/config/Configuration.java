@@ -40,10 +40,26 @@ public class Configuration {
      * @return Config root class containig all variable and object of variables defined by config file.
      */
     public static <C extends GeneratedConfig<C>> C load(C generatedConfig){
-        Config baseConfig = getConfig(generatedConfig, DEFAULT_CONFIG_LOCATION_FILENAME);
+        return load(generatedConfig, null);
+    }
+    
+    /**
+     * Loads config from config fillepath configured in maven property config-location.
+     * @param <C> Generated config root class type.
+     * @param generatedConfig Generated config root class.
+     * @param localConfigPath Absolute path to local config file
+     * @return Config root class containing all variable and object of variables defined by config file.
+     */
+    public static <C extends GeneratedConfig<C>> C load(C generatedConfig, String localConfigPath){
+        Config baseConfig 
+                = getConfig(generatedConfig, getConfigFilePath(generatedConfig, DEFAULT_CONFIG_LOCATION_FILENAME));
         
         // load local config
-        Config localConfig = getConfig(generatedConfig, DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME);
+        if(localConfigPath == null){
+            localConfigPath = getConfigFilePath(generatedConfig, DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME);
+        }
+        
+        Config localConfig = getConfig(generatedConfig, localConfigPath);
         
         if(localConfig != null){
             baseConfig.override(localConfig);
@@ -53,10 +69,13 @@ public class Configuration {
 		return config;
     }
     
-    private static Config getConfig(GeneratedConfig generatedConfig, String configLocationFilename){
+    private static String getConfigFilePath(GeneratedConfig generatedConfig, String configLocationFilename){
         String configPath 
                 = getConfigPath(generatedConfig, getConfigLocationFilePath(generatedConfig, configLocationFilename));
-        
+        return configPath;
+    }
+    
+    private static Config getConfig(GeneratedConfig generatedConfig, String configPath){
         LOGGER.log(Level.FINE, "Config file location: {0}", configPath);
         
         if(configPath == null){
