@@ -93,11 +93,16 @@ public class ConfigParser {
             /* skip blank lines */
             Matcher matcher = WHITESPACE_LINE_PATTERN.matcher(line);
             if(matcher.find()){
-                continue;
+                
             }
             
+            /* comment line */
+            else if(line.contains("#")){
+                // possible comment processing
+            }
+
             /* new array or object */
-            if(line.contains("{") || line.contains("[")){
+            else if(line.contains("{") || line.contains("[")){
                 
                 /* push old context to stack */
                 if(inArray){
@@ -129,13 +134,9 @@ public class ConfigParser {
                 else{
                     ((Map<String,Object>) objectStack.peek()).put(currentKey, currentContext);
                 }
-                
-                continue;
             }
-
-           
             
-            if(line.contains("}") || line.contains("]")){
+            else if(line.contains("}") || line.contains("]")){
                 Object currentContext = objectStack.pop();
                 if(currentContext instanceof HashMap){
                     currentObject = (HashMap<String, Object>) currentContext;
@@ -145,14 +146,8 @@ public class ConfigParser {
                     currentArray = (ArrayList<Object>) currentContext;
                     inArray = true;
                 }
-                
-                continue;
             }
             
-            /* comment line */
-            if(line.contains("#")){
-                // possible comment processing
-            }
             else{
                 parseLine(line);
             }
