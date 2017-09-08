@@ -35,16 +35,14 @@ public class ConfigParser {
     private static final Pattern SIMPLE_VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
     private static final Pattern NUMBER_PATTERN = Pattern.compile("^([0-9])");
     private static final Pattern BOOLEAN_PATTERN = Pattern.compile("^(true|false)");
-    private static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$([\\S_]+)");
-    private static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
+    public static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$([\\S_]+)");
+    public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
     private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
     
     
     private final HashMap<String,Object> config;
 	
 	private final Stack<Object> objectStack;
-    
-    private final Queue<QueueEntry> referenceQueue;
     
     private HashMap<String,Object> currentObject;
     
@@ -67,8 +65,6 @@ public class ConfigParser {
 		currentObject = config;
         currentContext = currentObject;
 		objectStack = new Stack<>();
-//        arrayStack = new Stack<>();
-        referenceQueue = new LinkedList<>();
         inArray = false;
     }
     
@@ -80,13 +76,13 @@ public class ConfigParser {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    public Config parseConfigFile(File configFile) throws FileNotFoundException, IOException{
+    public HashMap<String,Object> parseConfigFile(File configFile) throws FileNotFoundException, IOException{
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
             return parseConfigFile(br);
         }
     }
     
-    public Config parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
+    public HashMap<String,Object> parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
         String line;
         while ((line = configFileReader.readLine()) != null) {
             
@@ -152,9 +148,8 @@ public class ConfigParser {
                 parseLine(line);
             }
         }
-        processQueue();
         
-        return new Config(config);
+        return config;
     }
 
     private void parseLine(String line) {
@@ -211,14 +206,14 @@ public class ConfigParser {
 
     private Object parseExpression(String value) {
         if(value.contains("$")){
-            return parseExpressionWithReferences(value);
+            return value;
         }
         else{
             return parseSimpleValue(value);
         }
     }
 
-    private Object parseSimpleValue(String value) {
+    static Object parseSimpleValue(String value) {
         Matcher matcher = NUMBER_PATTERN.matcher(value);
         if(matcher.find()){
             if(value.contains(".")){
@@ -245,60 +240,7 @@ public class ConfigParser {
         }
     }
 
-    private Object parseExpressionWithReferences(String value) {
-        List<String> references = parseReferences(value);
-        for (String reference : references) {
-            Object variable = getReferencedValue(reference);
-            if(variable == null){
-                referenceQueue.add(new QueueEntry(currentKey, value, currentObject));
-                return null;
-            }
-
-            value = value.replace("$" + reference, "'" + variable.toString() + "'");
-        }
-        Matcher matcher = OPERATOR_PATTERN.matcher(value);
-        if(matcher.find()){
-            return parseExpressionWithOperators(value);
-        }
-        else{
-            return parseSimpleValue(value);
-        }
-    }
-
-    private List<String> parseReferences(String value) {
-        LinkedList<String> references = new LinkedList<>();
-        Matcher matcher = REFERENCE_PATTERN.matcher(value);
-        while(matcher.find()){
-            references.add(matcher.group(1));
-        }
-        return references;  
-    }
-
-    private Object getReferencedValue(String reference) {
-        HashMap<String,Object> currentObject = config;
-        String[] parts = reference.split("\\.");
-        if(parts.length == 0){
-            parts = new String[1];
-            parts[0] = reference;
-        }
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
-            if(currentObject.containsKey(part) && currentObject.get(part) != null){
-                if(i < parts.length - 1){
-                    currentObject = (HashMap<String, Object>) currentObject.get(part);
-                }
-                else{
-                    return currentObject.get(part);
-                }
-            }
-            else{
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private Object parseExpressionWithOperators(String value) {
+    static Object parseExpressionWithOperators(String value) {
         Matcher matcher = OPERATOR_EXPRESSION_PATTERN.matcher(value);
         LinkedList<String> operands = new LinkedList<>();
         LinkedList<String> operators = new LinkedList<>();
@@ -325,7 +267,7 @@ public class ConfigParser {
         return resolvedExpression;
     }
 
-    private Object resolveStringExpression(LinkedList<Object> operandsParsed, LinkedList<String> operators) {
+   private static Object resolveStringExpression(LinkedList<Object> operandsParsed, LinkedList<String> operators) {
         String resultSting = "";
         for (Object operand : operandsParsed) {
             resultSting += operand.toString();
@@ -337,45 +279,7 @@ public class ConfigParser {
         System.exit(1);
     }
     
-    private class QueueEntry{
-        private final String key;
-        
-        private final String value;
-        
-        private final HashMap<String,Object> parent;
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public HashMap<String, Object> getParent() {
-            return parent;
-        }
-        
-        
-
-        public QueueEntry(String key, String value, HashMap<String, Object> parent) {
-            this.key = key;
-            this.value = value;
-            this.parent = parent;
-        }
-
-    }
     
-    private void processQueue(){
-        while (!referenceQueue.isEmpty()) {
-            QueueEntry entry = referenceQueue.poll();
-            Object variableValue = parseExpressionWithReferences(entry.getValue());
-            if(variableValue == null){
-                referenceQueue.add(entry);
-            }
-            else{
-                entry.parent.put(entry.key, variableValue);
-            }
-        }
-    }
+    
+    
 }

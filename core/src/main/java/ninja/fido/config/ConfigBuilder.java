@@ -63,7 +63,7 @@ public class ConfigBuilder {
      */
 	public void buildConfig(){
 		try {
-			Config config = new ConfigParser().parseConfigFile(configFile);
+			ConfigData config = new ConfigParser().parseConfigFile(configFile);
 			HashMap<String,Object> configMap = config.getConfig();
 			generateConfig(configMap, "config", true);
 		} catch (IOException ex) {
