@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package builder;
+package ninja.fido.config.builder;
 
 import ninja.fido.config.parser.*;
 import java.io.IOException;

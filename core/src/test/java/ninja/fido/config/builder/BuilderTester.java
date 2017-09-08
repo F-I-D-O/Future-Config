@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package builder;
+package ninja.fido.config.builder;
 
-import ninja.fido.config.parser.*;
+import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import ninja.fido.config.ConfigBuilder;
 
 /**
  *
  * @author David Fiedler
  */
-public class BuilderTwoLevelArrayTest {
-    
-    @Test
-    public void test() throws IOException{
-        BuilderTester.tryParseFile("twoLevelArray.cfg");
-        
+public class BuilderTester {
+    public static void tryParseFile(String configFilePath) throws IOException{
+        configFilePath = "./src/test/resources/ninja/fido/config/" + configFilePath;
+        ConfigBuilder configBuilder = new ConfigBuilder(new File(configFilePath), new File("./temp"), "ninja.fido.config.test");
+        configBuilder.buildConfig();
     }
 }

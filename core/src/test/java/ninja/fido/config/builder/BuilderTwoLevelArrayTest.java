@@ -13,19 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package builder;
+package ninja.fido.config.builder;
 
+import ninja.fido.config.parser.*;
 import java.io.IOException;
+import java.util.Map;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  *
  * @author David Fiedler
  */
-public class BuilderCompleteTest {
-     @Test
+public class BuilderTwoLevelArrayTest {
+    
+    @Test
     public void test() throws IOException{
-        BuilderTester.tryParseFile("complete.cfg");
+        BuilderTester.tryParseFile("twoLevelArray.cfg");
         
     }
 }
