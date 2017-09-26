@@ -16,6 +16,7 @@
 package ninja.fido.config;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Map;
  * @author fido
  */
 public class ConfigDataLoader {
-    public ConfigData loadConfigData(BufferedReader... configReaders){
+    public ConfigData loadConfigData(BufferedReader... configReaders) throws IOException{
         ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
         for (BufferedReader configReader : configReaders) {
             configDataList.add(new ConfigParser().parseConfigFile(configReader));

@@ -7,7 +7,9 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeSpec;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,8 +65,8 @@ public class ConfigBuilder {
      */
 	public void buildConfig(){
 		try {
-			ConfigData config = new ConfigParser().parseConfigFile(configFile);
-			HashMap<String,Object> configMap = config.getConfig();
+			ConfigData config = new ConfigDataLoader().loadConfigData(new BufferedReader(new FileReader(configFile)));
+			Map<String,Object> configMap = config.getConfig();
 			generateConfig(configMap, "config", true);
 		} catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
@@ -72,7 +74,7 @@ public class ConfigBuilder {
 	}
 
 
-	private void generateConfig(HashMap<String, Object> configMap, String mapName, boolean isRoot) {
+	private void generateConfig(Map<String, Object> configMap, String mapName, boolean isRoot) {
 		
 		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 		TypeSpec.Builder objectBuilder 

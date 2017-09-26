@@ -83,15 +83,18 @@ public class ConfigDataResolver {
     }
     
     private void addAllUnresolvedVariablesToQueue() {
-        addAllUnresolvedVariablesToQueueForLevel(finalConfigData);
+        addAllUnresolvedVariablesToQueueForMap(finalConfigData);
     }
     
-    private void addAllUnresolvedVariablesToQueueForLevel(Map<String, Object> currentMap) {
-         for (Map.Entry<String, Object> entry : finalConfigData.entrySet()) {
+    private void addAllUnresolvedVariablesToQueueForMap(Map<String, Object> currentMap) {
+         for (Map.Entry<String, Object> entry : currentMap.entrySet()) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if(value instanceof HashMap){
-                addAllUnresolvedVariablesToQueueForLevel((HashMap<String,Object>) currentMap.get(key));
+            if(value instanceof Map){
+                addAllUnresolvedVariablesToQueueForMap((HashMap<String,Object>) value);
+            }
+            else if(value instanceof List){
+                addAllUnresolvedVariablesToQueueForList((List) value);
             }
             else if(value instanceof String){
                 String stringValue = (String) value;
@@ -103,15 +106,36 @@ public class ConfigDataResolver {
         }
     }
     
+    private void addAllUnresolvedVariablesToQueueForList(List currentList) {
+         for (Object entry : currentList) {
+            if(entry instanceof Map){
+                addAllUnresolvedVariablesToQueueForMap((Map<String,Object>) entry);
+            }
+            else if(entry instanceof List){
+                addAllUnresolvedVariablesToQueueForList((List) entry);
+            }
+            else if(entry instanceof String){
+                String stringValue = (String) entry;
+                Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
+                if(matcher.find()){
+                    referenceQueue.add(new QueueEntry(null, stringValue, currentList));
+                }
+            }
+        }
+    }
+    
     private void processQueue(){
         while (!referenceQueue.isEmpty()) {
             QueueEntry entry = referenceQueue.poll();
-            Object variableValue = parseExpressionWithReferences(entry.getValue());
+            Object variableValue = parseExpressionWithReferences(entry.value);
             if(variableValue == null){
                 referenceQueue.add(entry);
             }
+            else if(entry.parent instanceof Map){
+                ((Map) entry.parent).put(entry.key, variableValue);
+            }
             else{
-                entry.parent.put(entry.key, variableValue);
+                ((List) entry.parent).add(variableValue);
             }
         }
     }
@@ -180,23 +204,10 @@ public class ConfigDataResolver {
         
         private final String value;
         
-        private final Map<String,Object> parent;
-
-        public String getKey() {
-            return key;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public Map<String, Object> getParent() {
-            return parent;
-        }
-        
+        private final Object parent;
         
 
-        public QueueEntry(String key, String value, Map<String, Object> parent) {
+        public QueueEntry(String key, String value, Object parent) {
             this.key = key;
             this.value = value;
             this.parent = parent;

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 import ninja.fido.config.ConfigData;
+import ninja.fido.config.ConfigDataLoader;
 import ninja.fido.config.ConfigParser;
 
 /**
@@ -31,7 +32,7 @@ public class ParserTester {
     public static Map<String,Object> tryParseFile(String resourcePath) throws IOException{
         InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        ConfigData config = new ConfigParser().parseConfigFile(reader);
+        ConfigData config = new ConfigDataLoader().loadConfigData(reader);
         return config.getConfig();
     }
 }
