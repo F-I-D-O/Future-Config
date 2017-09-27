@@ -23,12 +23,19 @@ import java.util.Queue;
 import java.util.regex.Matcher;
 import static ninja.fido.config.Parser.OPERATOR_PATTERN;
 import static ninja.fido.config.Parser.REFERENCE_PATTERN;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author fido
  */
 public class VariableResolver {
+    
+    private static Logger logger = LoggerFactory.getLogger(VariableResolver.class);
+    
+    
+    
     
     private final Queue<QueueEntry> referenceQueue;
     
@@ -93,6 +100,8 @@ public class VariableResolver {
     }
     
     private void processQueue(){
+        int lastQueueLength = referenceQueue.size();
+        int checkCounter = lastQueueLength;
         while (!referenceQueue.isEmpty()) {
             QueueEntry entry = referenceQueue.poll();
             Object variableValue = parseExpressionWithReferences(entry.value);
@@ -104,6 +113,16 @@ public class VariableResolver {
             }
             else{
                 ((List) entry.parent).add(variableValue);
+            }
+            checkCounter--;
+            if(checkCounter == 0){
+                if(lastQueueLength == referenceQueue.size()){
+                    logger.error("None of the remaining variables can be resolved. Remaining variables: {}", 
+                            referenceQueue);
+                    terminate();
+                }
+                lastQueueLength = referenceQueue.size();
+                checkCounter = lastQueueLength;
             }
         }
     }
@@ -162,7 +181,9 @@ public class VariableResolver {
         return null;
     }
 
-   
+    private void terminate() {
+        System.exit(1);
+    }
 
    
     
@@ -181,5 +202,17 @@ public class VariableResolver {
             this.parent = parent;
         }
 
+        @Override
+        public String toString() {
+            String out = key + ": " + value;
+            
+//            if(parent != null){
+//                out += "(from: " + parent + ")";
+//            }
+            
+            return out;
+        }
+
+        
     }
 }
