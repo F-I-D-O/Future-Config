@@ -22,7 +22,7 @@ import java.io.InputStreamReader;
 import java.util.Map;
 import ninja.fido.config.ConfigData;
 import ninja.fido.config.ConfigDataLoader;
-import ninja.fido.config.ConfigParser;
+import ninja.fido.config.Parser;
 
 /**
  *

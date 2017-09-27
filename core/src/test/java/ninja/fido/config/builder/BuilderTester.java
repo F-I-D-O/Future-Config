@@ -15,8 +15,10 @@
  */
 package ninja.fido.config.builder;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import ninja.fido.config.ConfigBuilder;
 
 /**
@@ -25,8 +27,10 @@ import ninja.fido.config.ConfigBuilder;
  */
 public class BuilderTester {
     public static void tryParseFile(String configFilePath) throws IOException{
-        configFilePath = "./src/test/resources/ninja/fido/config/" + configFilePath;
-        ConfigBuilder configBuilder = new ConfigBuilder(new File(configFilePath), new File("./temp"), "ninja.fido.config.test");
+        configFilePath = "/ninja/fido/config/" + configFilePath;
+        ConfigBuilder configBuilder = new ConfigBuilder(
+                new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))), 
+                new File("./temp"), "ninja.fido.config.test");
         configBuilder.buildConfig();
     }
 }

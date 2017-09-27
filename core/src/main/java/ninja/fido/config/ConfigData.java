@@ -61,21 +61,4 @@ public class ConfigData {
         }
         return null;
     }
-    
-    public void override(ConfigData config){
-        overrideLevel(this.config, config.getConfig());
-    }
-    
-    private void overrideLevel(Map<String, Object> currentMap, Map<String, Object> overridingMap){
-        for (Map.Entry<String, Object> entry : overridingMap.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if(value instanceof HashMap){
-                overrideLevel((HashMap<String,Object>) currentMap.get(key), (HashMap<String,Object>) value);
-            }
-            else{
-                currentMap.put(key, value);
-            }
-        }
-    }
 }

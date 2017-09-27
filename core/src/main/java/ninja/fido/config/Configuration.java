@@ -91,7 +91,7 @@ public class Configuration {
             InputStream inputStream = generatedConfig.getClass().getResourceAsStream(configPath);
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             try {
-                config = new ConfigParser().parseConfigFile(reader);
+                config = new Parser().parseConfigFile(reader);
             } catch (IOException ex) {
                 LOGGER.log(Level.SEVERE, "Error loading config file: {0}", configPath);
                 return null;
@@ -100,7 +100,7 @@ public class Configuration {
         else{
             configFile = new File(configPath);
             try {
-                config = new ConfigParser().parseConfigFile(configFile);
+                config = new Parser().parseConfigFile(configFile);
             } catch (IOException ex) {
                 System.err.println("Config file not found at location: " + configFile.getAbsolutePath());
     //            Logger.getLogger(Configuration.class.getName()).log(Level.SEVERE, null, ex);

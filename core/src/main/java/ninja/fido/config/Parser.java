@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  * Config file parser
  * @author fido
  */
-public class ConfigParser {
-    private static Logger logger = LoggerFactory.getLogger(ConfigParser.class);
+public class Parser {
+    private static Logger logger = LoggerFactory.getLogger(Parser.class);
     
     private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
     private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    )*");
@@ -60,7 +60,7 @@ public class ConfigParser {
     /**
      * Constructor.
      */
-    public ConfigParser() {
+    public Parser() {
         config = new HashMap<>();
 		currentObject = config;
         currentContext = currentObject;

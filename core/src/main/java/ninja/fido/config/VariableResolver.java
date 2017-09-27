@@ -15,75 +15,43 @@
  */
 package ninja.fido.config;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.regex.Matcher;
-import static ninja.fido.config.ConfigParser.OPERATOR_PATTERN;
-import static ninja.fido.config.ConfigParser.REFERENCE_PATTERN;
+import static ninja.fido.config.Parser.OPERATOR_PATTERN;
+import static ninja.fido.config.Parser.REFERENCE_PATTERN;
 
 /**
  *
  * @author fido
  */
-public class ConfigDataResolver {
-    
-    private final ArrayList<Map<String, Object>> configDataList;
+public class VariableResolver {
     
     private final Queue<QueueEntry> referenceQueue;
     
-    private Map<String,Object> finalConfigData;
+    private final Map<String,Object> configMap;
 
     
     
     
-    public ConfigDataResolver(ArrayList<Map<String,Object>> configDataList) {
-        this.configDataList = configDataList;
+    public VariableResolver(Map<String,Object> configMap) {
+        this.configMap = configMap;
         referenceQueue = new LinkedList<>();
     }
     
-    
-    
-    public Map<String,Object> resolve(){
-        combineConfigData();
-        resolveVariables();
-        return finalConfigData;
-    }
 
-    private void combineConfigData() {
-        finalConfigData = configDataList.get(0);
-        for (int i = 1; i < configDataList.size(); i++) {
-            overrideWith(configDataList.get(i));
-        }
-    }
-    
-    private void overrideWith(Map<String,Object> configData){
-        overrideLevel(finalConfigData, configData);
-    }
-    
-    private void overrideLevel(Map<String, Object> currentMap, Map<String, Object> overridingMap){
-        for (Map.Entry<String, Object> entry : overridingMap.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if(value instanceof HashMap){
-                overrideLevel((HashMap<String,Object>) currentMap.get(key), (HashMap<String,Object>) value);
-            }
-            else{
-                currentMap.put(key, value);
-            }
-        }
-    }
 
-    private void resolveVariables() {
+    public Map<String,Object> resolveVariables() {
         addAllUnresolvedVariablesToQueue();
         processQueue();
+        return configMap;
     }
     
     private void addAllUnresolvedVariablesToQueue() {
-        addAllUnresolvedVariablesToQueueForMap(finalConfigData);
+        addAllUnresolvedVariablesToQueueForMap(configMap);
     }
     
     private void addAllUnresolvedVariablesToQueueForMap(Map<String, Object> currentMap) {
@@ -154,10 +122,10 @@ public class ConfigDataResolver {
         }
         Matcher matcher = OPERATOR_PATTERN.matcher(value);
         if(matcher.find()){
-            return ConfigParser.parseExpressionWithOperators(value);
+            return Parser.parseExpressionWithOperators(value);
         }
         else{
-            return ConfigParser.parseSimpleValue(value);
+            return Parser.parseSimpleValue(value);
         }
     }
     
@@ -171,7 +139,7 @@ public class ConfigDataResolver {
     }
     
     private Object getReferencedValue(String reference) {
-        Map<String,Object> currentObject = finalConfigData;
+        Map<String,Object> currentObject = configMap;
         String[] parts = reference.split("\\.");
         if(parts.length == 0){
             parts = new String[1];

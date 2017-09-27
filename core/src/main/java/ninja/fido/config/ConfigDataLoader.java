@@ -15,10 +15,11 @@
  */
 package ninja.fido.config;
 
+import com.google.common.collect.Lists;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,11 +27,45 @@ import java.util.Map;
  * @author fido
  */
 public class ConfigDataLoader {
-    public ConfigData loadConfigData(BufferedReader... configReaders) throws IOException{
-        ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
-        for (BufferedReader configReader : configReaders) {
-            configDataList.add(new ConfigParser().parseConfigFile(configReader));
+//    public ConfigData loadConfigData(BufferedReader... configReaders) throws IOException{
+//        ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
+//        for (BufferedReader configReader : configReaders) {
+//            configDataList.add(new ConfigParser().parseConfigFile(configReader));
+//        }
+//        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
+//    }
+    
+    public ConfigData loadConfigData(Object... configSources) throws IOException{
+        ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
+        for (int i = 0; i < configSources.length; i++) {
+            configSourceDefinitions[i] = new ConfigSource(configSources[i], (String[]) null);
         }
-        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
+        return loadConfigData(configSourceDefinitions);
+    }
+    
+    public ConfigData loadConfigData(ConfigSource... configSourceDefinitions) throws IOException{
+        ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
+        for (ConfigSource configSourceDefinition : configSourceDefinitions) {
+            Object source = configSourceDefinition.source;
+            Map<String,Object> configMapFromSource = null;
+            
+            if(source instanceof BufferedReader){
+                configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+            }
+            else if(source instanceof Map){
+                configMapFromSource = (Map) source;
+            }
+            
+            if(configSourceDefinition.path != null){
+                for(String objectName: Lists.reverse(configSourceDefinition.path)){
+                    Map<String,Object> parentMap = new HashMap<>();
+                    parentMap.put(objectName, configMapFromSource);
+                    configMapFromSource = parentMap;
+                }
+            }
+            
+            configDataList.add(configMapFromSource);
+        }
+        return new ConfigData(new VariableResolver(new Merger(configDataList).merge()).resolveVariables());
     }
 }

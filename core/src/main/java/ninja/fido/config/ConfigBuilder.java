@@ -29,7 +29,7 @@ public class ConfigBuilder {
     /**
      * Configuration file
      */
-	private final File configFile;
+	private final BufferedReader configFile;
 
 	/**
      * Src dir of the project where all config files will be created. Most time the ...src/main/java/ dir.
@@ -51,7 +51,7 @@ public class ConfigBuilder {
      * Most time the ...src/main/java/ dir.
      * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
      */
-	public ConfigBuilder(File configFile, File outputSrcDir, String configPackageName) {
+	public ConfigBuilder(BufferedReader configFile, File outputSrcDir, String configPackageName) {
 		this.configFile = configFile;
 		this.configPackageName = configPackageName;
 		this.outputSrcDir = outputSrcDir;
@@ -65,7 +65,7 @@ public class ConfigBuilder {
      */
 	public void buildConfig(){
 		try {
-			ConfigData config = new ConfigDataLoader().loadConfigData(new BufferedReader(new FileReader(configFile)));
+			ConfigData config = new ConfigDataLoader().loadConfigData(configFile);
 			Map<String,Object> configMap = config.getConfig();
 			generateConfig(configMap, "config", true);
 		} catch (IOException ex) {
