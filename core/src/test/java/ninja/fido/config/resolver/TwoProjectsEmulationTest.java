@@ -56,29 +56,34 @@ public class TwoProjectsEmulationTest {
         Map<String,Object> config = tryParseFiles("complete.cfg", "complete_override.cfg", 
                 "complete_child_project.cfg", "complete_child_project_override.cfg");
         
-        assertEquals("string replaced twice", config.get("string"));
-        assertEquals("composed string replaced twice", config.get("composed_string"));
-        assertEquals(222222, config.get("integer"));
-        assertEquals(3.14, config.get("float"));
+        /* parent map */
+        assertNotNull(config.get("parent"));
+        assertTrue(config.get("parent") instanceof ConfigDataMap);
+        ConfigDataMap parent = (ConfigDataMap) config.get("parent");
+        
+        assertEquals("string replaced twice", parent.get("string"));
+        assertEquals("composed string replaced twice", parent.get("composed_string"));
+        assertEquals(222222, parent.get("integer"));
+        assertEquals(3.14, parent.get("float"));
         
         /* object */
-        assertNotNull(config.get("object"));
-        assertTrue(config.get("object") instanceof ConfigDataMap);
-        ConfigDataMap object = (ConfigDataMap) config.get("object");
+        assertNotNull(parent.get("object"));
+        assertTrue(parent.get("object") instanceof ConfigDataMap);
+        ConfigDataMap object = (ConfigDataMap) parent.get("object");
         assertEquals("tset", object.get("string"));
         assertEquals(9, object.get("integer"));
         assertEquals(1.23, object.get("float"));
         
         /* array */
-        assertNotNull(config.get("array"));
-        assertTrue(config.get("array") instanceof ConfigDataList);
-        ConfigDataList array = (ConfigDataList) config.get("array");
+        assertNotNull(parent.get("array"));
+        assertTrue(parent.get("array") instanceof ConfigDataList);
+        ConfigDataList array = (ConfigDataList) parent.get("array");
         assertEquals(5, array.get(0));
         
         /* array of objects */
-        assertNotNull(config.get("array_of_objects"));
-        assertTrue(config.get("array_of_objects") instanceof ConfigDataList);
-        ConfigDataList arrayOfObjects = (ConfigDataList) config.get("array_of_objects");
+        assertNotNull(parent.get("array_of_objects"));
+        assertTrue(parent.get("array_of_objects") instanceof ConfigDataList);
+        ConfigDataList arrayOfObjects = (ConfigDataList) parent.get("array_of_objects");
         assertNotNull(arrayOfObjects.get(0));
         assertTrue(arrayOfObjects.get(0) instanceof ConfigDataMap);
         ConfigDataMap objectInArray = (ConfigDataMap) arrayOfObjects.get(0);
@@ -91,17 +96,17 @@ public class TwoProjectsEmulationTest {
         assertEquals(673, objectInArray2.get("end"));
         
         /* object with composed */
-        assertNotNull(config.get("object_with_composed"));
-        assertTrue(config.get("object_with_composed") instanceof ConfigDataMap);
-        ConfigDataMap objectWithComposedVariables = (ConfigDataMap) config.get("object_with_composed");
+        assertNotNull(parent.get("object_with_composed"));
+        assertTrue(parent.get("object_with_composed") instanceof ConfigDataMap);
+        ConfigDataMap objectWithComposedVariables = (ConfigDataMap) parent.get("object_with_composed");
         assertEquals("string replaced twice that is composed", objectWithComposedVariables.get("string"));
         assertEquals("double replaced in child project composed string replaced twice", objectWithComposedVariables.get("double_composed_string"));
         assertEquals("string replaced twice that is composed within object replaced", objectWithComposedVariables.get("inner_composition"));
         
         /* hierarchy */
-        assertNotNull(config.get("object_hierarchy"));
-        assertTrue(config.get("object_hierarchy") instanceof ConfigDataMap);
-        ConfigDataMap objectHierarchy = (ConfigDataMap) config.get("object_hierarchy");
+        assertNotNull(parent.get("object_hierarchy"));
+        assertTrue(parent.get("object_hierarchy") instanceof ConfigDataMap);
+        ConfigDataMap objectHierarchy = (ConfigDataMap) parent.get("object_hierarchy");
         
         assertNotNull(objectHierarchy.get("inner_object"));
         assertTrue(objectHierarchy.get("inner_object") instanceof ConfigDataMap);

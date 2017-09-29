@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import static ninja.fido.config.Parser.REFERENCE_PATTERN;
 
 /**
  *
@@ -57,7 +59,7 @@ public class ConfigDataLoader {
             }
             
             if(configSourceDefinition.path != null){
-                changeConfigContext(configMapFromSource, configSourceDefinition.path);
+                configMapFromSource = changeConfigContext(configMapFromSource, configSourceDefinition.path);
             }
             
             configDataList.add(configMapFromSource);
@@ -65,16 +67,22 @@ public class ConfigDataLoader {
         return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
     }
 
-    private void changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
+    private ConfigDataMap changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
         for(String objectName: Lists.reverse(path)){
             
             /* add prefix to all variables path */
-            
+            for(ConfigProperty configProperty: configMapFromSource.getVariableIterable()){
+                Matcher matcher = REFERENCE_PATTERN.matcher((String) configProperty.value);
+                matcher.find();
+                String result = matcher.replaceAll("\\$" + objectName + ".$1");
+                configProperty.set(result);
+            }
             
             /* move object to new parent */
             ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
             parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
             configMapFromSource = parentMap;
         }
+        return configMapFromSource;
     }
 }

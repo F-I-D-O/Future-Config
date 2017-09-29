@@ -22,16 +22,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import ninja.fido.config.ConfigDataList;
-import ninja.fido.config.ConfigDataLoader;
 import ninja.fido.config.ConfigDataMap;
-import ninja.fido.config.ConfigDataObject;
 import ninja.fido.config.ConfigProperty;
 import ninja.fido.config.ConfigSource;
 import ninja.fido.config.Merger;
 import ninja.fido.config.Parser;
-import ninja.fido.config.VariableResolver;
 import ninja.fido.config.parser.ParserTester;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,7 +39,7 @@ import org.junit.Test;
  */
 public class VariableIterationTest {
     
-    public static Map<String,Object> tryParseFile(String resourcePath) throws IOException{
+    private static ConfigDataMap tryParseFile(String resourcePath) throws IOException{
         InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         
@@ -56,12 +51,12 @@ public class VariableIterationTest {
         configDataList.add(configMapFromSource);
         ConfigDataMap mergedMap = new Merger(configDataList).merge();
         
-        return mergedMap.getConfigObject();
+        return mergedMap;
     }
     
     @Test
     public void test() throws IOException{
-        Map<String,Object> config = tryParseFile("complete.cfg");
+        ConfigDataMap config = tryParseFile("complete.cfg");
         
         /* hierarchy */
         assertNotNull(config.get("object_hierarchy"));
@@ -76,7 +71,14 @@ public class VariableIterationTest {
         assertEquals(2, map.size());
         assertEquals("$string + ' is funny to compose'", map.get("object_hierarchy.inner_object.composed"));
         assertEquals("$object_hierarchy.inner_object.composed + ' multiple times'", 
-                map.get("object_hierarchy.inner_object.inner_inner_object.composed"));     
+                map.get("object_hierarchy.inner_object.inner_inner_object.composed")); 
+        
+        
+        map = new HashMap<>();
+        for (ConfigProperty configProperty : config.getVariableIterable()) {
+            map.put(configProperty.getPath(), configProperty.value);
+        }
+        assertEquals(6, map.size());
     }
 
 }

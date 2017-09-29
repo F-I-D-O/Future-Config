@@ -113,6 +113,8 @@ public abstract class ConfigDataObject<T,K,V> implements Iterable<Entry<K,V>>{
         
         private VariableIteratorContext currentContext;
         
+        private Iterator<Entry<K,V>> currentIterator;
+        
         private Entry<K,V> currentEntry;
 
         
@@ -121,6 +123,7 @@ public abstract class ConfigDataObject<T,K,V> implements Iterable<Entry<K,V>>{
         public VariableIterator(ConfigDataObject configDataObject) {
             contextStack = new Stack<>();
             currentContext = new VariableIteratorContext(configDataObject, configDataObject.iterator());
+            currentIterator = currentContext.iterator;
         }
 
         
@@ -131,13 +134,12 @@ public abstract class ConfigDataObject<T,K,V> implements Iterable<Entry<K,V>>{
             if(currentEntry != null && Parser.containsVariable(currentEntry.getValue())){
                 return true;
             }
-            Iterator<Entry<K,V>> currentIterator = currentContext.iterator;
+            checkIterator();
             while (currentIterator.hasNext()) {
                 
                 /* fetching next entry */
                 currentEntry = currentIterator.next();
                 Object currentValue = currentEntry.getValue();
-                
                 
                 if(Parser.containsVariable(currentValue)){
                     return true;
@@ -148,10 +150,7 @@ public abstract class ConfigDataObject<T,K,V> implements Iterable<Entry<K,V>>{
                     currentContext = new VariableIteratorContext(currentConfigObject, currentConfigObject.iterator());
                     currentIterator = currentContext.iterator;
                 }
-                while(!currentIterator.hasNext() && !contextStack.empty()){
-                    currentContext = contextStack.pop();
-                    currentIterator = currentContext.iterator;
-                }
+                checkIterator();
             }
             return false;
         }
@@ -166,6 +165,13 @@ public abstract class ConfigDataObject<T,K,V> implements Iterable<Entry<K,V>>{
             }
             else{
                 return null;
+            }
+        }
+
+        private void checkIterator() {
+            while(!currentIterator.hasNext() && !contextStack.empty()){
+                currentContext = contextStack.pop();
+                currentIterator = currentContext.iterator;
             }
         }
         
