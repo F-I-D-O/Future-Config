@@ -15,37 +15,28 @@
  */
 package ninja.fido.config;
 
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  *
  * @author fido
  */
-public class ConfigSource {
-    public final Object source;
+public class ConfigProperty {
+    public final ConfigDataObject configDataObject;
     
-    final List<String> path;
+    public final Object key;
+    
+    public final Object value;
 
-    
-    public ConfigSource(Object source, String... path) {
-        this.source = source;
-        if(path != null){
-            List<String> pathList = new LinkedList<>();
-            for (String objectName : path) {
-                pathList.add(objectName);
-            }
-            this.path = pathList;
-        }
-        else{
-            this.path = null;
-        }
+    public ConfigProperty(ConfigDataObject configDataObject, Object key, Object value) {
+        this.configDataObject = configDataObject;
+        this.key = key;
+        this.value = value;
     }
     
-//    public ConfigSource(Object source, List<String> path) {
-//        this.source = source;
-//        this.path = path;
-//    }
+    public void set(Object newValue){
+        configDataObject.put(key, newValue);
+    }
     
-    
+    public String getPath(){
+        return configDataObject.getPath() + key;
+    }
 }

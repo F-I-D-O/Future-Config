@@ -13,13 +13,13 @@ import java.util.Map;
  * Class for encapsulating parsed configuration data.
  * @author fido
  */
-public class ConfigDataMap<PT extends ConfigDataObject,PK> extends ConfigDataObject<Map<String,Object>,String,Object,PT,PK>{
+public class ConfigDataMap extends ConfigDataObject<Map<String,Object>,String,Object>{
 
-    public ConfigDataMap(Map<String, Object> configObject, PT parentConfigObject, PK keyInParent) {
+    public ConfigDataMap(Map<String, Object> configObject, ConfigDataObject parentConfigObject, Object keyInParent) {
         super(configObject, parentConfigObject, keyInParent);
     }
     
-    public ConfigDataMap(PT parentConfigObject, PK keyInParent) {
+    public ConfigDataMap(ConfigDataObject parentConfigObject, Object keyInParent) {
         super(new HashMap<>(), parentConfigObject, keyInParent);
     }
     
@@ -45,5 +45,5 @@ public class ConfigDataMap<PT extends ConfigDataObject,PK> extends ConfigDataObj
         configObject.put(key, value);
         Map<String,Object> test = configObject;
     }
-	
+
 }

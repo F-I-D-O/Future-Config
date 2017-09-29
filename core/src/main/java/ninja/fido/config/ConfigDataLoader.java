@@ -20,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -46,7 +47,7 @@ public class ConfigDataLoader {
         ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
         for (ConfigSource configSourceDefinition : configSourceDefinitions) {
             Object source = configSourceDefinition.source;
-            ConfigDataMap<ConfigDataObject,Object> configMapFromSource = null;
+            ConfigDataMap configMapFromSource = null;
             
             if(source instanceof BufferedReader){
                 configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
@@ -56,15 +57,24 @@ public class ConfigDataLoader {
             }
             
             if(configSourceDefinition.path != null){
-                for(String objectName: Lists.reverse(configSourceDefinition.path)){
-                    ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
-                    parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
-                    configMapFromSource = parentMap;
-                }
+                changeConfigContext(configMapFromSource, configSourceDefinition.path);
             }
             
             configDataList.add(configMapFromSource);
         }
         return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
+    }
+
+    private void changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
+        for(String objectName: Lists.reverse(path)){
+            
+            /* add prefix to all variables path */
+            
+            
+            /* move object to new parent */
+            ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
+            parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
+            configMapFromSource = parentMap;
+        }
     }
 }

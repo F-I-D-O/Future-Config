@@ -9,7 +9,6 @@ import com.squareup.javapoet.MethodSpec.Builder;
 import com.squareup.javapoet.TypeSpec;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,7 +72,7 @@ public class ConfigBuilder {
 	}
 
 
-	private void generateConfig(ConfigDataMap<ConfigDataObject,Object> configMap, String mapName, boolean isRoot) {
+	private void generateConfig(ConfigDataMap configMap, String mapName, boolean isRoot) {
 		
 		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 		TypeSpec.Builder objectBuilder 

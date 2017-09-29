@@ -19,14 +19,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import ninja.fido.config.ConfigDataList;
 import ninja.fido.config.ConfigDataMap;
 import ninja.fido.config.ConfigDataLoader;
 import ninja.fido.config.ConfigSource;
 import ninja.fido.config.parser.ParserTester;
-import static ninja.fido.config.resolver.ResolverTest.tryParseFiles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -50,7 +48,7 @@ public class TwoProjectsEmulationTest {
         ConfigSource source4 = new ConfigSource(readers[3], null);
         
         ConfigDataMap config = new ConfigDataLoader().loadConfigData(source1, source2, source3, source4);
-        return config.getConfig();
+        return config.getConfigObject();
     }
     
     @Test
@@ -65,65 +63,65 @@ public class TwoProjectsEmulationTest {
         
         /* object */
         assertNotNull(config.get("object"));
-        assertTrue(config.get("object") instanceof Map);
-        Map object = (Map) config.get("object");
+        assertTrue(config.get("object") instanceof ConfigDataMap);
+        ConfigDataMap object = (ConfigDataMap) config.get("object");
         assertEquals("tset", object.get("string"));
         assertEquals(9, object.get("integer"));
         assertEquals(1.23, object.get("float"));
         
         /* array */
         assertNotNull(config.get("array"));
-        assertTrue(config.get("array") instanceof List);
-        List array = (List) config.get("array");
+        assertTrue(config.get("array") instanceof ConfigDataList);
+        ConfigDataList array = (ConfigDataList) config.get("array");
         assertEquals(5, array.get(0));
         
         /* array of objects */
         assertNotNull(config.get("array_of_objects"));
-        assertTrue(config.get("array_of_objects") instanceof List);
-        List arrayOfObjects = (List) config.get("array_of_objects");
+        assertTrue(config.get("array_of_objects") instanceof ConfigDataList);
+        ConfigDataList arrayOfObjects = (ConfigDataList) config.get("array_of_objects");
         assertNotNull(arrayOfObjects.get(0));
-        assertTrue(arrayOfObjects.get(0) instanceof Map);
-        Map objectInArray = (Map) arrayOfObjects.get(0);
+        assertTrue(arrayOfObjects.get(0) instanceof ConfigDataMap);
+        ConfigDataMap objectInArray = (ConfigDataMap) arrayOfObjects.get(0);
         assertEquals(571, objectInArray.get("start"));
         assertEquals(672, objectInArray.get("end"));
         assertNotNull(arrayOfObjects.get(1));
-        assertTrue(arrayOfObjects.get(1) instanceof Map);
-        Map objectInArray2 = (Map) arrayOfObjects.get(1);
+        assertTrue(arrayOfObjects.get(1) instanceof ConfigDataMap);
+        ConfigDataMap objectInArray2 = (ConfigDataMap) arrayOfObjects.get(1);
         assertEquals(572, objectInArray2.get("start"));
         assertEquals(673, objectInArray2.get("end"));
         
         /* object with composed */
         assertNotNull(config.get("object_with_composed"));
-        assertTrue(config.get("object_with_composed") instanceof Map);
-        Map objectWithComposedVariables = (Map) config.get("object_with_composed");
+        assertTrue(config.get("object_with_composed") instanceof ConfigDataMap);
+        ConfigDataMap objectWithComposedVariables = (ConfigDataMap) config.get("object_with_composed");
         assertEquals("string replaced twice that is composed", objectWithComposedVariables.get("string"));
         assertEquals("double replaced in child project composed string replaced twice", objectWithComposedVariables.get("double_composed_string"));
         assertEquals("string replaced twice that is composed within object replaced", objectWithComposedVariables.get("inner_composition"));
         
         /* hierarchy */
         assertNotNull(config.get("object_hierarchy"));
-        assertTrue(config.get("object_hierarchy") instanceof Map);
-        Map objectHierarchy = (Map) config.get("object_hierarchy");
+        assertTrue(config.get("object_hierarchy") instanceof ConfigDataMap);
+        ConfigDataMap objectHierarchy = (ConfigDataMap) config.get("object_hierarchy");
         
         assertNotNull(objectHierarchy.get("inner_object"));
-        assertTrue(objectHierarchy.get("inner_object") instanceof Map);
-        Map innerObject = (Map) objectHierarchy.get("inner_object");
+        assertTrue(objectHierarchy.get("inner_object") instanceof ConfigDataMap);
+        ConfigDataMap innerObject = (ConfigDataMap) objectHierarchy.get("inner_object");
         
         assertNotNull(objectHierarchy.get("array_of_objects"));
-        assertTrue(objectHierarchy.get("array_of_objects") instanceof List);
-        List innerArrayOfObjects = (List) objectHierarchy.get("array_of_objects");
+        assertTrue(objectHierarchy.get("array_of_objects") instanceof ConfigDataList);
+        ConfigDataList innerArrayOfObjects = (ConfigDataList) objectHierarchy.get("array_of_objects");
         
         assertNotNull(innerArrayOfObjects.get(1));
-        assertTrue(innerArrayOfObjects.get(1) instanceof Map);
-        Map animal = (Map) innerArrayOfObjects.get(1);
+        assertTrue(innerArrayOfObjects.get(1) instanceof ConfigDataMap);
+        ConfigDataMap animal = (ConfigDataMap) innerArrayOfObjects.get(1);
         
         assertNotNull(innerObject.get("inner_inner_object"));
-        assertTrue(innerObject.get("inner_inner_object") instanceof Map);
-        Map innerInnerObject = (Map) innerObject.get("inner_inner_object");
+        assertTrue(innerObject.get("inner_inner_object") instanceof ConfigDataMap);
+        ConfigDataMap innerInnerObject = (ConfigDataMap) innerObject.get("inner_inner_object");
         
         assertNotNull(innerInnerObject.get("array"));
-        assertTrue(innerInnerObject.get("array") instanceof List);
-        List innerInnerObjectArray = (List) innerInnerObject.get("array");
+        assertTrue(innerInnerObject.get("array") instanceof ConfigDataList);
+        ConfigDataList innerInnerObjectArray = (ConfigDataList) innerInnerObject.get("array");
 
         assertEquals("another_string", objectHierarchy.get("another_string"));
         assertEquals(987654, innerObject.get("integer"));

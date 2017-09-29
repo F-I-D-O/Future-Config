@@ -10,12 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -185,12 +181,19 @@ public class Parser {
     }
 
     private Object parseExpression(String value) {
-        if(value.contains("$")){
+        if(containsVariable(value)){
             return value;
         }
         else{
             return parseSimpleValue(value);
         }
+    }
+    
+    public static boolean containsVariable(Object expression){
+        if(expression == null || !(expression instanceof String)){
+            return false;
+        }
+        return ((String) expression).contains("$");
     }
 
     static Object parseSimpleValue(String value) {

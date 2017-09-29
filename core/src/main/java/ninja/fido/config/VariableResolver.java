@@ -57,10 +57,9 @@ public class VariableResolver {
         return rootMap;
     }
     
-    private void addAllUnresolvedVariablesToQueue(
-            ConfigDataObject<Object,Object,Object,ConfigDataObject,Object> configDataObject) {
+    private void addAllUnresolvedVariablesToQueue(ConfigDataObject<?,?,Object> configDataObject) {
 
-        for (Entry<Object, Object> entry : configDataObject) {
+        for (Entry<?, Object> entry : configDataObject) {
             Object key = entry.getKey();
             Object value = entry.getValue();
             if(value instanceof ConfigDataObject){
@@ -88,7 +87,7 @@ public class VariableResolver {
             else{
                 entry.parent.put(entry.key, variableValue);
             }
-            checkCounter--;
+            
             if(checkCounter == 0){
                 if(lastQueueLength == referenceQueue.size()){
                     logger.error("None of the remaining variables can be resolved. Remaining variables: {}", 
@@ -98,6 +97,7 @@ public class VariableResolver {
                 lastQueueLength = referenceQueue.size();
                 checkCounter = lastQueueLength;
             }
+            checkCounter--;
         }
     }
     
@@ -169,9 +169,6 @@ public class VariableResolver {
         
         private final ConfigDataObject parent;
         
-        
-        private String path;
-        
 
         public QueueEntry(Object key, String value, ConfigDataObject parent) {
             this.key = key;
@@ -180,29 +177,8 @@ public class VariableResolver {
         }
 
         @Override
-        public String toString() {
-            if(path == null){
-                createPath();
-            }
-            
-            return path + "." + key + ": " + value;
+        public String toString() {       
+            return parent.getPath() + key + ": " + value;
         }
-
-        private void createPath() {
-            path = "";
-            ConfigDataObject currentObject = parent;
-            while(currentObject != null){
-                Object keyInParentParent = currentObject.keyInParent;
-                if(keyInParentParent instanceof String){
-                    path = keyInParentParent + "." + path;
-                }
-                else{
-                    path = "[" + Integer.toString((int) keyInParentParent) + "]" + path;
-                }
-                currentObject = currentObject.parentConfigObject;
-            }
-        }
-
-        
     }
 }

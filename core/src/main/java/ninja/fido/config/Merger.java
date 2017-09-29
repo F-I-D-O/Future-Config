@@ -48,12 +48,12 @@ public class Merger {
         overrideLevel(finalConfigData, configData);
     }
     
-    private void overrideLevel(ConfigDataMap currentMap, ConfigDataMap<ConfigDataMap,Object> overridingMap){
+    private void overrideLevel(ConfigDataMap currentMap, ConfigDataMap overridingMap){
         for (Map.Entry<String, Object> entry : overridingMap) {
             String key = entry.getKey();
             Object value = entry.getValue();
             if(value instanceof ConfigDataMap){
-                overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap<ConfigDataMap, Object>) value);
+                overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap) value);
             }
             else{
                 currentMap.put(key, value);

@@ -26,15 +26,15 @@ import java.util.Set;
  *
  * @author David Fiedler
  */
-public class ConfigDataList<PT extends ConfigDataObject,PK> extends ConfigDataObject<List,Integer,Object,PT,PK>{
+public class ConfigDataList extends ConfigDataObject<List,Integer,Object>{
     
     Set<Entry<Integer,Object>> entrySet;
 
-    public ConfigDataList(List configObject, PT parentConfigObject, PK keyInParent) {
+    public ConfigDataList(List configObject, ConfigDataObject parentConfigObject, Object keyInParent) {
         super(configObject, parentConfigObject, keyInParent);
     }
     
-    public ConfigDataList(PT parentConfigObject, PK keyInParent) {
+    public ConfigDataList(ConfigDataObject parentConfigObject, Object keyInParent) {
         super(new ArrayList(), parentConfigObject, keyInParent);
     }
 
