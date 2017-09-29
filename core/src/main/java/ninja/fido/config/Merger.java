@@ -23,19 +23,19 @@ import java.util.Map;
  * @author fido
  */
 public class Merger {
-    private final ArrayList<Map<String, Object>> configDataList;
+    private final ArrayList<ConfigDataMap> configDataList;
     
     
-    private Map<String,Object> finalConfigData;
+    private ConfigDataMap finalConfigData;
     
     
     
 
-    public Merger(ArrayList<Map<String, Object>> configDataList) {
+    public Merger(ArrayList<ConfigDataMap> configDataList) {
         this.configDataList = configDataList;
     }
     
-    public Map<String,Object> merge(){
+    public ConfigDataMap merge(){
         finalConfigData = configDataList.get(0);
         for (int i = 1; i < configDataList.size(); i++) {
             overrideWith(configDataList.get(i));
@@ -44,16 +44,16 @@ public class Merger {
         return finalConfigData;
     }
     
-    private void overrideWith(Map<String,Object> configData){
+    private void overrideWith(ConfigDataMap configData){
         overrideLevel(finalConfigData, configData);
     }
     
-    private void overrideLevel(Map<String, Object> currentMap, Map<String, Object> overridingMap){
-        for (Map.Entry<String, Object> entry : overridingMap.entrySet()) {
+    private void overrideLevel(ConfigDataMap currentMap, ConfigDataMap<ConfigDataMap,Object> overridingMap){
+        for (Map.Entry<String, Object> entry : overridingMap) {
             String key = entry.getKey();
             Object value = entry.getValue();
-            if(value instanceof Map){
-                overrideLevel((Map<String,Object>) currentMap.get(key), (Map<String,Object>) value);
+            if(value instanceof ConfigDataMap){
+                overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap<ConfigDataMap, Object>) value);
             }
             else{
                 currentMap.put(key, value);

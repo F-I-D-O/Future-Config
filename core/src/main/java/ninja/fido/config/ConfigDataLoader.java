@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 /**
  *
@@ -35,7 +34,7 @@ public class ConfigDataLoader {
 //        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
 //    }
     
-    public ConfigData loadConfigData(Object... configSources) throws IOException{
+    public ConfigDataMap loadConfigData(Object... configSources) throws IOException{
         ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
         for (int i = 0; i < configSources.length; i++) {
             configSourceDefinitions[i] = new ConfigSource(configSources[i], (String[]) null);
@@ -43,29 +42,29 @@ public class ConfigDataLoader {
         return loadConfigData(configSourceDefinitions);
     }
     
-    public ConfigData loadConfigData(ConfigSource... configSourceDefinitions) throws IOException{
-        ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
+    public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) throws IOException{
+        ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
         for (ConfigSource configSourceDefinition : configSourceDefinitions) {
             Object source = configSourceDefinition.source;
-            Map<String,Object> configMapFromSource = null;
+            ConfigDataMap<ConfigDataObject,Object> configMapFromSource = null;
             
             if(source instanceof BufferedReader){
                 configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
             }
-            else if(source instanceof Map){
-                configMapFromSource = (Map) source;
+            else if(source instanceof ConfigDataMap){
+                configMapFromSource = (ConfigDataMap) source;
             }
             
             if(configSourceDefinition.path != null){
                 for(String objectName: Lists.reverse(configSourceDefinition.path)){
-                    Map<String,Object> parentMap = new HashMap<>();
-                    parentMap.put(objectName, configMapFromSource);
+                    ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
+                    parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
                     configMapFromSource = parentMap;
                 }
             }
             
             configDataList.add(configMapFromSource);
         }
-        return new ConfigData(new VariableResolver(new Merger(configDataList).merge()).resolveVariables());
+        return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
     }
 }

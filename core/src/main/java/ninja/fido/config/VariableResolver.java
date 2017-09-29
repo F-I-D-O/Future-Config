@@ -15,10 +15,10 @@
  */
 package ninja.fido.config;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import static ninja.fido.config.Parser.OPERATOR_PATTERN;
@@ -32,68 +32,45 @@ import org.slf4j.LoggerFactory;
  */
 public class VariableResolver {
     
-    private static Logger logger = LoggerFactory.getLogger(VariableResolver.class);
+    private static final Logger logger = LoggerFactory.getLogger(VariableResolver.class);
     
     
     
     
     private final Queue<QueueEntry> referenceQueue;
     
-    private final Map<String,Object> configMap;
+    private final ConfigDataMap rootMap;
 
     
     
     
-    public VariableResolver(Map<String,Object> configMap) {
-        this.configMap = configMap;
+    public VariableResolver(ConfigDataMap rootMap) {
+        this.rootMap = rootMap;
         referenceQueue = new LinkedList<>();
     }
     
 
 
-    public Map<String,Object> resolveVariables() {
-        addAllUnresolvedVariablesToQueue();
+    public ConfigDataMap resolveVariables() {
+        addAllUnresolvedVariablesToQueue(rootMap);
         processQueue();
-        return configMap;
+        return rootMap;
     }
     
-    private void addAllUnresolvedVariablesToQueue() {
-        addAllUnresolvedVariablesToQueueForMap(configMap);
-    }
-    
-    private void addAllUnresolvedVariablesToQueueForMap(Map<String, Object> currentMap) {
-         for (Map.Entry<String, Object> entry : currentMap.entrySet()) {
-            String key = entry.getKey();
+    private void addAllUnresolvedVariablesToQueue(
+            ConfigDataObject<Object,Object,Object,ConfigDataObject,Object> configDataObject) {
+
+        for (Entry<Object, Object> entry : configDataObject) {
+            Object key = entry.getKey();
             Object value = entry.getValue();
-            if(value instanceof Map){
-                addAllUnresolvedVariablesToQueueForMap((HashMap<String,Object>) value);
-            }
-            else if(value instanceof List){
-                addAllUnresolvedVariablesToQueueForList((List) value);
+            if(value instanceof ConfigDataObject){
+                addAllUnresolvedVariablesToQueue((ConfigDataObject) value);
             }
             else if(value instanceof String){
                 String stringValue = (String) value;
                 Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
                 if(matcher.find()){
-                    referenceQueue.add(new QueueEntry(key, stringValue, currentMap));
-                }
-            }
-        }
-    }
-    
-    private void addAllUnresolvedVariablesToQueueForList(List currentList) {
-         for (Object entry : currentList) {
-            if(entry instanceof Map){
-                addAllUnresolvedVariablesToQueueForMap((Map<String,Object>) entry);
-            }
-            else if(entry instanceof List){
-                addAllUnresolvedVariablesToQueueForList((List) entry);
-            }
-            else if(entry instanceof String){
-                String stringValue = (String) entry;
-                Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
-                if(matcher.find()){
-                    referenceQueue.add(new QueueEntry(null, stringValue, currentList));
+                    referenceQueue.add(new QueueEntry(key, stringValue, configDataObject));
                 }
             }
         }
@@ -108,11 +85,8 @@ public class VariableResolver {
             if(variableValue == null){
                 referenceQueue.add(entry);
             }
-            else if(entry.parent instanceof Map){
-                ((Map) entry.parent).put(entry.key, variableValue);
-            }
             else{
-                ((List) entry.parent).add(variableValue);
+                entry.parent.put(entry.key, variableValue);
             }
             checkCounter--;
             if(checkCounter == 0){
@@ -158,7 +132,7 @@ public class VariableResolver {
     }
     
     private Object getReferencedValue(String reference) {
-        Map<String,Object> currentObject = configMap;
+        ConfigDataObject currentObject = rootMap;
         String[] parts = reference.split("\\.");
         if(parts.length == 0){
             parts = new String[1];
@@ -168,7 +142,7 @@ public class VariableResolver {
             String part = parts[i];
             if(currentObject.containsKey(part) && currentObject.get(part) != null){
                 if(i < parts.length - 1){
-                    currentObject = (HashMap<String, Object>) currentObject.get(part);
+                    currentObject = (ConfigDataObject) currentObject.get(part);
                 }
                 else{
                     return currentObject.get(part);
@@ -189,14 +163,17 @@ public class VariableResolver {
     
     
     private class QueueEntry{
-        private final String key;
+        private final Object key;
         
         private final String value;
         
-        private final Object parent;
+        private final ConfigDataObject parent;
+        
+        
+        private String path;
         
 
-        public QueueEntry(String key, String value, Object parent) {
+        public QueueEntry(Object key, String value, ConfigDataObject parent) {
             this.key = key;
             this.value = value;
             this.parent = parent;
@@ -204,13 +181,26 @@ public class VariableResolver {
 
         @Override
         public String toString() {
-            String out = key + ": " + value;
+            if(path == null){
+                createPath();
+            }
             
-//            if(parent != null){
-//                out += "(from: " + parent + ")";
-//            }
-            
-            return out;
+            return path + "." + key + ": " + value;
+        }
+
+        private void createPath() {
+            path = "";
+            ConfigDataObject currentObject = parent;
+            while(currentObject != null){
+                Object keyInParentParent = currentObject.keyInParent;
+                if(keyInParentParent instanceof String){
+                    path = keyInParentParent + "." + path;
+                }
+                else{
+                    path = "[" + Integer.toString((int) keyInParentParent) + "]" + path;
+                }
+                currentObject = currentObject.parentConfigObject;
+            }
         }
 
         

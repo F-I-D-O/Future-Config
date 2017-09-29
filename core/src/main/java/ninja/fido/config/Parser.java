@@ -40,17 +40,13 @@ public class Parser {
     private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
     
     
-    private final HashMap<String,Object> config;
+    private final ConfigDataMap config;
 	
-	private final Stack<Object> objectStack;
+	private final Stack<ConfigDataObject> objectStack;
     
-    private HashMap<String,Object> currentObject;
+    private ConfigDataObject currentObject;
     
-    private ArrayList <Object> currentArray;
-    
-    private Object currentContext;
-    
-    private String currentKey;
+    private Object currentKey;
     
     private Object currentValue;
 	
@@ -61,9 +57,8 @@ public class Parser {
      * Constructor.
      */
     public Parser() {
-        config = new HashMap<>();
+        config = new ConfigDataMap(new HashMap<>(), null, null);
 		currentObject = config;
-        currentContext = currentObject;
 		objectStack = new Stack<>();
         inArray = false;
     }
@@ -76,13 +71,13 @@ public class Parser {
      * @throws FileNotFoundException
      * @throws IOException 
      */
-    public HashMap<String,Object> parseConfigFile(File configFile) throws FileNotFoundException, IOException{
+    public ConfigDataMap parseConfigFile(File configFile) throws FileNotFoundException, IOException{
         try (BufferedReader br = new BufferedReader(new FileReader(configFile))) {
             return parseConfigFile(br);
         }
     }
     
-    public HashMap<String,Object> parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
+    public ConfigDataMap parseConfigFile(BufferedReader configFileReader) throws FileNotFoundException, IOException{
         String line;
         while ((line = configFileReader.readLine()) != null) {
             
@@ -99,48 +94,38 @@ public class Parser {
 
             /* new array or object */
             else if(line.contains("{") || line.contains("[")){
-                
+
                 /* push old context to stack */
-                if(inArray){
-                    objectStack.push(currentArray);
-                }
-                else{
-                    objectStack.push(currentObject);
-                }
-                
-                boolean lastInArray = inArray;
+                objectStack.push(currentObject);
                 
                 /* new object */
                 if(line.contains("{")){
-                    currentObject = new HashMap<>();
-                    currentContext = currentObject;
+                    currentObject = new ConfigDataMap(currentObject, currentKey);
                     inArray = false;
                 }
 
                 /* new array */
                 if(line.contains("[")){
-                    currentArray = new ArrayList<>();
-                    currentContext = currentArray;
+                    currentObject = new ConfigDataList(currentObject, currentKey);
                     inArray = true;
                 }
                 
-                if(lastInArray){
-                    ((List<Object>) objectStack.peek()).add(currentContext);
-                }
-                else{
-                    ((Map<String,Object>) objectStack.peek()).put(currentKey, currentContext);
+                /* add new object to parent object */
+                objectStack.peek().put(currentKey, currentObject);
+                
+                if(inArray){
+                    currentKey = null;
                 }
             }
             
             else if(line.contains("}") || line.contains("]")){
-                Object currentContext = objectStack.pop();
-                if(currentContext instanceof HashMap){
-                    currentObject = (HashMap<String, Object>) currentContext;
+                currentObject = objectStack.pop();
+                if(currentObject instanceof ConfigDataMap){
                     inArray = false;
                 }
                 else{
-                    currentArray = (ArrayList<Object>) currentContext;
                     inArray = true;
+                    currentKey = null;
                 }
             }
             
@@ -160,12 +145,7 @@ public class Parser {
         }
         
         if(parseValue(line)){
-            if(inArray){
-                currentArray.add(currentValue);
-            }
-            else{
-                currentObject.put(currentKey, currentValue);
-            }
+            currentObject.put(currentKey, currentValue);
         }
     }
 

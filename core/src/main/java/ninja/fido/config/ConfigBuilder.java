@@ -65,8 +65,7 @@ public class ConfigBuilder {
      */
 	public void buildConfig(){
 		try {
-			ConfigData config = new ConfigDataLoader().loadConfigData(configFile);
-			Map<String,Object> configMap = config.getConfig();
+			ConfigDataMap configMap = new ConfigDataLoader().loadConfigData(configFile);
 			generateConfig(configMap, "config", true);
 		} catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
@@ -74,7 +73,7 @@ public class ConfigBuilder {
 	}
 
 
-	private void generateConfig(Map<String, Object> configMap, String mapName, boolean isRoot) {
+	private void generateConfig(ConfigDataMap<ConfigDataObject,Object> configMap, String mapName, boolean isRoot) {
 		
 		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 		TypeSpec.Builder objectBuilder 
@@ -95,7 +94,7 @@ public class ConfigBuilder {
 
 		parametrBuilder.addParameter(HashMap.class, mapParamName);
 		
-		for (Entry<String, Object> entry : configMap.entrySet()) {
+		for (Entry<String, Object> entry : configMap) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
 
@@ -103,9 +102,9 @@ public class ConfigBuilder {
 
 			FieldSpec.Builder fieldBuilder;
 
-			if(value instanceof Map){
+			if(value instanceof ConfigDataMap){
 				ClassName newObjectType = ClassName.get(configPackageName, getClassName(key));
-				generateConfig((HashMap<String, Object>) value, key, false);
+				generateConfig((ConfigDataMap) value, key, false);
 				fieldBuilder = FieldSpec.builder(newObjectType, propertyName);
 				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType, 
 						HashMap.class, mapParamName, key);
@@ -117,11 +116,11 @@ public class ConfigBuilder {
                 
                 
                 Object representative = list.get(0);
-                if(representative instanceof Map){
+                if(representative instanceof ConfigDataMap){
                     /* representative generation */
                     String itemName = key + "_item";
                     ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
-                    generateConfig((HashMap<String, Object>) representative, itemName, false);
+                    generateConfig((ConfigDataMap) representative, itemName, false);
                     
                     parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
                     

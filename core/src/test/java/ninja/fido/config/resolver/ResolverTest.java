@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
-import ninja.fido.config.ConfigData;
+import ninja.fido.config.ConfigDataMap;
 import ninja.fido.config.ConfigDataLoader;
 import ninja.fido.config.parser.ParserTester;
 import static org.junit.Assert.assertEquals;
@@ -40,7 +40,7 @@ public class ResolverTest {
             InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePaths[i]);
             readers[i] = new BufferedReader(new InputStreamReader(inputStream));
         }
-        ConfigData config = new ConfigDataLoader().loadConfigData(readers);
+        ConfigDataMap config = new ConfigDataLoader().loadConfigData(readers);
         return config.getConfig();
     }
     

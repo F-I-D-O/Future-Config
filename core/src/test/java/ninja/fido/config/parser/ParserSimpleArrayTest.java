@@ -16,8 +16,8 @@
 package ninja.fido.config.parser;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
+import ninja.fido.config.ConfigDataList;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -35,9 +35,9 @@ public class ParserSimpleArrayTest {
         Map<String,Object> config = ParserTester.tryParseFile("simpleArray.cfg");
         
         assertNotNull(config.get("array"));
-        assertTrue(config.get("array") instanceof List);
+        assertTrue(config.get("array") instanceof ConfigDataList);
         
-        List array = (List) config.get("array");
+        ConfigDataList array = (ConfigDataList) config.get("array");
 
         assertEquals(1, array.get(0));
         assertEquals(3, array.get(2));

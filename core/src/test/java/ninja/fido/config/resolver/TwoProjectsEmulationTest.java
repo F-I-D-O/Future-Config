@@ -22,7 +22,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import ninja.fido.config.ConfigData;
+import ninja.fido.config.ConfigDataMap;
 import ninja.fido.config.ConfigDataLoader;
 import ninja.fido.config.ConfigSource;
 import ninja.fido.config.parser.ParserTester;
@@ -49,7 +49,7 @@ public class TwoProjectsEmulationTest {
         ConfigSource source3 = new ConfigSource(readers[2], null);
         ConfigSource source4 = new ConfigSource(readers[3], null);
         
-        ConfigData config = new ConfigDataLoader().loadConfigData(source1, source2, source3, source4);
+        ConfigDataMap config = new ConfigDataLoader().loadConfigData(source1, source2, source3, source4);
         return config.getConfig();
     }
     

@@ -51,7 +51,7 @@ public class Configuration {
      * @return Config root class containing all variable and object of variables defined by config file.
      */
     public static <C extends GeneratedConfig<C>> C load(C generatedConfig, String localConfigPath){
-        ConfigData baseConfig 
+        ConfigDataMap baseConfig 
                 = getConfig(generatedConfig, getConfigFilePath(generatedConfig, DEFAULT_CONFIG_LOCATION_FILENAME));
         
         // load local config
@@ -59,7 +59,7 @@ public class Configuration {
             localConfigPath = getConfigFilePath(generatedConfig, DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME);
         }
         
-        ConfigData localConfig = getConfig(generatedConfig, localConfigPath);
+        ConfigDataMap localConfig = getConfig(generatedConfig, localConfigPath);
         
         if(localConfig != null){
             baseConfig.override(localConfig);
@@ -75,14 +75,14 @@ public class Configuration {
         return configPath;
     }
     
-    private static ConfigData getConfig(GeneratedConfig generatedConfig, String configPath){
+    private static ConfigDataMap getConfig(GeneratedConfig generatedConfig, String configPath){
         LOGGER.log(Level.FINE, "Config file location: {0}", configPath);
         
         if(configPath == null){
             return null;
         }
         
-        ConfigData config;
+        ConfigDataMap config;
         File configFile;
         if(isRelativePath(configPath)){
             configPath = configPath.replaceFirst("\\.", "");
