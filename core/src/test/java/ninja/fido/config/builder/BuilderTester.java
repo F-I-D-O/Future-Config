@@ -26,11 +26,12 @@ import ninja.fido.config.ConfigBuilder;
  * @author David Fiedler
  */
 public class BuilderTester {
-    public static void tryParseFile(String configFilePath) throws IOException{
-        configFilePath = "/ninja/fido/config/" + configFilePath;
-        ConfigBuilder configBuilder = new ConfigBuilder(
-                new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))), 
-                new File("./temp"), "ninja.fido.config.test");
-        configBuilder.buildConfig();
-    }
+
+	public static void tryParseFile(String configFilePath) throws IOException {
+		configFilePath = "/ninja/fido/config/" + configFilePath;
+		ConfigBuilder configBuilder = new ConfigBuilder(
+				new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))),
+				new File("./temp"), "ninja.fido.config.test");
+		configBuilder.buildConfig();
+	}
 }

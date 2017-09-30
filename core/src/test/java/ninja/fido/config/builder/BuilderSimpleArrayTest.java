@@ -27,10 +27,10 @@ import static org.junit.Assert.assertEquals;
  * @author David Fiedler
  */
 public class BuilderSimpleArrayTest {
-    
-    @Test
-    public void test() throws IOException{
-        BuilderTester.tryParseFile("simpleArray.cfg");
-        
-    }
+
+	@Test
+	public void test() throws IOException {
+		BuilderTester.tryParseFile("simpleArray.cfg");
+
+	}
 }

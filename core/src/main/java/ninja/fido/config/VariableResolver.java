@@ -31,154 +31,143 @@ import org.slf4j.LoggerFactory;
  * @author fido
  */
 public class VariableResolver {
-    
-    private static final Logger logger = LoggerFactory.getLogger(VariableResolver.class);
-    
-    
-    
-    
-    private final Queue<QueueEntry> referenceQueue;
-    
-    private final ConfigDataMap rootMap;
 
-    
-    
-    
-    public VariableResolver(ConfigDataMap rootMap) {
-        this.rootMap = rootMap;
-        referenceQueue = new LinkedList<>();
-    }
-    
+	private static final Logger logger = LoggerFactory.getLogger(VariableResolver.class);
 
+	private final Queue<QueueEntry> referenceQueue;
 
-    public ConfigDataMap resolveVariables() {
-        addAllUnresolvedVariablesToQueue(rootMap);
-        processQueue();
-        return rootMap;
-    }
-    
-    private void addAllUnresolvedVariablesToQueue(ConfigDataObject<?,?,Object> configDataObject) {
+	private final ConfigDataMap rootMap;
 
-        for (Entry<?, Object> entry : configDataObject) {
-            Object key = entry.getKey();
-            Object value = entry.getValue();
-            if(value instanceof ConfigDataObject){
-                addAllUnresolvedVariablesToQueue((ConfigDataObject) value);
-            }
-            else if(value instanceof String){
-                String stringValue = (String) value;
-                Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
-                if(matcher.find()){
-                    referenceQueue.add(new QueueEntry(key, stringValue, configDataObject));
-                }
-            }
-        }
-    }
-    
-    private void processQueue(){
-        int lastQueueLength = referenceQueue.size();
-        int checkCounter = lastQueueLength;
-        while (!referenceQueue.isEmpty()) {
-            QueueEntry entry = referenceQueue.poll();
-            Object variableValue = parseExpressionWithReferences(entry.value);
-            if(variableValue == null){
-                referenceQueue.add(entry);
-            }
-            else{
-                entry.parent.put(entry.key, variableValue);
-            }
-            
-            if(checkCounter == 0){
-                if(lastQueueLength == referenceQueue.size()){
-                    logger.error("None of the remaining variables can be resolved. Remaining variables: {}", 
-                            referenceQueue);
-                    terminate();
-                }
-                lastQueueLength = referenceQueue.size();
-                checkCounter = lastQueueLength;
-            }
-            checkCounter--;
-        }
-    }
-    
-    private Object parseExpressionWithReferences(String value) {
-        List<String> references = parseReferences(value);
-        for (String reference : references) {
-            Object variable = getReferencedValue(reference);
-            if(variable == null){
+	public VariableResolver(ConfigDataMap rootMap) {
+		this.rootMap = rootMap;
+		referenceQueue = new LinkedList<>();
+	}
+
+	public ConfigDataMap resolveVariables() {
+		addAllUnresolvedVariablesToQueue(rootMap);
+		processQueue();
+		return rootMap;
+	}
+
+	private void addAllUnresolvedVariablesToQueue(ConfigDataObject<?, ?, Object> configDataObject) {
+
+		for (Entry<?, Object> entry : configDataObject) {
+			Object key = entry.getKey();
+			Object value = entry.getValue();
+			if (value instanceof ConfigDataObject) {
+				addAllUnresolvedVariablesToQueue((ConfigDataObject) value);
+			}
+			else if (value instanceof String) {
+				String stringValue = (String) value;
+				Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
+				if (matcher.find()) {
+					referenceQueue.add(new QueueEntry(key, stringValue, configDataObject));
+				}
+			}
+		}
+	}
+
+	private void processQueue() {
+		int lastQueueLength = referenceQueue.size();
+		int checkCounter = lastQueueLength;
+		while (!referenceQueue.isEmpty()) {
+			QueueEntry entry = referenceQueue.poll();
+			Object variableValue = parseExpressionWithReferences(entry.value);
+			if (variableValue == null) {
+				referenceQueue.add(entry);
+			}
+			else {
+				entry.parent.put(entry.key, variableValue);
+			}
+
+			if (checkCounter == 0) {
+				if (lastQueueLength == referenceQueue.size()) {
+					logger.error("None of the remaining variables can be resolved. Remaining variables: {}",
+							referenceQueue);
+					terminate();
+				}
+				lastQueueLength = referenceQueue.size();
+				checkCounter = lastQueueLength;
+			}
+			checkCounter--;
+		}
+	}
+
+	private Object parseExpressionWithReferences(String value) {
+		List<String> references = parseReferences(value);
+		for (String reference : references) {
+			Object variable = getReferencedValue(reference);
+			if (variable == null) {
 //                referenceQueue.add(new QueueEntry(currentKey, value, currentObject));
-                return null;
-            }
-            
-            // now String variables only
-            value = value.replace("$" + reference, "'" + variable.toString() + "'");
-        }
-        Matcher matcher = OPERATOR_PATTERN.matcher(value);
-        if(matcher.find()){
-            return Parser.parseExpressionWithOperators(value);
-        }
-        else{
-            return Parser.parseSimpleValue(value);
-        }
-    }
-    
-    private List<String> parseReferences(String value) {
-        LinkedList<String> references = new LinkedList<>();
-        Matcher matcher = REFERENCE_PATTERN.matcher(value);
-        while(matcher.find()){
-            references.add(matcher.group(1));
-        }
-        return references;  
-    }
-    
-    private Object getReferencedValue(String reference) {
-        ConfigDataObject currentObject = rootMap;
-        String[] parts = reference.split("\\.");
-        if(parts.length == 0){
-            parts = new String[1];
-            parts[0] = reference;
-        }
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
-            if(currentObject.containsKey(part) && currentObject.get(part) != null){
-                if(i < parts.length - 1){
-                    currentObject = (ConfigDataObject) currentObject.get(part);
-                }
-                else{
-                    return currentObject.get(part);
-                }
-            }
-            else{
-                return null;
-            }
-        }
-        return null;
-    }
+				return null;
+			}
 
-    private void terminate() {
-        System.exit(1);
-    }
+			// now String variables only
+			value = value.replace("$" + reference, "'" + variable.toString() + "'");
+		}
+		Matcher matcher = OPERATOR_PATTERN.matcher(value);
+		if (matcher.find()) {
+			return Parser.parseExpressionWithOperators(value);
+		}
+		else {
+			return Parser.parseSimpleValue(value);
+		}
+	}
 
-   
-    
-    
-    private class QueueEntry{
-        private final Object key;
-        
-        private final String value;
-        
-        private final ConfigDataObject parent;
-        
+	private List<String> parseReferences(String value) {
+		LinkedList<String> references = new LinkedList<>();
+		Matcher matcher = REFERENCE_PATTERN.matcher(value);
+		while (matcher.find()) {
+			references.add(matcher.group(1));
+		}
+		return references;
+	}
 
-        public QueueEntry(Object key, String value, ConfigDataObject parent) {
-            this.key = key;
-            this.value = value;
-            this.parent = parent;
-        }
+	private Object getReferencedValue(String reference) {
+		ConfigDataObject currentObject = rootMap;
+		String[] parts = reference.split("\\.");
+		if (parts.length == 0) {
+			parts = new String[1];
+			parts[0] = reference;
+		}
+		for (int i = 0; i < parts.length; i++) {
+			String part = parts[i];
+			if (currentObject.containsKey(part) && currentObject.get(part) != null) {
+				if (i < parts.length - 1) {
+					currentObject = (ConfigDataObject) currentObject.get(part);
+				}
+				else {
+					return currentObject.get(part);
+				}
+			}
+			else {
+				return null;
+			}
+		}
+		return null;
+	}
 
-        @Override
-        public String toString() {       
-            return parent.getPath() + key + ": " + value;
-        }
-    }
+	private void terminate() {
+		System.exit(1);
+	}
+
+	private class QueueEntry {
+
+		private final Object key;
+
+		private final String value;
+
+		private final ConfigDataObject parent;
+
+		public QueueEntry(Object key, String value, ConfigDataObject parent) {
+			this.key = key;
+			this.value = value;
+			this.parent = parent;
+		}
+
+		@Override
+		public String toString() {
+			return parent.getPath() + key + ": " + value;
+		}
+	}
 }

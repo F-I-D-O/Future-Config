@@ -25,37 +25,37 @@ import java.util.Locale;
  * @author David Fiedler
  */
 public class JavaLanguageUtil {
-    
-    private static final Collator englishCollator = Collator.getInstance(Locale.ENGLISH);
-    
-    private static final String keywords[] = {
-        "abstract",  "assert",       "boolean",    "break",      "byte",      "case",
-        "catch",     "char",         "class",      "const",     "continue",
-        "default",   "do",           "double",     "else",      "extends",
-        "false",     "final",        "finally",    "float",     "for",
-        "goto",      "if",           "implements", "import",    "instanceof",
-        "int",       "interface",    "long",       "native",    "new",
-        "null",      "package",      "private",    "protected", "public",
-        "return",    "short",        "static",     "strictfp",  "super",
-        "switch",    "synchronized", "this",       "throw",     "throws",
-        "transient", "true",         "try",        "void",      "volatile",
-        "while"
-    };
-    
-    public static boolean isJavaKeyword(String keyword) {
-        return (Arrays.binarySearch(keywords, keyword, englishCollator) >= 0);
-    } 
-    
-    public static String sanitizePropertyName(String propertyName){
-        if(isJavaKeyword(propertyName)){
-            propertyName += "Property";
-        }
-        
-        return propertyName;
-    }
-    
-    public static String getPropertyName(String string){
+
+	private static final Collator englishCollator = Collator.getInstance(Locale.ENGLISH);
+
+	private static final String keywords[] = {
+		"abstract", "assert", "boolean", "break", "byte", "case",
+		"catch", "char", "class", "const", "continue",
+		"default", "do", "double", "else", "extends",
+		"false", "final", "finally", "float", "for",
+		"goto", "if", "implements", "import", "instanceof",
+		"int", "interface", "long", "native", "new",
+		"null", "package", "private", "protected", "public",
+		"return", "short", "static", "strictfp", "super",
+		"switch", "synchronized", "this", "throw", "throws",
+		"transient", "true", "try", "void", "volatile",
+		"while"
+	};
+
+	public static boolean isJavaKeyword(String keyword) {
+		return (Arrays.binarySearch(keywords, keyword, englishCollator) >= 0);
+	}
+
+	public static String sanitizePropertyName(String propertyName) {
+		if (isJavaKeyword(propertyName)) {
+			propertyName += "Property";
+		}
+
+		return propertyName;
+	}
+
+	public static String getPropertyName(String string) {
 		return sanitizePropertyName(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, string));
 	}
-    
+
 }

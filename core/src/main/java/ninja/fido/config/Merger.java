@@ -23,41 +23,38 @@ import java.util.Map;
  * @author fido
  */
 public class Merger {
-    private final ArrayList<ConfigDataMap> configDataList;
-    
-    
-    private ConfigDataMap finalConfigData;
-    
-    
-    
 
-    public Merger(ArrayList<ConfigDataMap> configDataList) {
-        this.configDataList = configDataList;
-    }
-    
-    public ConfigDataMap merge(){
-        finalConfigData = configDataList.get(0);
-        for (int i = 1; i < configDataList.size(); i++) {
-            overrideWith(configDataList.get(i));
-        }
-        
-        return finalConfigData;
-    }
-    
-    private void overrideWith(ConfigDataMap configData){
-        overrideLevel(finalConfigData, configData);
-    }
-    
-    private void overrideLevel(ConfigDataMap currentMap, ConfigDataMap overridingMap){
-        for (Map.Entry<String, Object> entry : overridingMap) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-            if(value instanceof ConfigDataMap){
-                overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap) value);
-            }
-            else{
-                currentMap.put(key, value);
-            }
-        }
-    }
+	private final ArrayList<ConfigDataMap> configDataList;
+
+	private ConfigDataMap finalConfigData;
+
+	public Merger(ArrayList<ConfigDataMap> configDataList) {
+		this.configDataList = configDataList;
+	}
+
+	public ConfigDataMap merge() {
+		finalConfigData = configDataList.get(0);
+		for (int i = 1; i < configDataList.size(); i++) {
+			overrideWith(configDataList.get(i));
+		}
+
+		return finalConfigData;
+	}
+
+	private void overrideWith(ConfigDataMap configData) {
+		overrideLevel(finalConfigData, configData);
+	}
+
+	private void overrideLevel(ConfigDataMap currentMap, ConfigDataMap overridingMap) {
+		for (Map.Entry<String, Object> entry : overridingMap) {
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			if (value instanceof ConfigDataMap) {
+				overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap) value);
+			}
+			else {
+				currentMap.put(key, value);
+			}
+		}
+	}
 }

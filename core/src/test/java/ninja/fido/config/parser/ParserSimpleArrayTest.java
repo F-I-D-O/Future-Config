@@ -29,18 +29,18 @@ import static org.junit.Assert.assertTrue;
  * @author David Fiedler
  */
 public class ParserSimpleArrayTest {
-    
-    @Test
-    public void test() throws IOException{
-        Map<String,Object> config = ParserTester.tryParseFile("simpleArray.cfg");
-        
-        assertNotNull(config.get("array"));
-        assertTrue(config.get("array") instanceof ConfigDataList);
-        
-        ConfigDataList array = (ConfigDataList) config.get("array");
 
-        assertEquals(1, array.get(0));
-        assertEquals(3, array.get(2));
-        assertEquals(6, array.get(5));
-    }
+	@Test
+	public void test() throws IOException {
+		Map<String, Object> config = ParserTester.tryParseFile("simpleArray.cfg");
+
+		assertNotNull(config.get("array"));
+		assertTrue(config.get("array") instanceof ConfigDataList);
+
+		ConfigDataList array = (ConfigDataList) config.get("array");
+
+		assertEquals(1, array.get(0));
+		assertEquals(3, array.get(2));
+		assertEquals(6, array.get(5));
+	}
 }

@@ -30,30 +30,30 @@ import static org.junit.Assert.assertTrue;
  * @author David Fiedler
  */
 public class ParserTwoLevelArrayTest {
-    
-    @Test
-    public void test() throws IOException{
-        Map<String,Object> config = ParserTester.tryParseFile("twoLevelArray.cfg");
-        
-        assertNotNull(config.get("array"));
-        assertTrue(config.get("array") instanceof ConfigDataList);
-        
-        ConfigDataList array = (ConfigDataList) config.get("array");
-        
-        assertNotNull(array.get(0));
-        assertNotNull(array.get(1));
-        
-        assertTrue(array.get(0) instanceof ConfigDataMap);
-        assertTrue(array.get(1) instanceof ConfigDataMap);
-        
-        ConfigDataMap innerMap = (ConfigDataMap) array.get(0);
 
-        assertEquals(1, innerMap.get("start"));
-        assertEquals(2, innerMap.get("end"));
-        
-        innerMap = (ConfigDataMap) array.get(1);
+	@Test
+	public void test() throws IOException {
+		Map<String, Object> config = ParserTester.tryParseFile("twoLevelArray.cfg");
 
-        assertEquals(3, innerMap.get("start"));
-        assertEquals(4, innerMap.get("end"));
-    }
+		assertNotNull(config.get("array"));
+		assertTrue(config.get("array") instanceof ConfigDataList);
+
+		ConfigDataList array = (ConfigDataList) config.get("array");
+
+		assertNotNull(array.get(0));
+		assertNotNull(array.get(1));
+
+		assertTrue(array.get(0) instanceof ConfigDataMap);
+		assertTrue(array.get(1) instanceof ConfigDataMap);
+
+		ConfigDataMap innerMap = (ConfigDataMap) array.get(0);
+
+		assertEquals(1, innerMap.get("start"));
+		assertEquals(2, innerMap.get("end"));
+
+		innerMap = (ConfigDataMap) array.get(1);
+
+		assertEquals(3, innerMap.get("start"));
+		assertEquals(4, innerMap.get("end"));
+	}
 }

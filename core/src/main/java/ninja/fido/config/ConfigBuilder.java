@@ -21,78 +21,74 @@ import javax.lang.model.element.Modifier;
 
 /**
  * Builds config classes from suplied config file.
+ *
  * @author F.I.D.O.
  */
 public class ConfigBuilder {
-	
-    /**
-     * Configuration file
-     */
+
+	/**
+	 * Configuration file
+	 */
 	private final BufferedReader configFile;
 
 	/**
-     * Src dir of the project where all config files will be created. Most time the ...src/main/java/ dir.
-     */
+	 * Src dir of the project where all config files will be created. Most time the ...src/main/java/ dir.
+	 */
 	private final File outputSrcDir;
-	
-    /**
-     * Name of the config package - for example projectrootpackage.someotherpackage.config
-     */
+
+	/**
+	 * Name of the config package - for example projectrootpackage.someotherpackage.config
+	 */
 	private final String configPackageName;
 
-    
-    
-    
-    /**
-     * Constructor.
-     * @param configFile Config file.
-     * @param outputSrcDir Src dir of the project where all config files will be created.
-     * Most time the ...src/main/java/ dir.
-     * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
-     */
+	/**
+	 * Constructor.
+	 *
+	 * @param configFile Config file.
+	 * @param outputSrcDir Src dir of the project where all config files will be created. Most time the
+	 * ...src/main/java/ dir.
+	 * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
+	 */
 	public ConfigBuilder(BufferedReader configFile, File outputSrcDir, String configPackageName) {
 		this.configFile = configFile;
 		this.configPackageName = configPackageName;
 		this.outputSrcDir = outputSrcDir;
 	}
-	
-	
-	
-    
-    /**
-     * Starts the building process.
-     */
-	public void buildConfig(){
+
+	/**
+	 * Starts the building process.
+	 */
+	public void buildConfig() {
 		try {
 			ConfigDataMap configMap = new ConfigDataLoader().loadConfigData(configFile);
 			generateConfig(configMap, "config", true);
-		} catch (IOException ex) {
+		}
+		catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-
 	private void generateConfig(ConfigDataMap configMap, String mapName, boolean isRoot) {
-		
+
 		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
-		TypeSpec.Builder objectBuilder 
+		TypeSpec.Builder objectBuilder
 				= TypeSpec.classBuilder(getClassName(mapName)).addModifiers(Modifier.PUBLIC);
-		
+
 		String mapParamName = JavaLanguageUtil.getPropertyName(mapName);
-		
+
 		Builder parametrBuilder = constructorBuilder;
-		
-		if(isRoot){
+
+		if (isRoot) {
 			// in root, properties are filled in fill method instead of the constructor
 			parametrBuilder = MethodSpec.methodBuilder("fill").addModifiers(Modifier.PUBLIC)
-				.returns(ClassName.get(configPackageName, getClassName(mapName)));
-			
+					.returns(ClassName.get(configPackageName, getClassName(mapName)));
+
 			// root class implements BuildedConfig interface
 			objectBuilder.addSuperinterface(GeneratedConfig.class);
 		}
 
 		parametrBuilder.addParameter(HashMap.class, mapParamName);
-		
+
 		for (Entry<String, Object> entry : configMap) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -101,70 +97,67 @@ public class ConfigBuilder {
 
 			FieldSpec.Builder fieldBuilder;
 
-			if(value instanceof ConfigDataMap){
+			if (value instanceof ConfigDataMap) {
 				ClassName newObjectType = ClassName.get(configPackageName, getClassName(key));
 				generateConfig((ConfigDataMap) value, key, false);
 				fieldBuilder = FieldSpec.builder(newObjectType, propertyName);
-				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType, 
+				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType,
 						HashMap.class, mapParamName, key);
 			}
-            else if(value instanceof List){
-                List list = (List) value;
-                fieldBuilder = FieldSpec.builder(List.class, propertyName);
-                
-                
-                
-                Object representative = list.get(0);
-                if(representative instanceof ConfigDataMap){
-                    /* representative generation */
-                    String itemName = key + "_item";
-                    ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
-                    generateConfig((ConfigDataMap) representative, itemName, false);
-                    
-                    parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
-                    
-                    String inputListName = propertyName + "List";
-                    parametrBuilder.addStatement("$T $N = ($T) $N.get($N)", List.class, inputListName, List.class,
-                            mapParamName, key);
-                    String representativeObjectName = "object";
-                    parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName, 
-                            inputListName);
-                    parametrBuilder.addStatement("$N.add(new $T(($T)$N))", propertyName, newObjectType, Map.class,
-                            representativeObjectName);        
-                    parametrBuilder.endControlFlow();
-                }
-                else{
-                    parametrBuilder.addStatement("$N = ($T) $N.get($N)", propertyName, List.class, 
-                                mapParamName, key);
-                }
-            }
-			else{
+			else if (value instanceof List) {
+				List list = (List) value;
+				fieldBuilder = FieldSpec.builder(List.class, propertyName);
+
+				Object representative = list.get(0);
+				if (representative instanceof ConfigDataMap) {
+					/* representative generation */
+					String itemName = key + "_item";
+					ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
+					generateConfig((ConfigDataMap) representative, itemName, false);
+
+					parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
+
+					String inputListName = propertyName + "List";
+					parametrBuilder.addStatement("$T $N = ($T) $N.get($N)", List.class, inputListName, List.class,
+							mapParamName, key);
+					String representativeObjectName = "object";
+					parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName,
+							inputListName);
+					parametrBuilder.addStatement("$N.add(new $T(($T)$N))", propertyName, newObjectType, Map.class,
+							representativeObjectName);
+					parametrBuilder.endControlFlow();
+				}
+				else {
+					parametrBuilder.addStatement("$N = ($T) $N.get($N)", propertyName, List.class,
+							mapParamName, key);
+				}
+			}
+			else {
 				fieldBuilder = FieldSpec.builder(value.getClass(), propertyName);
-				parametrBuilder.addStatement("this.$N = ($T) $N.get(\"$N\")", propertyName, value.getClass(), 
+				parametrBuilder.addStatement("this.$N = ($T) $N.get(\"$N\")", propertyName, value.getClass(),
 						mapParamName, key);
 			}
 			objectBuilder.addField(fieldBuilder.addModifiers(Modifier.PUBLIC).build());
 		}
 
-		if(isRoot){
+		if (isRoot) {
 			parametrBuilder.addStatement("return this");
 			objectBuilder.addMethod(parametrBuilder.build());
 		}
-			
+
 		TypeSpec object = objectBuilder.addMethod(constructorBuilder.build()).build();
 
 		JavaFile javaFile = JavaFile.builder(configPackageName, object).build();
 		try {
 			javaFile.writeTo(outputSrcDir);
-		} catch (IOException ex) {
+		}
+		catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
 
-	
-	private String getClassName(String name){
+	private String getClassName(String name) {
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
 	}
-	
-	
+
 }

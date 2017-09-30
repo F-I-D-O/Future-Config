@@ -23,9 +23,10 @@ import org.junit.Test;
  * @author David Fiedler
  */
 public class BuilderCompleteTest {
-     @Test
-    public void test() throws IOException{
-        BuilderTester.tryParseFile("complete.cfg");
-        
-    }
+
+	@Test
+	public void test() throws IOException {
+		BuilderTester.tryParseFile("complete.cfg");
+
+	}
 }

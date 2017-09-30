@@ -38,47 +38,46 @@ import org.junit.Test;
  * @author fido
  */
 public class VariableIterationTest {
-    
-    private static ConfigDataMap tryParseFile(String resourcePath) throws IOException{
-        InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        
-        ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
-        
-        ConfigSource configSourceDefinition = new ConfigSource(reader, null);
-        Object source = configSourceDefinition.source;
-        ConfigDataMap configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
-        configDataList.add(configMapFromSource);
-        ConfigDataMap mergedMap = new Merger(configDataList).merge();
-        
-        return mergedMap;
-    }
-    
-    @Test
-    public void test() throws IOException{
-        ConfigDataMap config = tryParseFile("complete.cfg");
-        
-        /* hierarchy */
-        assertNotNull(config.get("object_hierarchy"));
-        assertTrue(config.get("object_hierarchy") instanceof ConfigDataMap);
-        ConfigDataMap objectHierarchy = (ConfigDataMap) config.get("object_hierarchy");
-        
-        Map<String,Object> map = new HashMap<>();
-        for (ConfigProperty configProperty : objectHierarchy.getVariableIterable()) {
-            map.put(configProperty.getPath(), configProperty.value);
-        }
-        
-        assertEquals(2, map.size());
-        assertEquals("$string + ' is funny to compose'", map.get("object_hierarchy.inner_object.composed"));
-        assertEquals("$object_hierarchy.inner_object.composed + ' multiple times'", 
-                map.get("object_hierarchy.inner_object.inner_inner_object.composed")); 
-        
-        
-        map = new HashMap<>();
-        for (ConfigProperty configProperty : config.getVariableIterable()) {
-            map.put(configProperty.getPath(), configProperty.value);
-        }
-        assertEquals(6, map.size());
-    }
+
+	private static ConfigDataMap tryParseFile(String resourcePath) throws IOException {
+		InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+		ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
+
+		ConfigSource configSourceDefinition = new ConfigSource(reader, null);
+		Object source = configSourceDefinition.source;
+		ConfigDataMap configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+		configDataList.add(configMapFromSource);
+		ConfigDataMap mergedMap = new Merger(configDataList).merge();
+
+		return mergedMap;
+	}
+
+	@Test
+	public void test() throws IOException {
+		ConfigDataMap config = tryParseFile("complete.cfg");
+
+		/* hierarchy */
+		assertNotNull(config.get("object_hierarchy"));
+		assertTrue(config.get("object_hierarchy") instanceof ConfigDataMap);
+		ConfigDataMap objectHierarchy = (ConfigDataMap) config.get("object_hierarchy");
+
+		Map<String, Object> map = new HashMap<>();
+		for (ConfigProperty configProperty : objectHierarchy.getVariableIterable()) {
+			map.put(configProperty.getPath(), configProperty.value);
+		}
+
+		assertEquals(2, map.size());
+		assertEquals("$string + ' is funny to compose'", map.get("object_hierarchy.inner_object.composed"));
+		assertEquals("$object_hierarchy.inner_object.composed + ' multiple times'",
+				map.get("object_hierarchy.inner_object.inner_inner_object.composed"));
+
+		map = new HashMap<>();
+		for (ConfigProperty configProperty : config.getVariableIterable()) {
+			map.put(configProperty.getPath(), configProperty.value);
+		}
+		assertEquals(6, map.size());
+	}
 
 }

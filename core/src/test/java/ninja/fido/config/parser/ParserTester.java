@@ -28,10 +28,11 @@ import ninja.fido.config.ConfigDataLoader;
  * @author David Fiedler
  */
 public class ParserTester {
-    public static Map<String,Object> tryParseFile(String resourcePath) throws IOException{
-        InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        ConfigDataMap config = new ConfigDataLoader().loadConfigData(reader);
-        return config.getConfigObject();
-    }
+
+	public static Map<String, Object> tryParseFile(String resourcePath) throws IOException {
+		InputStream inputStream = ParserTester.class.getResourceAsStream("/ninja/fido/config/" + resourcePath);
+		BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+		ConfigDataMap config = new ConfigDataLoader().loadConfigData(reader);
+		return config.getConfigObject();
+	}
 }

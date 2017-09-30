@@ -26,14 +26,14 @@ import static org.junit.Assert.assertEquals;
  * @author David Fiedler
  */
 public class ParserDataTypeTest {
-    
-    @Test
-    public void test() throws IOException{
-        Map<String,Object> config = ParserTester.tryParseFile("dataTypes.cfg");
-        
-        assertEquals("String", config.get("string"));
-        assertEquals(1, config.get("int"));
-        assertEquals(1.0, config.get("double"));
-        
-    }
+
+	@Test
+	public void test() throws IOException {
+		Map<String, Object> config = ParserTester.tryParseFile("dataTypes.cfg");
+
+		assertEquals("String", config.get("string"));
+		assertEquals(1, config.get("int"));
+		assertEquals(1.0, config.get("double"));
+
+	}
 }

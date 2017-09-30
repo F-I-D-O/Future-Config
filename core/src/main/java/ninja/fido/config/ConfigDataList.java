@@ -26,77 +26,77 @@ import java.util.Set;
  *
  * @author David Fiedler
  */
-public class ConfigDataList extends ConfigDataObject<List,Integer,Object>{
-    
-    Set<Entry<Integer,Object>> entrySet;
+public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 
-    public ConfigDataList(List configObject, ConfigDataObject parentConfigObject, Object keyInParent) {
-        super(configObject, parentConfigObject, keyInParent);
-    }
-    
-    public ConfigDataList(ConfigDataObject parentConfigObject, Object keyInParent) {
-        super(new ArrayList(), parentConfigObject, keyInParent);
-    }
+	Set<Entry<Integer, Object>> entrySet;
 
-    @Override
-    public Iterator<Entry<Integer, Object>> iterator() {
-        if(entrySet == null){
-            createEntrySet();
-        }
-        return entrySet.iterator();
-    }
+	public ConfigDataList(List configObject, ConfigDataObject parentConfigObject, Object keyInParent) {
+		super(configObject, parentConfigObject, keyInParent);
+	}
 
-    private void createEntrySet() {
-        entrySet = new HashSet<>();
-        for (int i = 0; i < configObject.size(); i++) {
-            entrySet.add(new ListEntry(i));
-        }
-    }
+	public ConfigDataList(ConfigDataObject parentConfigObject, Object keyInParent) {
+		super(new ArrayList(), parentConfigObject, keyInParent);
+	}
 
-    @Override
-    public Object get(Integer key) {
-        return configObject.get(key);
-    }
+	@Override
+	public Iterator<Entry<Integer, Object>> iterator() {
+		if (entrySet == null) {
+			createEntrySet();
+		}
+		return entrySet.iterator();
+	}
 
-    @Override
-    public boolean containsKey(Integer key) {
-        return configObject.size() > key;
-    }
-    
-    public void put(Integer key, Object value){
-        if(key == null){
-            configObject.add(value);
-        }
-        else{
-            configObject.add(key, value);
-        }
-    }
-    
-    private class ListEntry implements Entry<Integer, Object>{
-        
-        private final int key;
+	private void createEntrySet() {
+		entrySet = new HashSet<>();
+		for (int i = 0; i < configObject.size(); i++) {
+			entrySet.add(new ListEntry(i));
+		}
+	}
 
-        public ListEntry(int key) {
-            this.key = key;
-        }
+	@Override
+	public Object get(Integer key) {
+		return configObject.get(key);
+	}
 
-        @Override
-        public Integer getKey() {
-            return key;
-        }
+	@Override
+	public boolean containsKey(Integer key) {
+		return configObject.size() > key;
+	}
 
-        @Override
-        public Object getValue() {
-            return configObject.get(key);
-        }
+	public void put(Integer key, Object value) {
+		if (key == null) {
+			configObject.add(value);
+		}
+		else {
+			configObject.add(key, value);
+		}
+	}
 
-        @Override
-        public Object setValue(Object value) {
-            Object oldObject = configObject.get(key);
-            configObject.add(key, value);
-            return oldObject;
-        }
-        
-    }
-    
+	private class ListEntry implements Entry<Integer, Object> {
+
+		private final int key;
+
+		public ListEntry(int key) {
+			this.key = key;
+		}
+
+		@Override
+		public Integer getKey() {
+			return key;
+		}
+
+		@Override
+		public Object getValue() {
+			return configObject.get(key);
+		}
+
+		@Override
+		public Object setValue(Object value) {
+			Object oldObject = configObject.get(key);
+			configObject.add(key, value);
+			return oldObject;
+		}
+
+	}
+
 }

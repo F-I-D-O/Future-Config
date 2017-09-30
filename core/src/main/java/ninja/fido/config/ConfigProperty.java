@@ -20,23 +20,24 @@ package ninja.fido.config;
  * @author fido
  */
 public class ConfigProperty {
-    public final ConfigDataObject configDataObject;
-    
-    public final Object key;
-    
-    public final Object value;
 
-    public ConfigProperty(ConfigDataObject configDataObject, Object key, Object value) {
-        this.configDataObject = configDataObject;
-        this.key = key;
-        this.value = value;
-    }
-    
-    public void set(Object newValue){
-        configDataObject.put(key, newValue);
-    }
-    
-    public String getPath(){
-        return configDataObject.getPath() + key;
-    }
+	public final ConfigDataObject configDataObject;
+
+	public final Object key;
+
+	public final Object value;
+
+	public ConfigProperty(ConfigDataObject configDataObject, Object key, Object value) {
+		this.configDataObject = configDataObject;
+		this.key = key;
+		this.value = value;
+	}
+
+	public void set(Object newValue) {
+		configDataObject.put(key, newValue);
+	}
+
+	public String getPath() {
+		return configDataObject.getPath() + key;
+	}
 }

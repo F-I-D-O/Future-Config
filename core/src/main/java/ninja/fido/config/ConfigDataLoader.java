@@ -36,53 +36,53 @@ public class ConfigDataLoader {
 //        }
 //        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
 //    }
-    
-    public ConfigDataMap loadConfigData(Object... configSources) throws IOException{
-        ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
-        for (int i = 0; i < configSources.length; i++) {
-            configSourceDefinitions[i] = new ConfigSource(configSources[i], (String[]) null);
-        }
-        return loadConfigData(configSourceDefinitions);
-    }
-    
-    public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) throws IOException{
-        ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
-        for (ConfigSource configSourceDefinition : configSourceDefinitions) {
-            Object source = configSourceDefinition.source;
-            ConfigDataMap configMapFromSource = null;
-            
-            if(source instanceof BufferedReader){
-                configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
-            }
-            else if(source instanceof ConfigDataMap){
-                configMapFromSource = (ConfigDataMap) source;
-            }
-            
-            if(configSourceDefinition.path != null){
-                configMapFromSource = changeConfigContext(configMapFromSource, configSourceDefinition.path);
-            }
-            
-            configDataList.add(configMapFromSource);
-        }
-        return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
-    }
 
-    private ConfigDataMap changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
-        for(String objectName: Lists.reverse(path)){
-            
-            /* add prefix to all variables path */
-            for(ConfigProperty configProperty: configMapFromSource.getVariableIterable()){
-                Matcher matcher = REFERENCE_PATTERN.matcher((String) configProperty.value);
-                matcher.find();
-                String result = matcher.replaceAll("\\$" + objectName + ".$1");
-                configProperty.set(result);
-            }
-            
-            /* move object to new parent */
-            ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
-            parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
-            configMapFromSource = parentMap;
-        }
-        return configMapFromSource;
-    }
+	public ConfigDataMap loadConfigData(Object... configSources) throws IOException {
+		ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
+		for (int i = 0; i < configSources.length; i++) {
+			configSourceDefinitions[i] = new ConfigSource(configSources[i], (String[]) null);
+		}
+		return loadConfigData(configSourceDefinitions);
+	}
+
+	public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) throws IOException {
+		ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
+		for (ConfigSource configSourceDefinition : configSourceDefinitions) {
+			Object source = configSourceDefinition.source;
+			ConfigDataMap configMapFromSource = null;
+
+			if (source instanceof BufferedReader) {
+				configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+			}
+			else if (source instanceof ConfigDataMap) {
+				configMapFromSource = (ConfigDataMap) source;
+			}
+
+			if (configSourceDefinition.path != null) {
+				configMapFromSource = changeConfigContext(configMapFromSource, configSourceDefinition.path);
+			}
+
+			configDataList.add(configMapFromSource);
+		}
+		return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
+	}
+
+	private ConfigDataMap changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
+		for (String objectName : Lists.reverse(path)) {
+
+			/* add prefix to all variables path */
+			for (ConfigProperty configProperty : configMapFromSource.getVariableIterable()) {
+				Matcher matcher = REFERENCE_PATTERN.matcher((String) configProperty.value);
+				matcher.find();
+				String result = matcher.replaceAll("\\$" + objectName + ".$1");
+				configProperty.set(result);
+			}
+
+			/* move object to new parent */
+			ConfigDataMap parentMap = new ConfigDataMap(new HashMap<>(), null, null);
+			parentMap.put(objectName, new ConfigDataMap(configMapFromSource.configObject, parentMap, objectName));
+			configMapFromSource = parentMap;
+		}
+		return configMapFromSource;
+	}
 }

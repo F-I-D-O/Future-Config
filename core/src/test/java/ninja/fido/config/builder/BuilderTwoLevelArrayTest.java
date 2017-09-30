@@ -27,10 +27,10 @@ import static org.junit.Assert.assertEquals;
  * @author David Fiedler
  */
 public class BuilderTwoLevelArrayTest {
-    
-    @Test
-    public void test() throws IOException{
-        BuilderTester.tryParseFile("twoLevelArray.cfg");
-        
-    }
+
+	@Test
+	public void test() throws IOException {
+		BuilderTester.tryParseFile("twoLevelArray.cfg");
+
+	}
 }

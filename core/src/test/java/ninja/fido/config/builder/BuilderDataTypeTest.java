@@ -27,10 +27,10 @@ import static org.junit.Assert.assertEquals;
  * @author David Fiedler
  */
 public class BuilderDataTypeTest {
-    
-    @Test
-    public void test() throws IOException{
-        BuilderTester.tryParseFile("dataTypes.cfg");
-        
-    }
+
+	@Test
+	public void test() throws IOException {
+		BuilderTester.tryParseFile("dataTypes.cfg");
+
+	}
 }

@@ -23,29 +23,27 @@ import java.util.List;
  * @author fido
  */
 public class ConfigSource {
-    public final Object source;
-    
-    final List<String> path;
 
-    
-    public ConfigSource(Object source, String... path) {
-        this.source = source;
-        if(path != null){
-            List<String> pathList = new LinkedList<>();
-            for (String objectName : path) {
-                pathList.add(objectName);
-            }
-            this.path = pathList;
-        }
-        else{
-            this.path = null;
-        }
-    }
-    
+	public final Object source;
+
+	final List<String> path;
+
+	public ConfigSource(Object source, String... path) {
+		this.source = source;
+		if (path != null) {
+			List<String> pathList = new LinkedList<>();
+			for (String objectName : path) {
+				pathList.add(objectName);
+			}
+			this.path = pathList;
+		}
+		else {
+			this.path = null;
+		}
+	}
+
 //    public ConfigSource(Object source, List<String> path) {
 //        this.source = source;
 //        this.path = path;
 //    }
-    
-    
 }
