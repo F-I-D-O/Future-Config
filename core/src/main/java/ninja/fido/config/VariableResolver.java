@@ -103,7 +103,7 @@ public class VariableResolver {
 			}
 
 			// now String variables only
-			value = value.replace("$" + reference, "'" + variable.toString() + "'");
+			value = value.replaceFirst("\\$" + reference, "'" + variable.toString() + "'");
 		}
 		Matcher matcher = OPERATOR_PATTERN.matcher(value);
 		if (matcher.find()) {
