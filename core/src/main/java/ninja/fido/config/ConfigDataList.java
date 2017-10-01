@@ -63,6 +63,7 @@ public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 		return configObject.size() > key;
 	}
 
+	@Override
 	public void put(Integer key, Object value) {
 		if (key == null) {
 			configObject.add(value);
@@ -70,6 +71,11 @@ public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 		else {
 			configObject.add(key, value);
 		}
+	}
+
+	@Override
+	public int getSize() {
+		return configObject.size();
 	}
 
 	private class ListEntry implements Entry<Integer, Object> {

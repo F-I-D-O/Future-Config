@@ -110,7 +110,7 @@ public class Parser {
 				objectStack.peek().put(currentKey, currentObject);
 
 				if (inArray) {
-					currentKey = null;
+					currentKey = 0;
 				}
 			}
 
@@ -121,7 +121,7 @@ public class Parser {
 				}
 				else {
 					inArray = true;
-					currentKey = null;
+					currentKey = currentObject.getSize();
 				}
 			}
 
@@ -142,6 +142,10 @@ public class Parser {
 
 		if (parseValue(line)) {
 			currentObject.put(currentKey, currentValue);
+		}
+		
+		if (inArray) {
+			currentKey = (int) currentKey + 1;
 		}
 	}
 

@@ -44,4 +44,9 @@ public class ConfigDataMap extends ConfigDataObject<Map<String, Object>, String,
 		Map<String, Object> test = configObject;
 	}
 
+	@Override
+	public int getSize() {
+		return configObject.size();
+	}
+
 }

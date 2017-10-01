@@ -56,18 +56,20 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 	public abstract boolean containsKey(K key);
 
 	public abstract void put(K key, V value);
+	
+	public abstract int getSize();
 
 	public void moveTo(ConfigDataObject parentConfigObject, Object keyInParent) {
 		this.parentConfigObject = parentConfigObject;
 		this.keyInParent = keyInParent;
 		createPath();
 	}
-
-	public Iterable<ConfigProperty> getVariableIterable() {
+	
+	public Iterable<ConfigProperty> getIterable() {
 		ConfigDataObject configDataObject = this;
 		return new Iterable<ConfigProperty>() {
 
-			VariableIterator iterator = new VariableIterator(configDataObject);
+			VariableIterator iterator = new VariableIterator(configDataObject, false);
 
 			@Override
 			public Iterator<ConfigProperty> iterator() {
@@ -76,16 +78,45 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 		};
 	}
 
+	public Iterable<ConfigProperty> getVariableIterable() {
+		ConfigDataObject configDataObject = this;
+		return new Iterable<ConfigProperty>() {
+
+			VariableIterator iterator = new VariableIterator(configDataObject, true);
+
+			@Override
+			public Iterator<ConfigProperty> iterator() {
+				return iterator;
+			}
+		};
+	}
+	
+	public String getStringForPrint(){
+		StringBuilder out = new StringBuilder();
+		for(ConfigProperty configProperty: getIterable()){
+			out.append(String.format("%s: %s%n", configProperty.getPath(), configProperty.value));
+		}
+		return out.toString();
+	}
+
 	private String createPath() {
 		path = "";
 		ConfigDataObject currentObject = this;
 		while (currentObject.keyInParent != null) {
 			Object keyInParentParent = currentObject.keyInParent;
 			if (keyInParentParent instanceof String) {
-				path = keyInParentParent + "." + path;
+				if(currentObject == this){
+					path = (String) keyInParentParent;
+				}
+				else if(path.startsWith("[")){
+					path = keyInParentParent + path;
+				}
+				else{
+					path = keyInParentParent + "." + path;
+				}
 			}
 			else {
-				path = "[" + Integer.toString((int) keyInParentParent) + "]" + path;
+				path = "[" + Integer.toString((int) keyInParentParent) + "]." + path;
 			}
 			currentObject = currentObject.parentConfigObject;
 		}
@@ -95,6 +126,8 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 	class VariableIterator implements Iterator<ConfigProperty> {
 
 		private final Stack<VariableIteratorContext> contextStack;
+		
+		private final boolean varsOnly;
 
 		private VariableIteratorContext currentContext;
 
@@ -102,7 +135,8 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 
 		private Entry<K, V> currentEntry;
 
-		public VariableIterator(ConfigDataObject configDataObject) {
+		public VariableIterator(ConfigDataObject configDataObject, boolean varsOnly) {
+			this.varsOnly = varsOnly;
 			contextStack = new Stack<>();
 			currentContext = new VariableIteratorContext(configDataObject, configDataObject.iterator());
 			currentIterator = currentContext.iterator;
@@ -110,7 +144,7 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 
 		@Override
 		public boolean hasNext() {
-			if (currentEntry != null && Parser.containsVariable(currentEntry.getValue())) {
+			if (currentEntry != null && isRequestedType(currentEntry.getValue())) {
 				return true;
 			}
 			checkIterator();
@@ -120,7 +154,7 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 				currentEntry = currentIterator.next();
 				Object currentValue = currentEntry.getValue();
 
-				if (Parser.containsVariable(currentValue)) {
+				if (isRequestedType(currentValue)) {
 					return true;
 				}
 				else if (currentValue instanceof ConfigDataObject) {
@@ -144,6 +178,15 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 			}
 			else {
 				return null;
+			}
+		}
+		
+		private boolean isRequestedType(Object value){
+			if(varsOnly){
+				return Parser.containsVariable(value);
+			}
+			else{
+				return !(value instanceof ConfigDataObject);
 			}
 		}
 
