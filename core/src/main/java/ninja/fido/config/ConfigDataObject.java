@@ -98,6 +98,8 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 		}
 		return out.toString();
 	}
+    
+    public abstract T getInternalObjects();
 
 	private String createPath() {
 		path = "";

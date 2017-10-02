@@ -49,4 +49,20 @@ public class ConfigDataMap extends ConfigDataObject<Map<String, Object>, String,
 		return configObject.size();
 	}
 
+    @Override
+    public Map<String, Object> getInternalObjects() {
+        Map<String,Object> out = new HashMap<>();
+        for (Map.Entry<String, Object> entry : this) {
+            Object value = entry.getValue();
+            String key = entry.getKey();
+            if(value instanceof ConfigDataObject){
+                out.put(key, ((ConfigDataObject) value).getInternalObjects());
+            }
+            else{
+                out.put(key, value);
+            }
+        }
+        return out;
+    }
+
 }

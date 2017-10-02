@@ -16,9 +16,11 @@
 package ninja.fido.config;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -77,6 +79,22 @@ public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 	public int getSize() {
 		return configObject.size();
 	}
+    
+    @Override
+    public List<Object> getInternalObjects() {
+        List<Object> out = new ArrayList<>();
+        for (Map.Entry<Integer, Object> entry : this) {
+            Object value = entry.getValue();
+            Integer key = entry.getKey();
+            if(value instanceof ConfigDataObject){
+                out.add(key, ((ConfigDataObject) value).getInternalObjects());
+            }
+            else{
+                out.add(key, value);
+            }
+        }
+        return out;
+    }
 
 	private class ListEntry implements Entry<Integer, Object> {
 

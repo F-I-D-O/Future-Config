@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import static ninja.fido.config.Parser.REFERENCE_PATTERN;
 
@@ -45,14 +47,18 @@ public class ConfigDataLoader {
 		return loadConfigData(configSourceDefinitions);
 	}
 
-	public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) throws IOException {
+	public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) {
 		ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
 		for (ConfigSource configSourceDefinition : configSourceDefinitions) {
 			Object source = configSourceDefinition.source;
 			ConfigDataMap configMapFromSource = null;
 
 			if (source instanceof BufferedReader) {
-				configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+                try {
+                    configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+                } catch (IOException ex) {
+                    Logger.getLogger(ConfigDataLoader.class.getName()).log(Level.SEVERE, null, ex);
+                }
 			}
 			else if (source instanceof ConfigDataMap) {
 				configMapFromSource = (ConfigDataMap) source;
