@@ -1,4 +1,4 @@
-package ninja.fido.config;
+package ninja.fido.config.plugin;
 
 import com.google.common.base.CaseFormat;
 import com.squareup.javapoet.ClassName;
@@ -18,6 +18,14 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import ninja.fido.config.ConfigDataList;
+import ninja.fido.config.ConfigDataLoader;
+import ninja.fido.config.ConfigDataMap;
+import ninja.fido.config.Configuration;
+import ninja.fido.config.GeneratedConfig;
+import ninja.fido.config.JavaLanguageUtil;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 
 /**
  * Builds config classes from suplied config file.
@@ -25,6 +33,8 @@ import javax.lang.model.element.Modifier;
  * @author F.I.D.O.
  */
 public class ConfigBuilder {
+	
+	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
 	/**
 	 * Configuration file
@@ -59,12 +69,27 @@ public class ConfigBuilder {
 	 * Starts the building process.
 	 */
 	public void buildConfig() {
+		deleteOldFiles();
 		try {
 			ConfigDataMap configMap = new ConfigDataLoader().loadConfigData(configFile);
 			generateConfig(configMap, "config", true);
 		}
 		catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+	
+	private void deleteOldFiles(){
+		String pathToOutputDir = outputSrcDir.getAbsolutePath() + JavaLanguageUtil.DIR_SEPARATOR 
+				+ JavaLanguageUtil.packageToPath(configPackageName);
+		File outputDir = new File(pathToOutputDir);
+		if(outputDir.exists()){
+			try { 
+				FileUtils.cleanDirectory(new File(pathToOutputDir));
+			}
+			catch (IOException ex) {
+				LOGGER.error(ex.getMessage());
+			}
 		}
 	}
 
@@ -87,7 +112,7 @@ public class ConfigBuilder {
 			objectBuilder.addSuperinterface(GeneratedConfig.class);
 		}
 
-		parametrBuilder.addParameter(HashMap.class, mapParamName);
+		parametrBuilder.addParameter(Map.class, mapParamName);
 
 		for (Entry<String, Object> entry : configMap) {
 			String key = entry.getKey();
@@ -102,10 +127,10 @@ public class ConfigBuilder {
 				generateConfig((ConfigDataMap) value, key, false);
 				fieldBuilder = FieldSpec.builder(newObjectType, propertyName);
 				parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType,
-						HashMap.class, mapParamName, key);
+						Map.class, mapParamName, key);
 			}
-			else if (value instanceof List) {
-				List list = (List) value;
+			else if (value instanceof ConfigDataList) {
+				ConfigDataList list = (ConfigDataList) value;
 				fieldBuilder = FieldSpec.builder(List.class, propertyName);
 
 				Object representative = list.get(0);
@@ -118,7 +143,7 @@ public class ConfigBuilder {
 					parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
 
 					String inputListName = propertyName + "List";
-					parametrBuilder.addStatement("$T $N = ($T) $N.get($N)", List.class, inputListName, List.class,
+					parametrBuilder.addStatement("$T $N = ($T) $N.get(\"$N\")", List.class, inputListName, List.class,
 							mapParamName, key);
 					String representativeObjectName = "object";
 					parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName,
@@ -128,7 +153,7 @@ public class ConfigBuilder {
 					parametrBuilder.endControlFlow();
 				}
 				else {
-					parametrBuilder.addStatement("$N = ($T) $N.get($N)", propertyName, List.class,
+					parametrBuilder.addStatement("$N = ($T) $N.get(\"$N\")", propertyName, List.class,
 							mapParamName, key);
 				}
 			}

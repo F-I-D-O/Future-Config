@@ -25,6 +25,8 @@ import java.util.Locale;
  * @author David Fiedler
  */
 public class JavaLanguageUtil {
+	
+	public static final char DIR_SEPARATOR = '/';
 
 	private static final Collator englishCollator = Collator.getInstance(Locale.ENGLISH);
 
@@ -58,4 +60,7 @@ public class JavaLanguageUtil {
 		return sanitizePropertyName(CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, string));
 	}
 
+	public static String packageToPath(String packageStructure) {
+		return packageStructure.replace('.', DIR_SEPARATOR);
+	}
 }

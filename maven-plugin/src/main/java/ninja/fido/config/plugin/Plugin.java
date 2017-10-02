@@ -1,12 +1,18 @@
 package ninja.fido.config.plugin;
 
+import java.io.BufferedReader;
 import java.io.File;
-import ninja.fido.config.ConfigBuilder;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import ninja.fido.config.Configuration;
+import ninja.fido.config.JavaLanguageUtil;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * FutureConfig plugin. It simply run a build config procedure in your project's root package directory using the config
@@ -14,6 +20,8 @@ import org.apache.maven.project.MavenProject;
  */
 @Mojo(name = "build-config")
 public class Plugin extends AbstractMojo {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
 	/**
 	 * Absolute path to the config file.
@@ -29,26 +37,25 @@ public class Plugin extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException {
-		File configFile = getConfigFile();
+		String mainPackageName = PluginTools.getMainPackageName(project);
+		BufferedReader defaultConfigFile = getConfigFile();
 		String srcPath = (String) project.getCompileSourceRoots().get(0);
-		String mainPackageName = getMainPackageName();
+		String configPackage = mainPackageName + "." + Configuration.DEFAULT_CONFIG_PACKAGE;
 
-		new ConfigBuilder(configFile, new File(srcPath), mainPackageName + ".config").buildConfig();
+		new ConfigBuilder(defaultConfigFile, new File(srcPath), configPackage).buildConfig();
 	}
 
-	private String getMainPackageName() {
-		return project.getArtifact().getGroupId() + "." + project.getArtifact().getArtifactId();
-	}
+	private BufferedReader getConfigFile(){ 
+		String path = PluginTools.getPathToProjectResourceDir(project) + JavaLanguageUtil.DIR_SEPARATOR
+				+ Configuration.DEFAULT_CONFIG_PACKAGE + JavaLanguageUtil.DIR_SEPARATOR
+				+ Configuration.DEFAULT_CONFIG_FILENAME;
 
-	private File getConfigFile() {
-		File configFile = null;
-		if (path.startsWith("./")) {
-			String finalPath = project.getFile().getPath().replace("pom.xml", "") + path.replaceFirst(".", "src/main/resources");
-			configFile = new File(finalPath);
+		try {
+			return new BufferedReader(new FileReader(path));
 		}
-		else {
-			configFile = new File(path);
+		catch (FileNotFoundException ex) {
+			LOGGER.error("Default config file not found at: {}", path);
+			return null;
 		}
-		return configFile;
 	}
 }

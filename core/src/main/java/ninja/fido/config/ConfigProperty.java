@@ -39,7 +39,7 @@ public class ConfigProperty {
 
 	public String getPath() {
 		if(key instanceof String){
-			return configDataObject.getPath() + key;
+			return String.format("%s.%s", configDataObject.getPath(), key);
 		}
 		else{
 			return String.format("%s[%s]", configDataObject.getPath(), key);

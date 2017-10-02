@@ -1,6 +1,6 @@
 package ninja.fido.config;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Interface for the contract between Configuration initialization and generated source file.
@@ -10,5 +10,5 @@ import java.util.HashMap;
  */
 public interface GeneratedConfig<C> {
 
-	public C fill(HashMap config);
+	public C fill(Map config);
 }

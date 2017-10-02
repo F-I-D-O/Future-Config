@@ -15,23 +15,19 @@
  */
 package ninja.fido.config.builder;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import ninja.fido.config.ConfigBuilder;
+import org.junit.Test;
+
 
 /**
  *
  * @author David Fiedler
  */
-public class BuilderTester {
+public class BuilderSimpleArrayTest {
 
-	public static void tryParseFile(String configFilePath) throws IOException {
-		configFilePath = "/ninja/fido/config/" + configFilePath;
-		ConfigBuilder configBuilder = new ConfigBuilder(
-				new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))),
-				new File("./temp"), "ninja.fido.config.test");
-		configBuilder.buildConfig();
+	@Test
+	public void test() throws IOException {
+		BuilderTester.tryParseFile("simpleArray.cfg");
+
 	}
 }

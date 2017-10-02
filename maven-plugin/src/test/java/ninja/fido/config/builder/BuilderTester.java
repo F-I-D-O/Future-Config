@@ -15,22 +15,23 @@
  */
 package ninja.fido.config.builder;
 
-import ninja.fido.config.parser.*;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.util.Map;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import java.io.InputStreamReader;
+import ninja.fido.config.plugin.ConfigBuilder;
 
 /**
  *
  * @author David Fiedler
  */
-public class BuilderTwoLevelArrayTest {
+public class BuilderTester {
 
-	@Test
-	public void test() throws IOException {
-		BuilderTester.tryParseFile("twoLevelArray.cfg");
-
+	public static void tryParseFile(String configFilePath) throws IOException {
+		configFilePath = "/ninja/fido/config/" + configFilePath;
+		ConfigBuilder configBuilder = new ConfigBuilder(
+				new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))),
+				new File("temp"), "ninja.fido.config.test");
+		configBuilder.buildConfig();
 	}
 }

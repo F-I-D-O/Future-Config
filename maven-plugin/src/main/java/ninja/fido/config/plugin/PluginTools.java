@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config.builder;
+package ninja.fido.config.plugin;
 
-import ninja.fido.config.parser.*;
-import java.io.IOException;
-import java.util.Map;
-import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
+import ninja.fido.config.JavaLanguageUtil;
+import org.apache.maven.project.MavenProject;
 
 /**
  *
  * @author David Fiedler
  */
-public class BuilderSimpleArrayTest {
-
-	@Test
-	public void test() throws IOException {
-		BuilderTester.tryParseFile("simpleArray.cfg");
-
+public class PluginTools {
+	public static String getMainPackageName(MavenProject project) {
+		return project.getArtifact().getGroupId() + "." + project.getArtifact().getArtifactId();
+	}
+	
+	public static String getPathToProjectResourceDir(MavenProject project){
+		String resourcePath = project.getFile().getPath().replace("pom.xml", "") + "src/main/resources/";
+		return resourcePath + JavaLanguageUtil.packageToPath(getMainPackageName(project));
 	}
 }

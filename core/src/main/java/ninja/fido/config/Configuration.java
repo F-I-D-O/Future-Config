@@ -5,10 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class expose config loading for projects.
@@ -16,21 +14,26 @@ import java.util.logging.Logger;
  * @author F.I.D.O.
  */
 public class Configuration {
+	
+	/**
+	 * Default config package both for config file (in resources) and for generated sources.
+	 */
+	public static final String DEFAULT_CONFIG_PACKAGE = "config";
+	
+	public static final String DEFAULT_CONFIG_FILENAME = "config.cfg";
 
-	private static final Logger LOGGER = Logger.getLogger(Configuration.class.getName());
+	private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
 	private static final String DEFAULT_CONFIG_LOCATION_FILENAME = "config-location.txt";
 
 	private static final String DEFAULT_LOCAL_CONFIG_LOCATION_FILENAME = "local-config-location.txt";
 
-	private static final char DIR_SEPARATOR = '/';
-
-	static {
-		Handler handlerObj = new ConsoleHandler();
-		handlerObj.setLevel(Level.ALL);
-		LOGGER.addHandler(handlerObj);
-		LOGGER.setLevel(Level.ALL);
-		LOGGER.setUseParentHandlers(false);
+	
+	
+	
+	
+	public BufferedReader getDefaultConfigFile(){
+		
 	}
 
 	/**
@@ -175,18 +178,19 @@ public class Configuration {
 	}
 
 	private static String getConfigLocationFilePath(GeneratedConfig generatedConfig, String filename) {
-		return DIR_SEPARATOR + getPackageStructure(generatedConfig.getClass()) + DIR_SEPARATOR + filename;
+		return DIR_SEPARATOR + getPathToClass(generatedConfig.getClass()) + DIR_SEPARATOR + filename;
 	}
 
-	private static String getPackageStructure(Class type) {
+	private static String getPathToClass(Class type) {
 		String cannonicalName = type.getCanonicalName();
 		String packageName = cannonicalName.substring(0, cannonicalName.lastIndexOf('.'));
-		return packageName.replace('.', DIR_SEPARATOR);
+		return getPathFromPackageStructure(packageName);
+	}
+	
+	private static String getPathFromPackageStructure(String packageStructure) {
+		return packageStructure.replace('.', DIR_SEPARATOR);
 	}
 
-//    private static String buildAbsolutePath(Class type, String relativePath){
-//        
-//    }
 	private static boolean isRelativePath(String path) {
 		return path.startsWith(".");
 	}

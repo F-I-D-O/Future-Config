@@ -21,8 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static ninja.fido.config.Parser.OPERATOR_PATTERN;
 import static ninja.fido.config.Parser.REFERENCE_PATTERN;
+import static ninja.fido.config.Parser.parseSimpleValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,11 @@ import org.slf4j.LoggerFactory;
 public class VariableResolver {
 
 	private static final Logger logger = LoggerFactory.getLogger(VariableResolver.class);
+	
+	private static final String STRING_VALUE_PATERN_STRING = "'[^']*'";
+	
+	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile(
+			String.format("\\s*(%s|%s)\\s*([+])?", Parser.NAME_PATERN_STRING, STRING_VALUE_PATERN_STRING));
 
 	private final Queue<QueueEntry> referenceQueue;
 
@@ -107,11 +114,46 @@ public class VariableResolver {
 		}
 		Matcher matcher = OPERATOR_PATTERN.matcher(value);
 		if (matcher.find()) {
-			return Parser.parseExpressionWithOperators(value);
+			return parseExpressionWithOperators(value);
 		}
 		else {
 			return Parser.parseSimpleValue(value);
 		}
+	}
+	
+	private static Object parseExpressionWithOperators(String value) {
+		Matcher matcher = OPERATOR_EXPRESSION_PATTERN.matcher(value);
+		LinkedList<String> operands = new LinkedList<>();
+		LinkedList<String> operators = new LinkedList<>();
+		while (matcher.find()) {
+			operands.add(matcher.group(1));
+			if (matcher.groupCount() == 2) {
+				operators.add(matcher.group(2));
+			}
+		}
+
+		LinkedList<Object> operandsParsed = new LinkedList<>();
+		for (String operand : operands) {
+			operandsParsed.add(parseSimpleValue(operand));
+		}
+
+		Object resolvedExpression = null;
+
+		if (operandsParsed.get(0) instanceof Number) {
+
+		}
+		else {
+			resolvedExpression = resolveStringExpression(operandsParsed, operators);
+		}
+		return resolvedExpression;
+	}
+
+	private static Object resolveStringExpression(LinkedList<Object> operandsParsed, LinkedList<String> operators) {
+		String resultSting = "";
+		for (Object operand : operandsParsed) {
+			resultSting += operand.toString();
+		}
+		return resultSting;
 	}
 
 	private List<String> parseReferences(String value) {

@@ -27,20 +27,19 @@ public class Parser {
 
 	private static final Logger logger = LoggerFactory.getLogger(Parser.class);
 	
-	private static final String NAME_PATERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)";
-	private static final String STRING_VALUE_PATERN_STRING = "'[^']*'";
+	static final String NAME_PATERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)";
 
 	private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
-	private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    )*");
+	private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    |	)*");
 	private static final Pattern KEY_PATTERN = Pattern.compile("^" + NAME_PATERN_STRING + "(:)");
 	private static final Pattern SIMPLE_VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("^([0-9])");
 	private static final Pattern BOOLEAN_PATTERN = Pattern.compile("^(true|false)");
-	public static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$" + NAME_PATERN_STRING);
+	public static final Pattern REFERENCE_PATTERN 
+			= Pattern.compile(String.format("\\$(%s(\\.%s)*)", NAME_PATERN_STRING, NAME_PATERN_STRING));
 	public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 //	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
-	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile(
-			String.format("\\s*(%s|%s)\\s*([+])?", NAME_PATERN_STRING, STRING_VALUE_PATERN_STRING));
+	
 
 	private final ConfigDataMap config;
 
@@ -228,41 +227,6 @@ public class Parser {
 				return value;
 			}
 		}
-	}
-
-	static Object parseExpressionWithOperators(String value) {
-		Matcher matcher = OPERATOR_EXPRESSION_PATTERN.matcher(value);
-		LinkedList<String> operands = new LinkedList<>();
-		LinkedList<String> operators = new LinkedList<>();
-		while (matcher.find()) {
-			operands.add(matcher.group(1));
-			if (matcher.groupCount() == 2) {
-				operators.add(matcher.group(2));
-			}
-		}
-
-		LinkedList<Object> operandsParsed = new LinkedList<>();
-		for (String operand : operands) {
-			operandsParsed.add(parseSimpleValue(operand));
-		}
-
-		Object resolvedExpression = null;
-
-		if (operandsParsed.get(0) instanceof Number) {
-
-		}
-		else {
-			resolvedExpression = resolveStringExpression(operandsParsed, operators);
-		}
-		return resolvedExpression;
-	}
-
-	private static Object resolveStringExpression(LinkedList<Object> operandsParsed, LinkedList<String> operators) {
-		String resultSting = "";
-		for (Object operand : operandsParsed) {
-			resultSting += operand.toString();
-		}
-		return resultSting;
 	}
 
 	private void terminate() {
