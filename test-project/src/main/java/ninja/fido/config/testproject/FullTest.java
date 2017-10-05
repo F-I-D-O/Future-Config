@@ -9,5 +9,11 @@
  * @author David Fiedler
  */
 public class FullTest {
-	
+    public static void main(String[] args) {
+        System.out.println("Single project integration test - app start");
+        
+        
+        
+        System.out.println("Single project integration test - app stop");
+    }
 }
