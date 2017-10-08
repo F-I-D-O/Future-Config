@@ -11,7 +11,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,11 +38,14 @@ public class Parser {
 			= Pattern.compile(String.format("\\$(%s(\\.%s)*)", NAME_PATERN_STRING, NAME_PATERN_STRING));
 	public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 //	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
+	private static final Pattern BUILDER_DIRECTIVE_PATTERN = Pattern.compile("^!([^\\s]*)");
 	
 
 	private final ConfigDataMap config;
 
 	private final Stack<ConfigDataObject> objectStack;
+	
+	private final boolean useBuilderDirectives;
 
 	private ConfigDataObject currentObject;
 
@@ -52,15 +54,23 @@ public class Parser {
 	private Object currentValue;
 
 	private boolean inArray;
+	
+	private boolean skipNextObject;
 
 	/**
 	 * Constructor.
 	 */
-	public Parser() {
+	public Parser(){
+		this(false);
+	}
+			
+	public Parser(boolean useBuilderDirectives) {
+		this.useBuilderDirectives = useBuilderDirectives;
 		config = new ConfigDataMap(new HashMap<>(), null, null);
 		currentObject = config;
 		objectStack = new Stack<>();
 		inArray = false;
+		skipNextObject = false;
 	}
 
 	/**
@@ -91,6 +101,13 @@ public class Parser {
 			else if (line.contains("#")) {
 				// possible comment processing
 			}
+			
+			/* comment line */
+			else if (line.startsWith("!")) {
+				if(useBuilderDirectives){
+					resolveBuilderDirective(line);
+				}
+			}
 
 			/* new array or object */
 			else if (line.contains("{") || line.contains("[")) {
@@ -109,9 +126,14 @@ public class Parser {
 					currentObject = new ConfigDataList(currentObject, currentKey);
 					inArray = true;
 				}
-
+				
 				/* add new object to parent object */
-				objectStack.peek().put(currentKey, currentObject);
+				if(skipNextObject){
+					skipNextObject = false;
+				}
+				else{
+					objectStack.peek().put(currentKey, currentObject);
+				}
 
 				if (inArray) {
 					currentKey = 0;
@@ -231,6 +253,16 @@ public class Parser {
 
 	private void terminate() {
 		System.exit(1);
+	}
+
+	private void resolveBuilderDirective(String line) {
+		Matcher matcher = BUILDER_DIRECTIVE_PATTERN.matcher(line);
+		matcher.find();
+		String directive = matcher.group(1);
+		switch(directive){
+			case "parent":
+				skipNextObject = true;
+		}
 	}
 
 }

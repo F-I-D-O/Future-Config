@@ -38,6 +38,19 @@ public class ConfigDataLoader {
 //        }
 //        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
 //    }
+	
+	private final boolean useBuilderDirectives;
+	
+	
+	public ConfigDataLoader(){
+		this(false);
+	}
+
+	public ConfigDataLoader(boolean useBuilderDirectives) {
+		this.useBuilderDirectives = useBuilderDirectives;
+	}
+	
+	
 
 	public ConfigDataMap loadConfigData(Object... configSources) throws IOException {
 		ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
@@ -55,7 +68,7 @@ public class ConfigDataLoader {
 
 			if (source instanceof BufferedReader) {
                 try {
-                    configMapFromSource = new Parser().parseConfigFile((BufferedReader) source);
+                    configMapFromSource = new Parser(useBuilderDirectives).parseConfigFile((BufferedReader) source);
                 } catch (IOException ex) {
                     Logger.getLogger(ConfigDataLoader.class.getName()).log(Level.SEVERE, null, ex);
                 }

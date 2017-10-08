@@ -16,3 +16,4 @@ hs_err_pid*
 temp/
 /test-resources/target/
 /test-project/target/
+/testproject-client/target/

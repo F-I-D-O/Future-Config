@@ -56,6 +56,9 @@ public class TwoProjectsEmulationTest {
 	public void test() throws IOException {
 		Map<String, Object> config = tryParseFiles("complete.cfg", "complete_override.cfg",
 				"complete_child_project.cfg", "complete_child_project_override.cfg");
+		
+		
+		assertEquals("replaced twice", config.get("replacement"));
 
 		/* parent map */
 		assertNotNull(config.get("parent"));

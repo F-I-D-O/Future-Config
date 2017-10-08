@@ -71,7 +71,7 @@ public class ConfigBuilder {
 	public void buildConfig() {
 		deleteOldFiles();
 		try {
-			ConfigDataMap configMap = new ConfigDataLoader().loadConfigData(configFile);
+			ConfigDataMap configMap = new ConfigDataLoader(true).loadConfigData(configFile);
 			generateConfig(configMap, "config", true);
 		}
 		catch (IOException ex) {
@@ -136,7 +136,8 @@ public class ConfigBuilder {
 				Object representative = list.get(0);
 				if (representative instanceof ConfigDataMap) {
 					/* representative generation */
-					String itemName = key + "_item";
+					String itemName = configMap.getPath() == null ? key + "_item" 
+							: configMap.getPath() + "_" + key + "_item";
 					ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
 					generateConfig((ConfigDataMap) representative, itemName, false);
 

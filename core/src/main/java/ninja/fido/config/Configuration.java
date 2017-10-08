@@ -55,7 +55,7 @@ public class Configuration {
                         defaultConfigSource, defaultClientConfigSource, localClientConfigSource);
                 Map<String,Object> configMap = ((ConfigDataMap) config).getInternalObjects();
                 generatedConfig.fill((Map) configMap.get(keyInClient));
-                generatedConfig.fill((Map) configMap.get(keyInClient));
+                clientGeneratedConfig.fill((Map) configMap);
 
             } catch (FileNotFoundException ex) {
                 LOGGER.error(ex.getMessage());

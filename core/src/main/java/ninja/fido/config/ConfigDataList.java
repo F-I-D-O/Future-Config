@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +31,7 @@ import java.util.Set;
  */
 public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 
-	Set<Entry<Integer, Object>> entrySet;
+	List<Entry<Integer, Object>> entrySet;
 
 	public ConfigDataList(List configObject, ConfigDataObject parentConfigObject, Object keyInParent) {
 		super(configObject, parentConfigObject, keyInParent);
@@ -49,7 +50,7 @@ public class ConfigDataList extends ConfigDataObject<List, Integer, Object> {
 	}
 
 	private void createEntrySet() {
-		entrySet = new HashSet<>();
+		entrySet = new LinkedList<>();
 		for (int i = 0; i < configObject.size(); i++) {
 			entrySet.add(new ListEntry(i));
 		}

@@ -8,8 +8,8 @@ public class ArrayOfObjectsItem {
 
   public Integer end;
 
-  public ArrayOfObjectsItem(Map arrayOfObjectsItem) {
-    this.start = (Integer) arrayOfObjectsItem.get("start");
-    this.end = (Integer) arrayOfObjectsItem.get("end");
+  public ArrayOfObjectsItem(Map ArrayOfObjectsItem) {
+    this.start = (Integer) ArrayOfObjectsItem.get("start");
+    this.end = (Integer) ArrayOfObjectsItem.get("end");
   }
 }

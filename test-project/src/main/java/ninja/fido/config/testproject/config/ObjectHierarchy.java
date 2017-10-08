@@ -18,7 +18,7 @@ public class ObjectHierarchy {
     this.arrayOfObjects = new ArrayList();
     List arrayOfObjectsList = (List) objectHierarchy.get("array_of_objects");
     for (Object object: arrayOfObjectsList) {
-      arrayOfObjects.add(new ArrayOfObjectsItem((Map)object));
+      arrayOfObjects.add(new ObjectHierarchyArrayOfObjectsItem((Map)object));
     }
     this.innerObject = new InnerObject((Map) objectHierarchy.get("inner_object"));
   }
