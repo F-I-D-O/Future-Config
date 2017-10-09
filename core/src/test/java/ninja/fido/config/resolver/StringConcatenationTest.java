@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ninja.fido.config.parser;
+package ninja.fido.config.resolver;
 
 import java.io.IOException;
 import java.util.Map;
+import ninja.fido.config.parser.ParserTester;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @author David Fiedler
  */
-public class ParserStringConcatenationTest {
+public class StringConcatenationTest {
 
 	@Test
 	public void test() throws IOException {

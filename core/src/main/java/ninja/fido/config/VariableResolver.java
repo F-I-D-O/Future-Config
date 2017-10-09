@@ -51,24 +51,25 @@ public class VariableResolver {
 	}
 
 	public ConfigDataMap resolveVariables() {
-		addAllUnresolvedVariablesToQueue(rootMap);
+		addAllVariablesToQueue(rootMap);
 		processQueue();
 		return rootMap;
 	}
 
-	private void addAllUnresolvedVariablesToQueue(ConfigDataObject<?, ?, Object> configDataObject) {
+	private <K> void addAllVariablesToQueue(ConfigDataObject<?, K, Object> configDataObject) {
 
-		for (Entry<?, Object> entry : configDataObject) {
-			Object key = entry.getKey();
+		for (Entry<K, Object> entry : configDataObject) {
+			K key = entry.getKey();
 			Object value = entry.getValue();
 			if (value instanceof ConfigDataObject) {
-				addAllUnresolvedVariablesToQueue((ConfigDataObject) value);
+				addAllVariablesToQueue((ConfigDataObject) value);
 			}
 			else if (value instanceof String) {
 				String stringValue = (String) value;
 				Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
 				if (matcher.find()) {
 					referenceQueue.add(new QueueEntry(key, stringValue, configDataObject));
+                    configDataObject.put(key, null);
 				}
 			}
 		}
@@ -209,7 +210,7 @@ public class VariableResolver {
 
 		@Override
 		public String toString() {
-			return parent.getPath() + key + ": " + value;
+			return new ConfigProperty(parent, key, value).getPath() + ": " + value;
 		}
 	}
 }

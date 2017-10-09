@@ -38,6 +38,9 @@ public class ConfigProperty {
 	}
 
 	public String getPath() {
+        if(configDataObject.getPath().length() == 0){
+            return key.toString();
+        }
 		if(key instanceof String){
 			return String.format("%s.%s", configDataObject.getPath(), key);
 		}

@@ -49,8 +49,8 @@ public class Merger {
 		for (Map.Entry<String, Object> entry : overridingMap) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
-			if (value instanceof ConfigDataMap) {
-				overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap) value);
+			if (value instanceof ConfigDataMap && currentMap.get(key) != null) {
+                overrideLevel((ConfigDataMap) currentMap.get(key), (ConfigDataMap) value);
 			}
 			else {
 				currentMap.put(key, value);
