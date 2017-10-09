@@ -25,19 +25,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import static ninja.fido.config.Parser.REFERENCE_PATTERN;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author fido
  */
 public class ConfigDataLoader {
-//    public ConfigData loadConfigData(BufferedReader... configReaders) throws IOException{
-//        ArrayList<Map<String,Object>> configDataList = new ArrayList<>();
-//        for (BufferedReader configReader : configReaders) {
-//            configDataList.add(new ConfigParser().parseConfigFile(configReader));
-//        }
-//        return new ConfigData(new ConfigDataResolver(configDataList).resolve());
-//    }
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ConfigDataLoader.class);
 	
 	private final boolean useBuilderDirectives;
 	
@@ -61,6 +56,9 @@ public class ConfigDataLoader {
 	}
 
 	public ConfigDataMap loadConfigData(ConfigSource... configSourceDefinitions) {
+        
+        printSourceDefinitions(configSourceDefinitions);
+        
 		ArrayList<ConfigDataMap> configDataList = new ArrayList<>();
 		for (ConfigSource configSourceDefinition : configSourceDefinitions) {
 			Object source = configSourceDefinition.source;
@@ -83,7 +81,11 @@ public class ConfigDataLoader {
 
 			configDataList.add(configMapFromSource);
 		}
-		return new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
+        ConfigDataMap configRoot = new VariableResolver(new Merger(configDataList).merge()).resolveVariables();
+        
+        LOGGER.debug(configRoot.getStringForPrint());
+        
+		return configRoot;
 	}
 
 	private ConfigDataMap changeConfigContext(ConfigDataMap configMapFromSource, List<String> path) {
@@ -104,4 +106,13 @@ public class ConfigDataLoader {
 		}
 		return configMapFromSource;
 	}
+
+    private void printSourceDefinitions(ConfigSource[] configSources) {
+//        StringBuilder out = new StringBuilder(String.format("Config will be loaded from: %n"));
+//		for (ConfigSource configSource : configSources) {
+//            String sourcePath = ((BufferedReader) configSource.source).;
+//			out.append(String.format("%s%n", configSource.source));
+//		}
+//		LOGGER.debug(out.toString());
+    }
 }

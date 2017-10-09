@@ -65,14 +65,14 @@
 					</executions>
 				</plugin>
                 
-                <plugin>
+<!--                <plugin>
                     <artifactId>maven-invoker-plugin</artifactId>
                     <version>3.0.1</version>
                     <configuration>
                         <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
                         <settingsFile>src/it/settings.xml</settingsFile>
                         <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
-                        <postBuildHookScript>verify</postBuildHookScript> <!-- no extension required -->
+                        <postBuildHookScript>verify</postBuildHookScript>  no extension required 
                         <debug>true</debug>
                         <goals>
                             <goal>clean</goal>
@@ -90,7 +90,7 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
                 
                 <!--central repository deployment plugins-->
                 <plugin>

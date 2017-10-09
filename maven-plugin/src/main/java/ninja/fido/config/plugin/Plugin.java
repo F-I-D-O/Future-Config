@@ -41,8 +41,9 @@ public class Plugin extends AbstractMojo {
 		BufferedReader defaultConfigFile = getConfigFile();
 		String srcPath = (String) project.getCompileSourceRoots().get(0);
 		String configPackage = mainPackageName + "." + Configuration.DEFAULT_CONFIG_PACKAGE;
+        String mainConfigClassName = project.getArtifactId() + "_config";
 
-		new ConfigBuilder(defaultConfigFile, new File(srcPath), configPackage).buildConfig();
+		new ConfigBuilder(defaultConfigFile, new File(srcPath), configPackage, mainConfigClassName).buildConfig();
 	}
 
 	private BufferedReader getConfigFile(){ 

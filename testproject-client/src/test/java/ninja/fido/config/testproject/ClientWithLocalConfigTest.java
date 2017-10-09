@@ -3,7 +3,8 @@ package ninja.fido.config.testproject;
 import java.io.File;
 import ninja.fido.config.testproject.config.ArrayOfObjectsItem;
 import ninja.fido.config.testproject.config.ObjectHierarchyArrayOfObjectsItem;
-import ninja.fido.config.testprojectclient.config.Config;
+import ninja.fido.config.testproject.config.TestprojectConfig;
+import ninja.fido.config.testprojectclient.config.TestprojectclientConfig;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -15,8 +16,8 @@ public class ClientWithLocalConfigTest {
 	
 	@Test
 	public void test(){
-		Config config = new Config();
-		ninja.fido.config.testproject.config.Config libConfig = ClientIn.configure(config,
+		TestprojectclientConfig config = new TestprojectclientConfig();
+		TestprojectConfig libConfig = ClientIn.configure(config,
 				new File("./src/main/resources/ninja/fido/config/testprojectclient/config/local_config.cfg"));
 
 		assertEquals("string replaced twice", libConfig.string);

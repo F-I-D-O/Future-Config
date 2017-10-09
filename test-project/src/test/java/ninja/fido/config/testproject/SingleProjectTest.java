@@ -2,7 +2,7 @@ package ninja.fido.config.testproject;
 
 import ninja.fido.config.Configuration;
 import ninja.fido.config.testproject.config.ArrayOfObjectsItem;
-import ninja.fido.config.testproject.config.Config;
+import ninja.fido.config.testproject.config.TestprojectConfig;
 import ninja.fido.config.testproject.config.ObjectHierarchyArrayOfObjectsItem;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class SingleProjectTest {
 	
 	@Test
 	public void test(){
-		Config config = new Config();
+		TestprojectConfig config = new TestprojectConfig();
 		Configuration.load(config);
 
 		assertEquals("string", config.string);

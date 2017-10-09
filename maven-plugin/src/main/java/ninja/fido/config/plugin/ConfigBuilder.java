@@ -50,6 +50,8 @@ public class ConfigBuilder {
 	 * Name of the config package - for example projectrootpackage.someotherpackage.config
 	 */
 	private final String configPackageName;
+    
+    private final String rootClassName;
 
 	/**
 	 * Constructor.
@@ -59,10 +61,11 @@ public class ConfigBuilder {
 	 * ...src/main/java/ dir.
 	 * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
 	 */
-	public ConfigBuilder(BufferedReader configFile, File outputSrcDir, String configPackageName) {
+	public ConfigBuilder(BufferedReader configFile, File outputSrcDir, String configPackageName, String rootClassName) {
 		this.configFile = configFile;
 		this.configPackageName = configPackageName;
 		this.outputSrcDir = outputSrcDir;
+        this.rootClassName = rootClassName;
 	}
 
 	/**
@@ -72,7 +75,7 @@ public class ConfigBuilder {
 		deleteOldFiles();
 		try {
 			ConfigDataMap configMap = new ConfigDataLoader(true).loadConfigData(configFile);
-			generateConfig(configMap, "config", true);
+			generateConfig(configMap, rootClassName, true);
 		}
 		catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);

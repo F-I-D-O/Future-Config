@@ -31,7 +31,7 @@ public class BuilderTester {
 		configFilePath = "/ninja/fido/config/" + configFilePath;
 		ConfigBuilder configBuilder = new ConfigBuilder(
 				new BufferedReader(new InputStreamReader(BuilderTester.class.getResourceAsStream(configFilePath))),
-				new File("temp"), "ninja.fido.config.test");
+				new File("temp"), "ninja.fido.config.test", "maven_plugin_config");
 		configBuilder.buildConfig();
 	}
 }

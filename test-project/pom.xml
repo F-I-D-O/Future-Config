@@ -24,9 +24,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <path>${config.path}</path>
-                </configuration>
             </plugin>
         </plugins>
     </build>
