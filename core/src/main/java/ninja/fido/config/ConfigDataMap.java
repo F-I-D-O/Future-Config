@@ -39,9 +39,9 @@ public class ConfigDataMap extends ConfigDataObject<Map<String, Object>, String,
 		return configObject.containsKey(key);
 	}
 
+    @Override
 	public void put(String key, Object value) {
 		configObject.put(key, value);
-		Map<String, Object> test = configObject;
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class Parser {
 	private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
 	private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    |	)*");
 	private static final Pattern KEY_PATTERN = Pattern.compile("^" + NAME_PATERN_STRING + "(:)");
-	private static final Pattern SIMPLE_VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
+	private static final Pattern VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("^([0-9])");
 	private static final Pattern BOOLEAN_PATTERN = Pattern.compile("^(true|false)");
 	public static final Pattern REFERENCE_PATTERN 
@@ -39,6 +39,44 @@ public class Parser {
 	public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 //	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
 	private static final Pattern BUILDER_DIRECTIVE_PATTERN = Pattern.compile("^!([^\\s]*)");
+    
+    
+    
+    public static boolean containsVariable(Object expression) {
+		if (expression == null || !(expression instanceof String)) {
+			return false;
+		}
+		return ((String) expression).contains("$");
+	}
+
+	static Object parseSimpleValue(String value) {
+		Matcher matcher = NUMBER_PATTERN.matcher(value);
+		if (matcher.find()) {
+			if (value.contains(".")) {
+				return Double.parseDouble(value);
+			}
+			else {
+				return Integer.parseInt(value);
+			}
+		}
+		else {
+			matcher = BOOLEAN_PATTERN.matcher(value);
+			if (matcher.find()) {
+				return Boolean.parseBoolean(value);
+			}
+			else {
+				if (value.startsWith("'")) {
+					return value.replace("'", "");
+				}
+				if (value.startsWith("\"")) {
+					return value.replace("\"", "");
+				}
+				return value;
+			}
+		}
+	}
+    
+    
 	
 
 	private final ConfigDataMap config;
@@ -199,7 +237,7 @@ public class Parser {
 	}
 
 	private boolean parseValue(String line) {
-		Matcher matcher = SIMPLE_VALUE_PATTERN.matcher(line);
+		Matcher matcher = VALUE_PATTERN.matcher(line);
 		if (matcher.find()) {
 			currentValue = parseExpression(matcher.group(1));
 			return true;
@@ -209,6 +247,8 @@ public class Parser {
 	}
 
 	private Object parseExpression(String value) {
+        
+        /* do not parse before references are resolved */
 		if (containsVariable(value)) {
 			return value;
 		}
@@ -217,39 +257,7 @@ public class Parser {
 		}
 	}
 
-	public static boolean containsVariable(Object expression) {
-		if (expression == null || !(expression instanceof String)) {
-			return false;
-		}
-		return ((String) expression).contains("$");
-	}
-
-	static Object parseSimpleValue(String value) {
-		Matcher matcher = NUMBER_PATTERN.matcher(value);
-		if (matcher.find()) {
-			if (value.contains(".")) {
-				return Double.parseDouble(value);
-			}
-			else {
-				return Integer.parseInt(value);
-			}
-		}
-		else {
-			matcher = BOOLEAN_PATTERN.matcher(value);
-			if (matcher.find()) {
-				return Boolean.parseBoolean(value);
-			}
-			else {
-				if (value.startsWith("'")) {
-					return value.replace("'", "");
-				}
-				if (value.startsWith("\"")) {
-					return value.replace("\"", "");
-				}
-				return value;
-			}
-		}
-	}
+	
 
 	private void terminate() {
 		System.exit(1);
