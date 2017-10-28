@@ -1,4 +1,5 @@
 
+from typing import Callable
 from config_property import ConfigProperty
 
 
@@ -6,13 +7,16 @@ class ConfigDataObject:
 
 	def __init__(self, parent_config_object, key_in_parent, is_array=False):
 		self.is_array = is_array
-		self.config_object = []
+		self.config_object = {}
 		self.parent_config_object = parent_config_object
 		self.key_in_parent = key_in_parent
 		self.path = self.create_path()
 
 	def __iter__(self):
 		return iter(self.config_object)
+
+	def items(self):
+		return self.config_object.items()
 
 	def put(self, key, value):
 		self.config_object[key] = value
@@ -37,21 +41,22 @@ class ConfigDataObject:
 		path = ""
 		current_object = self
 		while current_object.key_in_parent:
-			key_in_parent = current_object.keyInParent;
+			key_in_parent = current_object.keyInParent
 			if isinstance(key_in_parent, int):
 				path = "[{}].{}".format(key_in_parent, path)
 			else:
 				if current_object == self:
 					path = key_in_parent
 				elif path.startsWith("["):
-					path = key_in_parent + path;
+					path = key_in_parent + path
 				else:
-					path = key_in_parent + "." + path;
-			current_object = current_object.parent_config_object;
-		return path;
+					path = key_in_parent + "." + path
+			current_object = current_object.parent_config_object
+		return path
 
-	def iterate_properties(self, filter_function, iter_function, out=None):
-		for key, value in self.iteritems():
+	def iterate_properties(
+			self, filter_function: Callable[any, bool], iter_function: Callable[ConfigProperty, any, None], out=None):
+		for key, value in self.items():
 			if isinstance(value, ConfigDataObject):
 				value.iterate_properties(filter_function, iter_function)
 			elif filter_function(value):

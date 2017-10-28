@@ -4,8 +4,11 @@ import sys
 
 from config_data_object import ConfigDataObject
 
+NAME_PATTERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)"
+
 NUMBER_PATTERN = re.compile("^([0-9])")
 BOOLEAN_PATTERN = re.compile("^(true|false)")
+
 
 
 def contains_variable(expression):
@@ -28,13 +31,10 @@ def parse_simple_value(value):
 
 
 class Parser:
-    NAME_PATTERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)"
-
     WHITESPACE_LINE_PATTERN = re.compile(r"^\s*$")
     INDENTION_PATTERN = re.compile("^(    |	)*")
     KEY_PATTERN = re.compile("^" + NAME_PATTERN_STRING + "(:)")
     VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
-
 
     REFERENCE_PATTERN = re.compile(r"\$({}(\.{})*)".format(NAME_PATTERN_STRING, NAME_PATTERN_STRING))
     OPERATOR_PATTERN = re.compile(r"[+\-]")

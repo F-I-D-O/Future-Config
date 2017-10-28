@@ -17,7 +17,6 @@ package ninja.fido.config;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.regex.Matcher;
@@ -34,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VariableResolver {
 
-	private static final Logger logger = LoggerFactory.getLogger(VariableResolver.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(VariableResolver.class);
 	
 	private static final String STRING_VALUE_PATERN_STRING = "'[^']*'";
 	
@@ -90,7 +89,7 @@ public class VariableResolver {
 
 			if (checkCounter == 0) {
 				if (lastQueueLength == referenceQueue.size()) {
-					logger.error("None of the remaining variables can be resolved. Remaining variables: {}",
+					LOGGER.error("None of the remaining variables can be resolved. Remaining variables: {}",
 							referenceQueue);
 					terminate();
 				}
