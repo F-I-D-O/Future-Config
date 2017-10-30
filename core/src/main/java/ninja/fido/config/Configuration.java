@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +51,9 @@ public class Configuration {
                         = new ConfigSource(new BufferedReader(new FileReader(clientLocalConfigFile)), null);
                 ConfigDataMap config = new ConfigDataLoader().loadConfigData(
                         defaultConfigSource, defaultClientConfigSource, localClientConfigSource);
-                Map<String,Object> configMap = ((ConfigDataMap) config).getInternalObjects();
+                Map<String,Object> configMap = config.getInternalObjects();
                 generatedConfig.fill((Map) configMap.get(keyInClient));
-                clientGeneratedConfig.fill((Map) configMap);
+                clientGeneratedConfig.fill(configMap);
 
             } catch (FileNotFoundException ex) {
                 LOGGER.error(ex.getMessage());
@@ -70,17 +68,17 @@ public class Configuration {
                     = new ConfigSource(getDefaultConfig(clientGeneratedConfig), null);
         ConfigDataMap config = new ConfigDataLoader().loadConfigData(defaultConfigSource, defaultClientConfigSource);
         
-        Map<String,Object> configMap = ((ConfigDataMap) config).getInternalObjects();
+        Map<String,Object> configMap = config.getInternalObjects();
         generatedConfig.fill((Map) configMap.get(keyInClient));
-        clientGeneratedConfig.fill((Map) configMap);
+        clientGeneratedConfig.fill(configMap);
     }
     
     public static <C extends GeneratedConfig<C>> void load(C generatedConfig){
         ConfigSource defaultConfigSource = new ConfigSource(getDefaultConfig(generatedConfig), null);
         ConfigDataMap config = new ConfigDataLoader().loadConfigData(defaultConfigSource);
         
-        Map<String,Object> configMap = ((ConfigDataMap) config).getInternalObjects();
-        generatedConfig.fill((Map) configMap);
+        Map<String,Object> configMap = config.getInternalObjects();
+        generatedConfig.fill(configMap);
     }
     
     private static <C extends GeneratedConfig<C>> BufferedReader getDefaultConfig(C generatedConfig){
@@ -246,5 +244,8 @@ public class Configuration {
 	private static boolean isRelativePath(String path) {
 		return path.startsWith(".");
 	}
+
+    private Configuration() {
+    }
 
 }

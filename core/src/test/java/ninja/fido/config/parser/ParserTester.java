@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import ninja.fido.config.ConfigDataMap;
 import ninja.fido.config.ConfigDataLoader;
+import ninja.fido.config.ConfigDataMap;
 
 /**
  *
@@ -35,4 +35,7 @@ public class ParserTester {
 		ConfigDataMap config = new ConfigDataLoader().loadConfigData(reader);
 		return config.getConfigObject();
 	}
+
+    private ParserTester() {
+    }
 }

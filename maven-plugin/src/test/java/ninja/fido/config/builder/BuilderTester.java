@@ -34,4 +34,7 @@ public class BuilderTester {
 				new File("temp"), "ninja.fido.config.test", "maven_plugin_config");
 		configBuilder.buildConfig();
 	}
+
+    private BuilderTester() {
+    }
 }

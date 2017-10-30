@@ -15,6 +15,7 @@
  */
 package ninja.fido.config;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -32,9 +33,7 @@ public class ConfigSource {
 		this.source = source;
 		if (path != null) {
 			List<String> pathList = new LinkedList<>();
-			for (String objectName : path) {
-				pathList.add(objectName);
-			}
+            pathList.addAll(Arrays.asList(path));
 			this.path = pathList;
 		}
 		else {

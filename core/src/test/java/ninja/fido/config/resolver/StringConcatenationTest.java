@@ -18,9 +18,8 @@ package ninja.fido.config.resolver;
 import java.io.IOException;
 import java.util.Map;
 import ninja.fido.config.parser.ParserTester;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 /**
  *

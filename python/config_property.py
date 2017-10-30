@@ -18,3 +18,6 @@ class ConfigProperty:
             return "{}[{}]".format(self.config_data_object.getPath, self.key)
         else:
             return "{}.{}".format(self.config_data_object.getPath, self.key)
+
+    def to_string(self):
+        return self.get_path() + ": " + self.value

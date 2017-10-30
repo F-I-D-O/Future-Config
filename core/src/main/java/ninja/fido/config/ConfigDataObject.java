@@ -137,7 +137,7 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 
 		private Entry<K, V> currentEntry;
 
-		public VariableIterator(ConfigDataObject configDataObject, boolean varsOnly) {
+		VariableIterator(ConfigDataObject configDataObject, boolean varsOnly) {
 			this.varsOnly = varsOnly;
 			contextStack = new Stack<>();
 			currentContext = new VariableIteratorContext(configDataObject, configDataObject.iterator());
@@ -205,7 +205,7 @@ public abstract class ConfigDataObject<T, K, V> implements Iterable<Entry<K, V>>
 
 			private final Iterator<Entry<K, V>> iterator;
 
-			public VariableIteratorContext(ConfigDataObject configDataObject, Iterator<Entry<K, V>> iterator) {
+			VariableIteratorContext(ConfigDataObject configDataObject, Iterator<Entry<K, V>> iterator) {
 				this.configDataObject = configDataObject;
 				this.iterator = iterator;
 			}

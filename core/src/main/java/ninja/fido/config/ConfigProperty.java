@@ -48,4 +48,9 @@ public class ConfigProperty {
 			return String.format("%s[%s]", configDataObject.getPath(), key);
 		}
 	}
+    
+    @Override
+    public String toString() {
+        return getPath() + ": " + value;
+    }
 }

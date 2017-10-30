@@ -23,10 +23,12 @@ import org.slf4j.LoggerFactory;
  * @author fido
  */
 public class Parser {
-
-	private static final Logger logger = LoggerFactory.getLogger(Parser.class);
+    public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 	
 	static final String NAME_PATERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)";
+    public static final Pattern REFERENCE_PATTERN
+            = Pattern.compile(String.format("\\$(%s(\\.%s)*)", NAME_PATERN_STRING, NAME_PATERN_STRING));
+    private static final Logger logger = LoggerFactory.getLogger(Parser.class);
 
 	private static final Pattern WHITESPACE_LINE_PATTERN = Pattern.compile("^\\s*$");
 	private static final Pattern INDENTION_PATTERN = Pattern.compile("^(    |	)*");
@@ -34,9 +36,6 @@ public class Parser {
 	private static final Pattern VALUE_PATTERN = Pattern.compile("^\\s*([^\\s]+.*)");
 	private static final Pattern NUMBER_PATTERN = Pattern.compile("^([0-9])");
 	private static final Pattern BOOLEAN_PATTERN = Pattern.compile("^(true|false)");
-	public static final Pattern REFERENCE_PATTERN 
-			= Pattern.compile(String.format("\\$(%s(\\.%s)*)", NAME_PATERN_STRING, NAME_PATERN_STRING));
-	public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 //	private static final Pattern OPERATOR_EXPRESSION_PATTERN = Pattern.compile("\\s*('[^']+'+)\\s*([+])?");
 	private static final Pattern BUILDER_DIRECTIVE_PATTERN = Pattern.compile("^!([^\\s]*)");
     

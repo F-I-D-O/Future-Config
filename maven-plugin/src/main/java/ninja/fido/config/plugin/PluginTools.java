@@ -31,4 +31,7 @@ public class PluginTools {
 		String resourcePath = project.getFile().getPath().replace("pom.xml", "") + "src/main/resources/";
 		return resourcePath + JavaLanguageUtil.packageToPath(getMainPackageName(project));
 	}
+
+    private PluginTools() {
+    }
 }

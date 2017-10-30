@@ -1,5 +1,7 @@
 import re
 import parser
+import logging
+import sys
 
 from collections import deque
 from config_data_object import ConfigDataObject
@@ -12,6 +14,25 @@ class Resolver:
 	OPERATOR_EXPRESSION_PATTERN \
 		= re.compile(r"\s*({}|{})\s*([+])?".format(parser.NAME_PATTERN_STRING, STRING_VALUE_PATTERN_STRING))
 
+	@staticmethod
+	def _resolve_string_expression(operands_parsed: list, operators: list) -> str:
+		result_sting = ""
+		for operand in operands_parsed:
+			result_sting += operand
+		return result_sting
+
+	@staticmethod
+	def _parse_references(value: str) -> list:
+		references = []
+		matches = parser.REFERENCE_PATTERN.findall(value)
+		for match in matches:
+			references.append(match[0])
+		return references
+
+	@staticmethod
+	def _terminate():
+		sys.exit(1)
+
 	def __init__(self, config_data_object: ConfigDataObject):
 		self.root_object = config_data_object
 		self.reference_queue = deque()
@@ -23,158 +44,85 @@ class Resolver:
 
 	def _add_all_variables_to_queue(self, config_data_object: ConfigDataObject):
 		def add_to_queue (config_property: ConfigProperty, reference_queue: deque):
-			reference_queue.append()new
-			QueueEntry(key, stringValue, configDataObject));
-			configDataObject.put(key, null);
+			reference_queue.append(config_property)
+			config_property.config_data_object.put(config_property.key, None)
 
-		for key, value in config_data_object.items():
-			if (value instanceof ConfigDataObject) {
-				addAllVariablesToQueue((ConfigDataObject) value);
-			}
-			else if (value instanceof String) {
-				String stringValue = (String) value;
-				Matcher matcher = REFERENCE_PATTERN.matcher(stringValue);
-				if (matcher.find()) {
+		config_data_object.iterate_properties(
+			lambda x: parser.contains_variable(x), add_to_queue(), self.reference_queue)
 
-				}
-			}
+	def _process_queue(self):
+		last_queue_length = len(self.reference_queue)
+		check_counter = last_queue_length
+		while self.reference_queue:
+			config_property = self.reference_queue.popleft()
+			variable_value = self._parse_expression_with_references(config_property.value)
+			if variable_value:
+				config_property.parent.put(config_property.key, variable_value)
+			else:
+				self.reference_queue.append(config_property)
 
-#
-# 	private void processQueue() {
-# 		int lastQueueLength = referenceQueue.size();
-# 		int checkCounter = lastQueueLength;
-# 		while (!referenceQueue.isEmpty()) {
-# 			QueueEntry entry = referenceQueue.poll();
-# 			Object variableValue = parseExpressionWithReferences(entry.value);
-# 			if (variableValue == null) {
-# 				referenceQueue.add(entry);
-# 			}
-# 			else {
-# 				entry.parent.put(entry.key, variableValue);
-# 			}
-#
-# 			if (checkCounter == 0) {
-# 				if (lastQueueLength == referenceQueue.size()) {
-# 					LOGGER.error("None of the remaining variables can be resolved. Remaining variables: {}",
-# 							referenceQueue);
-# 					terminate();
-# 				}
-# 				lastQueueLength = referenceQueue.size();
-# 				checkCounter = lastQueueLength;
-# 			}
-# 			checkCounter--;
-# 		}
-# 	}
-#
-# 	private Object parseExpressionWithReferences(String value) {
-# 		List<String> references = parseReferences(value);
-# 		for (String reference : references) {
-# 			Object variable = getReferencedValue(reference);
-# 			if (variable == null) {
-# //                referenceQueue.add(new QueueEntry(currentKey, value, currentObject));
-# 				return null;
-# 			}
-#
-# 			// now String variables only
-# 			value = value.replaceFirst("\\$" + reference, "'" + variable.toString() + "'");
-# 		}
-# 		Matcher matcher = OPERATOR_PATTERN.matcher(value);
-# 		if (matcher.find()) {
-# 			return parseExpressionWithOperators(value);
-# 		}
-# 		else {
-# 			return Parser.parseSimpleValue(value);
-# 		}
-# 	}
-#
-# 	private static Object parseExpressionWithOperators(String value) {
-# 		Matcher matcher = OPERATOR_EXPRESSION_PATTERN.matcher(value);
-# 		LinkedList<String> operands = new LinkedList<>();
-# 		LinkedList<String> operators = new LinkedList<>();
-# 		while (matcher.find()) {
-# 			operands.add(matcher.group(1));
-# 			if (matcher.groupCount() == 2) {
-# 				operators.add(matcher.group(2));
-# 			}
-# 		}
-#
-# 		LinkedList<Object> operandsParsed = new LinkedList<>();
-# 		for (String operand : operands) {
-# 			operandsParsed.add(parseSimpleValue(operand));
-# 		}
-#
-# 		Object resolvedExpression = null;
-#
-# 		if (operandsParsed.get(0) instanceof Number) {
-#
-# 		}
-# 		else {
-# 			resolvedExpression = resolveStringExpression(operandsParsed, operators);
-# 		}
-# 		return resolvedExpression;
-# 	}
-#
-# 	private static Object resolveStringExpression(LinkedList<Object> operandsParsed, LinkedList<String> operators) {
-# 		String resultSting = "";
-# 		for (Object operand : operandsParsed) {
-# 			resultSting += operand.toString();
-# 		}
-# 		return resultSting;
-# 	}
-#
-# 	private List<String> parseReferences(String value) {
-# 		LinkedList<String> references = new LinkedList<>();
-# 		Matcher matcher = REFERENCE_PATTERN.matcher(value);
-# 		while (matcher.find()) {
-# 			references.add(matcher.group(1));
-# 		}
-# 		return references;
-# 	}
-#
-# 	private Object getReferencedValue(String reference) {
-# 		ConfigDataObject currentObject = rootMap;
-# 		String[] parts = reference.split("\\.");
-# 		if (parts.length == 0) {
-# 			parts = new String[1];
-# 			parts[0] = reference;
-# 		}
-# 		for (int i = 0; i < parts.length; i++) {
-# 			String part = parts[i];
-# 			if (currentObject.containsKey(part) && currentObject.get(part) != null) {
-# 				if (i < parts.length - 1) {
-# 					currentObject = (ConfigDataObject) currentObject.get(part);
-# 				}
-# 				else {
-# 					return currentObject.get(part);
-# 				}
-# 			}
-# 			else {
-# 				return null;
-# 			}
-# 		}
-# 		return null;
-# 	}
-#
-# 	private void terminate() {
-# 		System.exit(1);
-# 	}
-#
-		class QueueEntry:
-			def __init__(self, key: any, value: str,  parent):
+			# check for unresolvable references
+			if check_counter == 0:
+				if last_queue_length == len(self.reference_queue):
+					logging.critical("None of the remaining variables can be resolved. Remaining variables: %s",
+							self.reference_queue)
+					self._terminate()
 
-			private final Object key;
+				last_queue_length = len(self.reference_queue)
+				check_counter = last_queue_length
 
-			private final String value;
+				check_counter -= check_counter
 
-			private final ConfigDataObject parent;
+	def _parse_expression_with_references(self, value: str):
+		references = self._parse_references(value)
+		for reference in references:
+			variable = self._get_referenced_value(reference)
+			if not variable:
+				return None
 
-			public QueueEntry(Object key, String value, ConfigDataObject parent) {
-				this.key = key;
-				this.value = value;
-				this.parent = parent;
-			}
+			# now String variables only
+			value = value.replace("$" + reference, "'" + variable + "'")
 
-			@Override
-			public String toString() {
-				return new ConfigProperty(parent, key, value).getPath() + ": " + value;
-			}
+		if parser.OPERATOR_PATTERN.match(value):
+			return self._parse_expression_with_operators(value)
+		else:
+			return parser.parse_simple_value(value)
+
+	def _parse_expression_with_operators(self, value: str):
+		operands = []
+		operators = []
+		match_list = Resolver.OPERATOR_EXPRESSION_PATTERN.findall(value)
+		for match in match_list:
+			operands.append(match[0])
+			if len(match) > 1:
+				operators.append(match[1])
+
+		operands_parsed = []
+		for operand in operands:
+			operands_parsed.append(parser.parse_simple_value(operand))
+
+		if isinstance(operands_parsed[0], str):
+			return self._resolve_string_expression(operands_parsed, operators)
+
+	def _get_referenced_value(self, reference: str):
+		current_object = self.root_object
+		parts = reference.split(".")
+
+		for i, part in enumerate(parts):
+			if current_object.get(part):
+				if i < len(parts) - 1:
+					current_object = current_object.get(part);
+				else:
+					return current_object.get(part)
+			else:
+				return None
+
+
+		# class QueueEntry:
+		# 	def __init__(self, key: any, value: str, parent: ConfigDataObject):
+		# 		self.key = key
+		# 		self.value = value
+		# 		self.parent = parent
+		#
+		# 	def to_string():
+		# 		return new ConfigProperty(parent, key, value).getPath() + ": " + value;

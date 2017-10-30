@@ -93,7 +93,7 @@ public class ConfigDataLoader {
 
 			/* add prefix to all variables path */
 			for (ConfigProperty configProperty : configMapFromSource.getVariableIterable()) {
-				Matcher matcher = REFERENCE_PATTERN.matcher((String) configProperty.value);
+				Matcher matcher = REFERENCE_PATTERN.matcher((CharSequence) configProperty.value);
 				matcher.find();
 				String result = matcher.replaceAll("\\$" + objectName + ".$1");
 				configProperty.set(result);

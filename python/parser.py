@@ -8,13 +8,16 @@ NAME_PATTERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)"
 
 NUMBER_PATTERN = re.compile("^([0-9])")
 BOOLEAN_PATTERN = re.compile("^(true|false)")
+OPERATOR_PATTERN = re.compile(r"[+\-]")
+REFERENCE_PATTERN = re.compile(r"\$({}(\.{})*)".format(NAME_PATTERN_STRING, NAME_PATTERN_STRING))
 
 
 
 def contains_variable(expression):
-    if not isinstance(expression, basestring):
+    if not isinstance(expression, str):
         return False
     return "$" in expression
+
 
 def parse_simple_value(value):
     if NUMBER_PATTERN.match(value):
@@ -35,9 +38,6 @@ class Parser:
     INDENTION_PATTERN = re.compile("^(    |	)*")
     KEY_PATTERN = re.compile("^" + NAME_PATTERN_STRING + "(:)")
     VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
-
-    REFERENCE_PATTERN = re.compile(r"\$({}(\.{})*)".format(NAME_PATTERN_STRING, NAME_PATTERN_STRING))
-    OPERATOR_PATTERN = re.compile(r"[+\-]")
     BUILDER_DIRECTIVE_PATTERN = re.compile(r"^!([^\s]*)")
 
     @staticmethod

@@ -63,4 +63,7 @@ public class JavaLanguageUtil {
 	public static String packageToPath(String packageStructure) {
 		return packageStructure.replace('.', DIR_SEPARATOR);
 	}
+
+    private JavaLanguageUtil() {
+    }
 }
