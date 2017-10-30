@@ -19,14 +19,25 @@ import ninja.fido.config.JavaLanguageUtil;
 import org.apache.maven.project.MavenProject;
 
 /**
- *
+ * Utility class for maven plugins development
  * @author David Fiedler
  */
 public class PluginTools {
+    
+    /**
+     * Returns the name of the main package if it is in accordance to group and artefact name.
+     * @param project Maven project instance.
+     * @return Returns the name of the main package if it is in accordance to group and artefact name.
+     */
 	public static String getMainPackageName(MavenProject project) {
 		return project.getArtifact().getGroupId() + "." + project.getArtifact().getArtifactId();
 	}
 	
+    /**
+     * Returns the path to the root resource directory.
+     * @param project Maven project instance.
+     * @return Returns the path to the root resource directory.
+     */
 	public static String getPathToProjectResourceDir(MavenProject project){
 		String resourcePath = project.getFile().getPath().replace("pom.xml", "") + "src/main/resources/";
 		return resourcePath + JavaLanguageUtil.packageToPath(getMainPackageName(project));

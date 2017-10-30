@@ -59,6 +59,7 @@ public class ConfigBuilder {
 	 * @param outputSrcDir Src dir of the project where all config files will be created. Most time the
 	 * ...src/main/java/ dir.
 	 * @param configPackageName Name of the config package - for example projectrootpackage.someotherpackage.config
+     * @param rootClassName The name of the main config class.
 	 */
 	public ConfigBuilder(BufferedReader configFile, File outputSrcDir, String configPackageName, String rootClassName) {
 		this.configFile = configFile;
