@@ -1,15 +1,16 @@
 
 class Builder:
 
-	/**
-	 * Starts the building process.
-	 */
-	public void buildConfig() {
-		deleteOldFiles();
-		try {
-			ConfigDataMap configMap = new ConfigDataLoader(true).loadConfigData(configFile);
-			generateConfig(configMap, rootClassName, true);
-		}
+	def build_config(self):
+		"""
+		Starts the building process.
+		"""
+
+		self._delete_old_files()
+
+		configMap = new ConfigDataLoader(true).loadConfigData(configFile);
+		generateConfig(configMap, rootClassName, true);
+
 		catch (IOException ex) {
 			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
 		}
