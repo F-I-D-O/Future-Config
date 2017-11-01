@@ -1,0 +1,30 @@
+<%namespace name="builder" file="builder.py"/>
+
+% for key in object_properties:
+    from ${key} import ${builder.get_class_name(key)}
+% endfor
+
+def ${class_name}:
+
+    def __init__(self, properties):
+        % for key in properties:
+            self.${key} = properties.get("${key}")
+        % endfor
+
+        % for key in object_properties:
+            self.${key} = ${${builder.get_class_name(key)}(properties.get(${property.key}))
+        % endfor
+
+        % for key, value in array_properties.items():
+            % if isinstance(value[0], ConfigDataObject):
+            <%
+                item_class_name = builder.get_class_name(value[0])
+            %>
+                self.${key} = []
+                for item in properties.get("${property.key}")
+                    self.${property.key}.append(${item_class_name}(item))
+            %else
+                self.${key} = [', '.join(properties.get("${property.key}"))]
+            %endif
+        % endfor
+

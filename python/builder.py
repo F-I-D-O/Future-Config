@@ -1,5 +1,30 @@
+import os
+import loader
+import java
+
+from mako.template import Template
+from config_data_object import ConfigDataObject
+
+
+def get_class_name(snake_case_property_name):
+	components = snake_case_property_name.split('_')
+	return "".join(x.title() for x in components)
+
 
 class Builder:
+
+	# class ObjectProperty:
+	#
+	# 	def __init__(self, key):
+	# 		self.key = key
+	# 		self.class_name = Builder.get_className(key)
+	# 		self.module_name = Builder._get_module_name(key)
+
+	def __init__(self, config_file, root_class_name, output_dir, config_package_name):
+		self.config_file = config_file
+		self.root_class_name = root_class_name
+		self.output_dir = output_dir
+		self.config_package_name = config_package_name
 
 	def build_config(self):
 		"""
@@ -8,117 +33,41 @@ class Builder:
 
 		self._delete_old_files()
 
-		configMap = new ConfigDataLoader(true).loadConfigData(configFile);
-		generateConfig(configMap, rootClassName, true);
+		config_map = loader.load_config_data(self.config_file)
+		self._generate_config(config_map, self.root_class_name)
 
-		catch (IOException ex) {
-			Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
+	def _delete_old_files(self):
+		for the_file in os.listdir(self.output_dir):
+			file_path = os.path.join(self.output_dir, the_file)
+			try:
+				if os.path.isfile(file_path):
+					os.unlink(file_path)
+				# elif os.path.isdir(file_path): shutil.rmtree(file_path)
+			except Exception as e:
+				print(e)
 
-	# private void deleteOldFiles(){
-	# 	String pathToOutputDir = outputSrcDir.getAbsolutePath() + JavaLanguageUtil.DIR_SEPARATOR
-	# 			+ JavaLanguageUtil.packageToPath(configPackageName);
-	# 	File outputDir = new File(pathToOutputDir);
-	# 	if(outputDir.exists()){
-	# 		try {
-	# 			FileUtils.cleanDirectory(new File(pathToOutputDir));
-	# 		}
-	# 		catch (IOException ex) {
-	# 			LOGGER.error(ex.getMessage());
-	# 		}
-	# 	}
-	# }
-	#
-	# private void generateConfig(ConfigDataMap configMap, String mapName, boolean isRoot) {
-	#
-	# 	Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
-	# 	TypeSpec.Builder objectBuilder
-	# 			= TypeSpec.classBuilder(getClassName(mapName)).addModifiers(Modifier.PUBLIC);
-	#
-	# 	String mapParamName = JavaLanguageUtil.getPropertyName(mapName);
-	#
-	# 	Builder parametrBuilder = constructorBuilder;
-	#
-	# 	if (isRoot) {
-	# 		// in root, properties are filled in fill method instead of the constructor
-	# 		parametrBuilder = MethodSpec.methodBuilder("fill").addModifiers(Modifier.PUBLIC)
-	# 				.returns(ClassName.get(configPackageName, getClassName(mapName)));
-	#
-	# 		// root class implements BuildedConfig interface
-	# 		objectBuilder.addSuperinterface(GeneratedConfig.class);
-	# 	}
-	#
-	# 	parametrBuilder.addParameter(Map.class, mapParamName);
-	#
-	# 	for (Entry<String, Object> entry : configMap) {
-	# 		String key = entry.getKey();
-	# 		Object value = entry.getValue();
-	#
-	# 		String propertyName = JavaLanguageUtil.getPropertyName(key);
-	#
-	# 		FieldSpec.Builder fieldBuilder;
-	#
-	# 		if (value instanceof ConfigDataMap) {
-	# 			ClassName newObjectType = ClassName.get(configPackageName, getClassName(key));
-	# 			generateConfig((ConfigDataMap) value, key, false);
-	# 			fieldBuilder = FieldSpec.builder(newObjectType, propertyName);
-	# 			parametrBuilder.addStatement("this.$N = new $T(($T) $N.get(\"$N\"))", propertyName, newObjectType,
-	# 					Map.class, mapParamName, key);
-	# 		}
-	# 		else if (value instanceof ConfigDataList) {
-	# 			ConfigDataList list = (ConfigDataList) value;
-	# 			fieldBuilder = FieldSpec.builder(List.class, propertyName);
-	#
-	# 			Object representative = list.get(0);
-	# 			if (representative instanceof ConfigDataMap) {
-	# 				/* representative generation */
-	# 				String itemName = configMap.getPath() == null ? key + "_item"
-	# 						: configMap.getPath() + "_" + key + "_item";
-	# 				ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
-	# 				generateConfig((ConfigDataMap) representative, itemName, false);
-	#
-	# 				parametrBuilder.addStatement("this.$N = new $T()", propertyName, ArrayList.class);
-	#
-	# 				String inputListName = propertyName + "List";
-	# 				parametrBuilder.addStatement("$T $N = ($T) $N.get(\"$N\")", List.class, inputListName, List.class,
-	# 						mapParamName, key);
-	# 				String representativeObjectName = "object";
-	# 				parametrBuilder.beginControlFlow("for ($T $N: $N)", Object.class, representativeObjectName,
-	# 						inputListName);
-	# 				parametrBuilder.addStatement("$N.add(new $T(($T)$N))", propertyName, newObjectType, Map.class,
-	# 						representativeObjectName);
-	# 				parametrBuilder.endControlFlow();
-	# 			}
-	# 			else {
-	# 				parametrBuilder.addStatement("$N = ($T) $N.get(\"$N\")", propertyName, List.class,
-	# 						mapParamName, key);
-	# 			}
-	# 		}
-	# 		else {
-	# 			fieldBuilder = FieldSpec.builder(value.getClass(), propertyName);
-	# 			parametrBuilder.addStatement("this.$N = ($T) $N.get(\"$N\")", propertyName, value.getClass(),
-	# 					mapParamName, key);
-	# 		}
-	# 		objectBuilder.addField(fieldBuilder.addModifiers(Modifier.PUBLIC).build());
-	# 	}
-	#
-	# 	if (isRoot) {
-	# 		parametrBuilder.addStatement("return this");
-	# 		objectBuilder.addMethod(parametrBuilder.build());
-	# 	}
-	#
-	# 	TypeSpec object = objectBuilder.addMethod(constructorBuilder.build()).build();
-	#
-	# 	JavaFile javaFile = JavaFile.builder(configPackageName, object).build();
-	# 	try {
-	# 		javaFile.writeTo(outputSrcDir);
-	# 	}
-	# 	catch (IOException ex) {
-	# 		Logger.getLogger(ConfigBuilder.class.getName()).log(Level.SEVERE, null, ex);
-	# 	}
-	# }
-	#
-	# private String getClassName(String name) {
-	# 	return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
-	# }
+	def _generate_config(self, config_map: ConfigDataObject, map_name: str):
+		properties = {}
+		object_properties = {}
+		array_properties = {}
+		for key, value in config_map:
+			if isinstance(value, ConfigDataObject):
+				if value.is_array:
+					if isinstance(value[0], ConfigDataObject):
+						item_name \
+							= config_map.path + "_" + key + "_item" if config_map.path else key + "_item"
+						self._generate_config(value[0], item_name)
+					array_properties[key] = value
+				else:
+					self._generate_config(value, key)
+					object_properties[key] = value
+			else:
+				properties[key] = value
+
+		class_template = Template(filename='config_teplate.txt')
+
+		output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
+		output_file.write(class_template.render(
+			properties=properties, object_properties=object_properties, array_properties=array_properties))
+
+
