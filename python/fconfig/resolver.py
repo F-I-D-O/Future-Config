@@ -1,11 +1,12 @@
-import re
-import parser
 import logging
+import fconfig.parser as parser
+import re
 import sys
-
 from collections import deque
-from config_data_object import ConfigDataObject
-from config_property import ConfigProperty
+
+from fconfig.config_data_object import ConfigDataObject
+
+from fconfig.config_property import ConfigProperty
 
 
 class Resolver:
@@ -48,7 +49,7 @@ class Resolver:
 			config_property.config_data_object.put(config_property.key, None)
 
 		config_data_object.iterate_properties(
-			lambda x: parser.contains_variable(x), add_to_queue(), self.reference_queue)
+			lambda x: parser.contains_variable(x), add_to_queue, self.reference_queue)
 
 	def _process_queue(self):
 		last_queue_length = len(self.reference_queue)

@@ -1,13 +1,28 @@
 
 from typing import Callable
-from config_property import ConfigProperty
+
+from fconfig.config_property import ConfigProperty
 
 
 class ConfigDataObject:
 
-	def __init__(self, parent_config_object, key_in_parent, is_array=False):
+	# def __init__(self):
+	# 	self.is_array = False
+	# 	self.config_object = {}
+	# 	self.parent_config_object = None
+	# 	self.key_in_parent = None
+	# 	self.path = self.create_path()
+	#
+	# def __init__(self, parent_config_object, key_in_parent: str, is_array):
+	# 	self.is_array = is_array
+	# 	self.config_object = {}
+	# 	self.parent_config_object = parent_config_object
+	# 	self.key_in_parent = key_in_parent
+	# 	self.path = self.create_path()
+
+	def __init__(self, is_array: bool, parent_config_object=None, key_in_parent: str=None, config_object: dict=None):
 		self.is_array = is_array
-		self.config_object = {}
+		self.config_object = config_object if config_object else {}
 		self.parent_config_object = parent_config_object
 		self.key_in_parent = key_in_parent
 		self.path = self.create_path()
@@ -20,6 +35,9 @@ class ConfigDataObject:
 
 	def put(self, key, value):
 		self.config_object[key] = value
+
+	def get(self, key: str):
+		return self.config_object[key]
 
 	def get_size(self):
 		return len(self.config_object)
@@ -41,7 +59,7 @@ class ConfigDataObject:
 		path = ""
 		current_object = self
 		while current_object.key_in_parent:
-			key_in_parent = current_object.keyInParent
+			key_in_parent = current_object.key_in_parent
 			if isinstance(key_in_parent, int):
 				path = "[{}].{}".format(key_in_parent, path)
 			else:
@@ -54,14 +72,24 @@ class ConfigDataObject:
 			current_object = current_object.parent_config_object
 		return path
 
-	def iterate_properties(
-			self, filter_function: Callable[any, bool], iter_function: Callable[ConfigProperty, any, None], out=None):
+	def iterate_properties(self, filter_function: Callable[[any], bool],
+					iter_function: Callable[[ConfigProperty, any], None], out=None):
 		for key, value in self.items():
 			if isinstance(value, ConfigDataObject):
 				value.iterate_properties(filter_function, iter_function)
 			elif filter_function(value):
 				config_property = ConfigProperty(self, key, value)
 				iter_function(config_property, out)
+
+	def get_internal_objects(self):
+		out = {}
+		for key, value in self.items():
+			if isinstance(value, self.__class__):
+				out[key] = value.get_internal_objects()
+			else:
+				out[key] = value
+
+		return out
 
 	# class Entry:
 	#     def __init__(self, key, value):

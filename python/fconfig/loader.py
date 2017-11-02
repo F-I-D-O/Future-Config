@@ -1,34 +1,29 @@
-import merger
-import parser
-
+import pkgutil
+import fconfig.parser as parser
+from fconfig.parser import Parser
 from typing import Tuple
-from parser import Parser
-from resolver import Resolver
-from config_data_object import ConfigDataObject
-from config_property import ConfigProperty
 
+import fconfig.merger as merger
+from fconfig.config_data_object import ConfigDataObject
+from fconfig.config_property import ConfigProperty
 
-# def load_config_data(Object... configSources) throws IOException {
-# 		ConfigSource[] configSourceDefinitions = new ConfigSource[configSources.length];
-# 		for (int i = 0; i < configSources.length; i++) {
-# 			configSourceDefinitions[i] = new ConfigSource(configSources[i], (String[]) null);
-# 		}
-# 		return loadConfigData(configSourceDefinitions);
-# 	}
+from fconfig.resolver import Resolver
+
+DEFAULT_CONFIG_FILE_NAME = "config.cfg"
+
 
 class ConfigSource:
 
-	def __init__(self, filepath: str, *path_in_config: str):
-		self.filepath = filepath
+	def __init__(self, source: str, *path_in_config: str):
+		self.source = source
 		self.path_in_config = path_in_config
-
 
 def load_config_data(*config_source_definitions: ConfigSource, use_builder_directives=False):
 	config_data_list = []
 
 	for config_source_definition in config_source_definitions:
-		source = config_source_definition.filepath
-		config_map_from_source = Parser(use_builder_directives).parse_config_file(source)
+		source = config_source_definition.source
+		config_map_from_source = Parser(use_builder_directives).parse_config_source(_get_config_content(source))
 
 		if config_source_definition.path_in_config:
 			config_map_from_source \
@@ -55,11 +50,25 @@ def _change_config_context(config_map_from_source: ConfigDataObject, path: Tuple
 		config_map_from_source.iterate_properties(lambda x: parser.contains_variable(x), add_prefix)
 
 		# move object to new parent
-		parent_map = ConfigDataObject()
-		parent_map.put(object_name, ConfigDataObject(config_map_from_source.config_object, parent_map, object_name))
+		parent_map = ConfigDataObject(False)
+		parent_map.put(object_name, ConfigDataObject(config_map_from_source.is_array, parent_map, object_name,
+													 config_map_from_source.config_object))
 		config_map_from_source = parent_map
 
 	return config_map_from_source
 
+
+def _get_config_content(source: str):
+
+	# source defined as path
+	if source.endswith(".cfg"):
+		with open(source) as f:
+			content = f.readlines()
+
+	# source defined as resource
+	else:
+		content = pkgutil.get_data(source, DEFAULT_CONFIG_FILE_NAME).decode("utf-8").split("\n")
+
+	return content
 
 

@@ -1,10 +1,12 @@
 import os
-import loader
-import java
+import pkgutil
 
+from fconfig.config_data_object import ConfigDataObject
+from mako.lookup import TemplateLookup
 from mako.template import Template
-from config_data_object import ConfigDataObject
-from loader import ConfigSource
+
+from fconfig import loader
+from fconfig.loader import ConfigSource
 
 
 def get_class_name(snake_case_property_name):
@@ -37,20 +39,21 @@ class Builder:
 		self._generate_config(config_map, self.root_class_name)
 
 	def _delete_old_files(self):
-		for the_file in os.listdir(self.output_dir):
-			file_path = os.path.join(self.output_dir, the_file)
-			try:
-				if os.path.isfile(file_path):
-					os.unlink(file_path)
-				# elif os.path_in_config.isdir(file_path): shutil.rmtree(file_path)
-			except Exception as e:
-				print(e)
+		if os.path.isdir(self.output_dir):
+			for the_file in os.listdir(self.output_dir):
+				file_path = os.path.join(self.output_dir, the_file)
+				try:
+					if os.path.isfile(file_path):
+						os.unlink(file_path)
+					# elif os.path_in_config.isdir(file_path): shutil.rmtree(file_path)
+				except Exception as e:
+					print(e)
 
 	def _generate_config(self, config_map: ConfigDataObject, map_name: str):
 		properties = {}
 		object_properties = {}
 		array_properties = {}
-		for key, value in config_map:
+		for key, value in config_map.items():
 			if isinstance(value, ConfigDataObject):
 				if value.is_array:
 					if isinstance(value[0], ConfigDataObject):
@@ -64,10 +67,15 @@ class Builder:
 			else:
 				properties[key] = value
 
-		class_template = Template(filename='config_teplate.txt')
+		teplate_data = pkgutil.get_data("fconfig.configuration", 'config_template.txt')
+		lookup = TemplateLookup(module_directory="/tmp")
+		class_template = Template(teplate_data, lookup=lookup)
+
+		if not os.path.exists(self.output_dir):
+			os.makedirs(self.output_dir)
 
 		output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
-		output_file.write(class_template.render(
-			properties=properties, object_properties=object_properties, array_properties=array_properties))
+		output_file.write(class_template.render(properties=properties, object_properties=object_properties,
+												array_properties=array_properties, class_name=get_class_name(map_name)))
 
 

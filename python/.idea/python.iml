@@ -5,4 +5,15 @@
     <orderEntry type="jdk" jdkName="Python 3.5.3 (/usr/bin/python3.5)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
+  <component name="TemplatesService">
+    <option name="templateFileTypes">
+      <list>
+        <option value="XML" />
+        <option value="XHTML" />
+        <option value="HTML" />
+        <option value="PLAIN_TEXT" />
+      </list>
+    </option>
+    <option name="TEMPLATE_CONFIGURATION" value="Mako" />
+  </component>
 </module>

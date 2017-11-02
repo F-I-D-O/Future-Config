@@ -1,8 +1,9 @@
-import re
 import logging
+import re
 import sys
 
-from config_data_object import ConfigDataObject
+from fconfig.config_data_object import ConfigDataObject
+# from fconfig.loader import ConfigSource
 
 NAME_PATTERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)"
 
@@ -19,7 +20,7 @@ def contains_variable(expression):
     return "$" in expression
 
 
-def parse_simple_value(value):
+def parse_simple_value(value: str):
     if NUMBER_PATTERN.match(value):
         if "." in value:
             return float(value)
@@ -27,9 +28,9 @@ def parse_simple_value(value):
             return int(value)
     elif BOOLEAN_PATTERN.match(value):
         return bool(value)
-    elif value.startsWith("'"):
+    elif value.startswith("'"):
         return value.replace("'", "")
-    elif value.startsWith("\""):
+    elif value.startswith("\""):
         return value.replace("\"", "")
 
 
@@ -56,67 +57,65 @@ class Parser:
 
     @staticmethod
     def terminate():
-        sys.exit(1);
+        sys.exit(1)
 
     def __init__(self, use_builder_directives=False):
-        self.config = []
+        self.config = ConfigDataObject(False)
         self.object_stack = []
-        self.useBuilderDirectives = use_builder_directives
+        self.use_builder_directives = use_builder_directives
         self.current_object = self.config
         self.current_key = 0
         self.current_value = None
         self.in_array = False
         self.skip_next_object = False
 
-    def parse_config_file(self, filename: str):
-        with open(filename) as f:
-            content = f.readlines()
-            for line in content:
+    def parse_config_source(self, config_source: str)-> ConfigDataObject:
+        for line in config_source:
 
-                # skip blank lines
-                if Parser.WHITESPACE_LINE_PATTERN.match(line):
-                    pass
+            # skip blank lines
+            if Parser.WHITESPACE_LINE_PATTERN.match(line):
+                pass
 
-                # comment line
-                elif "#" in line:
+            # comment line
+            elif "#" in line:
 
-                    # possible comment processing
-                    pass
+                # possible comment processing
+                pass
 
-                # directive line
-                elif line.startswith("!"):
-                    if self.use_builder_directives:
-                        self.resolve_builder_directive(line)
+            # directive line
+            elif line.startswith("!"):
+                if self.use_builder_directives:
+                    self.resolve_builder_directive(line)
 
-                # new array or object
-                elif "{" in line or "[" in line:
+            # new array or object
+            elif "{" in line or "[" in line:
 
-                    # push old context to stack
-                    self.object_stack.push(self.current_object)
+                # push old context to stack
+                self.object_stack.append(self.current_object)
 
-                    self.in_array = "[" in line
+                self.in_array = "[" in line
 
-                    current_object = ConfigDataObject(self.current_object, self.current_key)
+                self.current_object = ConfigDataObject(self.in_array, self.current_object, self.current_key)
 
-                    # add new object to parent object
-                    if self.skip_next_object:
-                        self.skip_next_object = False
-                    else:
-                        self.object_stack[-1].put(self.current_key, self.current_object)
-                    if self.in_array:
-                        self.current_key = 0
-
-                elif "}" in line or "]" in line:
-                    self.current_object = self.object_stack.pop()
-                    if self.current_object.is_array:
-                        self.in_array = True
-                        self.current_key = self.current_object.getSize()
-                    else:
-                        self.in_array = False
+                # add new object to parent object
+                if self.skip_next_object:
+                    self.skip_next_object = False
                 else:
-                    self.parse_line(line)
+                    self.object_stack[-1].put(self.current_key, self.current_object)
+                if self.in_array:
+                    self.current_key = 0
 
-            return self.config
+            elif "}" in line or "]" in line:
+                self.current_object = self.object_stack.pop()
+                if self.current_object.is_array:
+                    self.in_array = True
+                    self.current_key = self.current_object.getSize()
+                else:
+                    self.in_array = False
+            else:
+                self.parse_line(line)
+
+        return self.config
 
     def parse_line(self, line):
         line = self.strip_indention(line)
