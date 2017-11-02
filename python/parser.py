@@ -68,7 +68,7 @@ class Parser:
         self.in_array = False
         self.skip_next_object = False
 
-    def parse_config_file(self, filename):
+    def parse_config_file(self, filename: str):
         with open(filename) as f:
             content = f.readlines()
             for line in content:

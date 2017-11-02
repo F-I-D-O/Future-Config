@@ -4,6 +4,7 @@ import java
 
 from mako.template import Template
 from config_data_object import ConfigDataObject
+from loader import ConfigSource
 
 
 def get_class_name(snake_case_property_name):
@@ -20,11 +21,10 @@ class Builder:
 	# 		self.class_name = Builder.get_className(key)
 	# 		self.module_name = Builder._get_module_name(key)
 
-	def __init__(self, config_file, root_class_name, output_dir, config_package_name):
-		self.config_file = config_file
+	def __init__(self, config_file_path: str, root_class_name: str, output_dir: str):
+		self.config_file_path = config_file_path
 		self.root_class_name = root_class_name
 		self.output_dir = output_dir
-		self.config_package_name = config_package_name
 
 	def build_config(self):
 		"""
@@ -33,7 +33,7 @@ class Builder:
 
 		self._delete_old_files()
 
-		config_map = loader.load_config_data(self.config_file)
+		config_map = loader.load_config_data(ConfigSource(self.config_file_path))
 		self._generate_config(config_map, self.root_class_name)
 
 	def _delete_old_files(self):
@@ -42,7 +42,7 @@ class Builder:
 			try:
 				if os.path.isfile(file_path):
 					os.unlink(file_path)
-				# elif os.path.isdir(file_path): shutil.rmtree(file_path)
+				# elif os.path_in_config.isdir(file_path): shutil.rmtree(file_path)
 			except Exception as e:
 				print(e)
 
