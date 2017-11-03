@@ -62,7 +62,7 @@ def load(generated_config: Type[C], client_generated_config: Type[CC]=None, clie
 
 		return client_config_instance, config_instance
 	else:
-		return generated_config(config_dict)
+		return None, generated_config(config_dict)
 
 
 def _get_project_main_module_name(generated_config: type):
