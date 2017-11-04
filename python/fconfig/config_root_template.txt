@@ -1,0 +1,52 @@
+<% from fconfig import builder%>
+##
+from fconfig.config import Config
+
+% for key in object_properties:
+    from ${key} import ${builder.get_class_name(key)}
+% endfor
+
+class ${class_name}(Config):
+
+    def __init__(self):
+    % for key in properties:
+        self.${key} = None
+    % endfor
+
+    % for key in object_properties:
+        self.${key} = None
+    % endfor
+
+    % for key, value in array_properties.items():
+        self.${key} = None
+    % endfor
+
+        pass
+
+    def fill(self, properties: dict=None):
+    % for key in properties:
+        self.${key} = properties.get("${key}")
+    % endfor
+
+    % for key in object_properties:
+        self.${key} = ${builder.get_class_name(key)}(properties.get(${key}))
+    % endfor
+
+    % for key, value in array_properties.items():
+
+        % if isinstance(value[0], ConfigDataObject):
+        <%
+            item_class_name = builder.get_class_name(value[0])
+        %>
+            self.${key} = []
+            for item in properties.get("${key}")
+                self.${key}.append(${item_class_name}(item))
+        % else:
+            self.${key} = [', '.join(properties.get("${key}"))]
+        % endif
+
+    % endfor
+
+        pass
+<%doc>
+         </%doc>

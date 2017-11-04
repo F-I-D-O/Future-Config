@@ -18,6 +18,7 @@ class ConfigSource:
 		self.source = source
 		self.path_in_config = path_in_config
 
+
 def load_config_data(*config_source_definitions: ConfigSource, use_builder_directives=False):
 	config_data_list = []
 

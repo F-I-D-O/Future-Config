@@ -37,14 +37,14 @@ def generate_config():
 	#  */
 
 
-def load(generated_config: Type[C], client_generated_config: Type[CC]=None, client_local_config_file: str=None,
-		 key_in_client: str=None) -> Tuple[C,CC]:
+def load(generated_config: C, client_generated_config: CC=None, client_local_config_file: str=None,
+		key_in_client: str=None):
 	config_sources = []
 
 	default_config_source = ConfigSource(_get_project_main_module_name(generated_config), key_in_client)
 	config_sources.append(default_config_source)
 
-	if(client_generated_config):
+	if client_generated_config:
 		default_client_config_source = ConfigSource(_get_project_main_module_name(client_generated_config))
 		config_sources.append(default_client_config_source)
 
@@ -57,12 +57,10 @@ def load(generated_config: Type[C], client_generated_config: Type[CC]=None, clie
 	config_dict = config.get_internal_objects()
 
 	if client_generated_config:
-		config_instance = generated_config(config_dict[key_in_client])
-		client_config_instance = client_generated_config(config_dict)
-
-		return client_config_instance, config_instance
+		generated_config.fill(config_dict[key_in_client])
+		client_generated_config.fill(config_dict)
 	else:
-		return None, generated_config(config_dict)
+		generated_config.fill(config_dict)
 
 
 def _get_project_main_module_name(generated_config: type):

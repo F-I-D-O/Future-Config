@@ -17,3 +17,7 @@ temp/
 /test-resources/target/
 /test-project/target/
 /testproject-client/target/
+
+# python
+*.pyc
+.idea/

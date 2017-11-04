@@ -1,37 +1,35 @@
 <% from fconfig import builder%>
-##
-from fconfig.config import Config
 
 % for key in object_properties:
     from ${key} import ${builder.get_class_name(key)}
 % endfor
 
-class ${class_name}(Config):
+class ${class_name}:
 
     def __init__(self, properties: dict=None):
-        super().__init__(properties)
-        if properties:
-        % for key in properties:
-            self.${key} = properties.get("${key}")
-        % endfor
+    % for key in properties:
+        self.${key} = properties.get("${key}")
+    % endfor
 
-        % for key in object_properties:
-            self.${key} = ${builder.get_class_name(key)}(properties.get(${property.key}))
-        % endfor
+    % for key in object_properties:
+        self.${key} = ${builder.get_class_name(key)}(properties.get(${key}))
+    % endfor
 
-        % for key, value in array_properties.items():
+    % for key, value in array_properties.items():
 
-            % if isinstance(value[0], ConfigDataObject):
-            <%
-                item_class_name = builder.get_class_name(value[0])
-            %>
-                self.${key} = []
-                for item in properties.get("${key}")
-                    self.${key}.append(${item_class_name}(item))
-            % else:
-                self.${key} = [', '.join(properties.get("${property.key}"))]
-            % endif
+        % if isinstance(value[0], ConfigDataObject):
+        <%
+            item_class_name = builder.get_class_name(value[0])
+        %>
+            self.${key} = []
+            for item in properties.get("${key}")
+                self.${key}.append(${item_class_name}(item))
+        % else:
+            self.${key} = [', '.join(properties.get("${key}"))]
+        % endif
 
-        % endfor
+    % endfor
+
+        pass
 <%doc>
          </%doc>

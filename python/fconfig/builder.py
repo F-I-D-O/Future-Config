@@ -35,8 +35,8 @@ class Builder:
 
 		self._delete_old_files()
 
-		config_map = loader.load_config_data(ConfigSource(self.config_file_path))
-		self._generate_config(config_map, self.root_class_name)
+		config_map = loader.load_config_data(ConfigSource(self.config_file_path), use_builder_directives=True)
+		self._generate_config(config_map, self.root_class_name, True)
 
 	def _delete_old_files(self):
 		if os.path.isdir(self.output_dir):
@@ -49,7 +49,7 @@ class Builder:
 				except Exception as e:
 					print(e)
 
-	def _generate_config(self, config_map: ConfigDataObject, map_name: str):
+	def _generate_config(self, config_map: ConfigDataObject, map_name: str, is_root: bool=False):
 		properties = {}
 		object_properties = {}
 		array_properties = {}
@@ -67,15 +67,16 @@ class Builder:
 			else:
 				properties[key] = value
 
-		teplate_data = pkgutil.get_data("fconfig.configuration", 'config_template.txt')
+		template_filename = 'config_root_template.txt' if is_root else  'config_template.txt'
+		template_data = pkgutil.get_data("fconfig.configuration", template_filename)
 		lookup = TemplateLookup(module_directory="/tmp")
-		class_template = Template(teplate_data, lookup=lookup)
+		class_template = Template(template_data, lookup=lookup)
 
 		if not os.path.exists(self.output_dir):
 			os.makedirs(self.output_dir)
 
 		output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
 		output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-												array_properties=array_properties, class_name=get_class_name(map_name)))
+			array_properties=array_properties, class_name=get_class_name(map_name)))
 
 
