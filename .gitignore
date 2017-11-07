@@ -20,4 +20,6 @@ temp/
 
 # python
 *.pyc
-.idea/
+/python/.idea/
+/python/fconfig.egg-info/
+/python/fconfig/__pycache__/

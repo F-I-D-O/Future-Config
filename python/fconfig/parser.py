@@ -32,6 +32,9 @@ def parse_simple_value(value: str):
         return value.replace("'", "")
     elif value.startswith("\""):
         return value.replace("\"", "")
+    else:
+        logging.critical("Unsupported value type: %s", value)
+
 
 
 class Parser:
