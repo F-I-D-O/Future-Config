@@ -43,10 +43,16 @@ class Parser:
     KEY_PATTERN = re.compile("^" + NAME_PATTERN_STRING + "(:)")
     VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
     BUILDER_DIRECTIVE_PATTERN = re.compile(r"^!([^\s]*)")
+    LINE_END_PATTERN = re.compile(r"[\r\n]+")
 
     @staticmethod
     def strip_indention(line):
         line = Parser.INDENTION_PATTERN.sub("", line)
+        return line
+
+    @staticmethod
+    def remove_line_ends(line):
+        line = Parser.LINE_END_PATTERN.sub("", line)
         return line
 
     @staticmethod
@@ -123,6 +129,8 @@ class Parser:
     def parse_line(self, line):
         line = self.strip_indention(line)
 
+        line = self.remove_line_ends(line)
+
         if not self.in_array:
             line = self.parse_key(line)
 
@@ -153,3 +161,4 @@ class Parser:
         directive = match.group(1);
         if directive == "parent":
             self.skip_next_object = True
+
