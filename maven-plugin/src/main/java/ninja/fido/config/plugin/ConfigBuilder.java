@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
 import ninja.fido.config.ConfigDataList;
 import ninja.fido.config.ConfigDataLoader;
@@ -47,6 +49,8 @@ import org.slf4j.LoggerFactory;
  * @author F.I.D.O.
  */
 public class ConfigBuilder {
+	
+	private static final Pattern ARRAY_INDEXING_PATTERN = Pattern.compile("\\[[0-9]+\\]");
 	
 	private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Configuration.class);
 
@@ -156,6 +160,7 @@ public class ConfigBuilder {
 					/* representative generation */
 					String itemName = configMap.getPath() == null ? key + "_item" 
 							: configMap.getPath() + "_" + key + "_item";
+					itemName = get_iteme_name_from_path(itemName);
 					ClassName newObjectType = ClassName.get(configPackageName, getClassName(itemName));
 					generateConfig((ConfigDataMap) representative, itemName, false);
 
@@ -202,6 +207,16 @@ public class ConfigBuilder {
 
 	private String getClassName(String name) {
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, name);
+	}
+
+	private String get_iteme_name_from_path(String itemName) {
+		Matcher matcher = ARRAY_INDEXING_PATTERN.matcher(itemName);
+		if (matcher.find()) {
+			itemName = matcher.replaceAll("");
+		}
+		itemName = itemName.replaceAll("\\.", "_");
+		
+		return itemName;
 	}
 
 }
