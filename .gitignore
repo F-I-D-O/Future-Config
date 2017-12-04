@@ -23,3 +23,7 @@ temp/
 /python/.idea/
 /python/fconfig.egg-info/
 /python/fconfig/__pycache__/
+/test-project-gradle/.nb-gradle/
+/test-project-gradle/build/
+/gradle-plugin/.nb-gradle/
+.gradle
