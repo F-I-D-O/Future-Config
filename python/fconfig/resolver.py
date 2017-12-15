@@ -10,7 +10,7 @@ from fconfig.config_property import ConfigProperty
 
 
 class Resolver:
-	STRING_VALUE_PATTERN_STRING = "'[^']*'"
+	STRING_VALUE_PATTERN_STRING = r"(?:'[^']*'||\"[^']*\")"
 
 	OPERATOR_EXPRESSION_PATTERN \
 		= re.compile(r"\s*({}|{})\s*([+])?".format(parser.NAME_PATTERN_STRING, STRING_VALUE_PATTERN_STRING))
@@ -44,7 +44,7 @@ class Resolver:
 		return self.root_object
 
 	def _add_all_variables_to_queue(self, config_data_object: ConfigDataObject):
-		def add_to_queue (config_property: ConfigProperty, reference_queue: deque):
+		def add_to_queue(config_property: ConfigProperty, reference_queue: deque):
 			reference_queue.append(config_property)
 			config_property.config_data_object.put(config_property.key, None)
 
@@ -58,7 +58,7 @@ class Resolver:
 			config_property = self.reference_queue.popleft()
 			variable_value = self._parse_expression_with_references(config_property.value)
 			if variable_value:
-				config_property.parent.put(config_property.key, variable_value)
+				config_property.config_data_object.put(config_property.key, variable_value)
 			else:
 				self.reference_queue.append(config_property)
 
@@ -84,7 +84,7 @@ class Resolver:
 			# now String variables only
 			value = value.replace("$" + reference, "'" + variable + "'")
 
-		if parser.OPERATOR_PATTERN.match(value):
+		if parser.OPERATOR_PATTERN.search(value):
 			return self._parse_expression_with_operators(value)
 		else:
 			return parser.parse_simple_value(value)
@@ -112,7 +112,7 @@ class Resolver:
 		for i, part in enumerate(parts):
 			if current_object.get(part):
 				if i < len(parts) - 1:
-					current_object = current_object.get(part);
+					current_object = current_object.get(part)
 				else:
 					return current_object.get(part)
 			else:

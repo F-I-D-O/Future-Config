@@ -5,13 +5,13 @@ import sys
 from fconfig.config_data_object import ConfigDataObject
 # from fconfig.loader import ConfigSource
 
-NAME_PATTERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)"
+NAME_PATTERN_STRING = "[a-zA-Z][a-zA-Z0-9_]+"
 
 NUMBER_PATTERN = re.compile("^([0-9])")
-BOOLEAN_PATTERN = re.compile("^(true|false)")
+BOOLEAN_PATTERN = re.compile(r"^(true|false)$")
+TRUE_PATTERN = re.compile("^(true)$")
 OPERATOR_PATTERN = re.compile(r"[+\-]")
 REFERENCE_PATTERN = re.compile(r"\$({}(\.{})*)".format(NAME_PATTERN_STRING, NAME_PATTERN_STRING))
-
 
 
 def contains_variable(expression):
@@ -27,7 +27,7 @@ def parse_simple_value(value: str):
         else:
             return int(value)
     elif BOOLEAN_PATTERN.match(value):
-        return bool(value)
+        return True if TRUE_PATTERN.match(value) else False
     elif value.startswith("'"):
         return value.replace("'", "")
     elif value.startswith("\""):
@@ -158,7 +158,7 @@ class Parser:
 
     def resolve_builder_directive(self, line):
         match = self.BUILDER_DIRECTIVE_PATTERN.match(line)
-        directive = match.group(1);
+        directive = match.group(1)
         if directive == "parent":
             self.skip_next_object = True
 

@@ -76,7 +76,7 @@ class ConfigDataObject:
 					iter_function: Callable[[ConfigProperty, any], None], out=None):
 		for key, value in self.items():
 			if isinstance(value, ConfigDataObject):
-				value.iterate_properties(filter_function, iter_function)
+				value.iterate_properties(filter_function, iter_function, out)
 			elif filter_function(value):
 				config_property = ConfigProperty(self, key, value)
 				iter_function(config_property, out)
