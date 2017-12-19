@@ -23,8 +23,9 @@ class Builder:
 	# 		self.class_name = Builder.get_className(key)
 	# 		self.module_name = Builder._get_module_name(key)
 
-	def __init__(self, config_file_path: str, root_class_name: str, output_dir: str):
+	def __init__(self, config_file_path: str, main_module_name: str, root_class_name: str, output_dir: str):
 		self.config_file_path = config_file_path
+		self.main_module_name = main_module_name
 		self.root_class_name = root_class_name
 		self.output_dir = output_dir
 
@@ -67,7 +68,7 @@ class Builder:
 			else:
 				properties[key] = value
 
-		template_filename = 'config_root_template.txt' if is_root else  'config_template.txt'
+		template_filename = 'config_root_template.txt' if is_root else 'config_template.txt'
 		template_data = pkgutil.get_data("fconfig.configuration", template_filename)
 		lookup = TemplateLookup(module_directory="/tmp")
 		class_template = Template(template_data, lookup=lookup)
@@ -76,7 +77,8 @@ class Builder:
 			os.makedirs(self.output_dir)
 
 		output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
+		import_package = "{}.{}".format(self.main_module_name, self.output_dir)
 		output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-			array_properties=array_properties, class_name=get_class_name(map_name)))
+			array_properties=array_properties, class_name=get_class_name(map_name), import_package=import_package))
 
 

@@ -1,7 +1,7 @@
 <% from fconfig import builder%>
 
 % for key in object_properties:
-    from ${key} import ${builder.get_class_name(key)}
+    from ${import_package}.${key} import ${builder.get_class_name(key)}
 % endfor
 
 class ${class_name}:
@@ -12,7 +12,7 @@ class ${class_name}:
     % endfor
 
     % for key in object_properties:
-        self.${key} = ${builder.get_class_name(key)}(properties.get(${key}))
+        self.${key} = ${builder.get_class_name(key)}(properties.get("${key}"))
     % endfor
 
     % for key, value in array_properties.items():

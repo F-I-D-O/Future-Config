@@ -10,7 +10,7 @@ from fconfig.config_property import ConfigProperty
 
 
 class Resolver:
-	STRING_VALUE_PATTERN_STRING = r"(?:'[^']*'||\"[^']*\")"
+	STRING_VALUE_PATTERN_STRING = r"(?:'[^']*'|\"[^']*\")"
 
 	OPERATOR_EXPRESSION_PATTERN \
 		= re.compile(r"\s*({}|{})\s*([+])?".format(parser.NAME_PATTERN_STRING, STRING_VALUE_PATTERN_STRING))

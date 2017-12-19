@@ -40,7 +40,7 @@ def parse_simple_value(value: str):
 class Parser:
     WHITESPACE_LINE_PATTERN = re.compile(r"^\s*$")
     INDENTION_PATTERN = re.compile("^(    |	)*")
-    KEY_PATTERN = re.compile("^" + NAME_PATTERN_STRING + "(:)")
+    KEY_PATTERN = re.compile("^({})(:)".format(NAME_PATTERN_STRING))
     VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
     BUILDER_DIRECTIVE_PATTERN = re.compile(r"^!([^\s]*)")
     LINE_END_PATTERN = re.compile(r"[\r\n]+")
