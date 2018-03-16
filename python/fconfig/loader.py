@@ -42,13 +42,13 @@ def load_config_data(*config_source_definitions: ConfigSource, use_builder_direc
 def _change_config_context(config_map_from_source: ConfigDataObject, path: Tuple[str,...]):
 
 	def add_prefix(config_property: ConfigProperty, object_name: str):
-		result = parser.REFERENCE_PATTERN.sub(config_property.value, r"\$" + object_name + ".$1")
+		result = parser.REFERENCE_PATTERN.sub(r"\$" + object_name + r".\1", config_property.value)
 		config_property.set_value(result)
 
 	for object_name in reversed(path):
 
 		# add prefix to all variables path_in_config
-		config_map_from_source.iterate_properties(lambda x: parser.contains_variable(x), add_prefix)
+		config_map_from_source.iterate_properties(lambda x: parser.contains_variable(x), add_prefix, object_name)
 
 		# move object to new parent
 		parent_map = ConfigDataObject(False)

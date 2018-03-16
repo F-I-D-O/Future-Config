@@ -57,10 +57,10 @@ class Builder:
 		for key, value in config_map.items():
 			if isinstance(value, ConfigDataObject):
 				if value.is_array:
-					if isinstance(value[0], ConfigDataObject):
+					if isinstance(value.get(0), ConfigDataObject):
 						item_name \
 							= config_map.path + "_" + key + "_item" if config_map.path else key + "_item"
-						self._generate_config(value[0], item_name)
+						self._generate_config(value.get(0), item_name)
 					array_properties[key] = value
 				else:
 					self._generate_config(value, key)

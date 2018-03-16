@@ -1,5 +1,8 @@
 from string import Formatter
 
+# cannot import because python does not support circular dependencies :(
+# from fconfig.config_data_object import ConfigDataObject
+
 
 class ConfigProperty:
 
@@ -9,7 +12,7 @@ class ConfigProperty:
         self.value = value
 
     def set_value(self, new_value):
-        self.config_data_object[self.key] = new_value
+        self.config_data_object.put(self.key, new_value)
 
     def get_path(self):
         if not self.config_data_object.getPath:

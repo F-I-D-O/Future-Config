@@ -1,6 +1,10 @@
-<% from fconfig import builder%>
+<%
+from fconfig import builder
+from fconfig.config_data_object import ConfigDataObject
+%>
 ##
 from fconfig.config import Config
+
 
 % for key in object_properties:
 from ${import_package}.${key} import ${builder.get_class_name(key)}
@@ -33,16 +37,19 @@ class ${class_name}(Config):
     % endfor
 
     % for key, value in array_properties.items():
-
-        % if isinstance(value[0], ConfigDataObject):
         <%
-            item_class_name = builder.get_class_name(value[0])
+            array_content = value.get(0)
+            object_in_array = isinstance(array_content, ConfigDataObject)
+        %>
+        % if object_in_array:
+        <%
+            item_class_name = builder.get_class_name(value.get(0))
         %>
             self.${key} = []
             for item in properties.get("${key}")
                 self.${key}.append(${item_class_name}(item))
         % else:
-            self.${key} = [', '.join(properties.get("${key}"))]
+        self.${key} = properties.get("${key}").values()
         % endif
 
     % endfor
