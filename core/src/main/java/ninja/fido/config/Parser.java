@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 public class Parser {
     public static final Pattern OPERATOR_PATTERN = Pattern.compile("[+\\-]");
 	
-	static final String NAME_PATERN_STRING = "([a-zA-Z][a-zA-Z0-9_]+)";
+	static final String LEGAL_NAME_CHARACTER = "a-zA-Z0-9_";
+	static final String NAME_PATERN_STRING = String.format("([a-zA-Z][%s]+)", LEGAL_NAME_CHARACTER);
     public static final Pattern REFERENCE_PATTERN
             = Pattern.compile(String.format("\\$(%s(\\.%s)*)", NAME_PATERN_STRING, NAME_PATERN_STRING));
     private static final Logger logger = LoggerFactory.getLogger(Parser.class);

@@ -26,7 +26,7 @@ import org.junit.Test;
  * @author David Fiedler
  */
 public class StringConcatenationTest {
-
+	
 	@Test
 	public void test() throws IOException {
 		Map<String, Object> config = ParserTester.tryParseFile("string_concatenation.cfg");

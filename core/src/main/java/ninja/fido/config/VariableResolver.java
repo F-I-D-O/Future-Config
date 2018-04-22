@@ -128,7 +128,10 @@ public class VariableResolver {
 			}
 
 			// now String variables only
-			value = value.replace("$" + reference, "'" + variable.toString() + "'");
+			Pattern p = Pattern.compile(String.format("\\$%s(?![%s]+)", reference, Parser.LEGAL_NAME_CHARACTER));
+			String replacement = variable instanceof String ? String.format("'%s'", variable) : variable.toString();
+			replacement = replacement.replace("\\", "\\\\");
+			value = p.matcher(value).replaceFirst(replacement);
 		}
 		Matcher matcher = OPERATOR_PATTERN.matcher(value);
 		if (matcher.find()) {
