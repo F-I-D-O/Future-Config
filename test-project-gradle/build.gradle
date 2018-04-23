@@ -1,5 +1,26 @@
 apply plugin: 'java'
 
+class GreetingPlugin implements Plugin<Project> {
+    void apply(Project project) {
+        project.task('hello') {
+            doLast {
+                println 'Hello from the GreetingPlugin'
+            }
+        }
+    }
+	
+}
+
+apply plugin: GreetingPlugin
+
+compileJava {
+	dependsOn hello
+}
+
+
+
+
+
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -25,3 +46,4 @@ dependencies {
     compile 'ninja.fido.config:core:1.0'
     testCompile group: 'junit', name: 'junit', version: '4.10'
 }
+

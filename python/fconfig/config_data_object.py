@@ -65,7 +65,7 @@ class ConfigDataObject:
 			else:
 				if current_object == self:
 					path = key_in_parent
-				elif path.startsWith("["):
+				elif path.startswith("["):
 					path = key_in_parent + path
 				else:
 					path = key_in_parent + "." + path

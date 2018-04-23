@@ -17,14 +17,14 @@ C = TypeVar('C', bound=Config)
 CC = TypeVar('CC', bound=Config)
 
 
-def generate_config():
+def generate_config(config_path: str=loader.DEFAULT_CONFIG_FILE_NAME):
 	"""
 	At this time, this function has to be called from the project root!
 	"""
 	root_module_name = os.path.basename(os.path.normpath(os.path.dirname(sys.modules['__main__'].__file__)))
 	root_config_object_name_name = root_module_name + "_config"
 	# default_config_file_name = root_module_name + ".cfg"
-	Builder(loader.DEFAULT_CONFIG_FILE_NAME, root_module_name, root_config_object_name_name,
+	Builder(config_path, root_module_name, root_config_object_name_name,
 			DEFAULT_CONFIG_OUTPUT_DIR).build_config()
 
 	# /**
@@ -38,15 +38,17 @@ def generate_config():
 	#  */
 
 
-def load(generated_config: C, client_generated_config: CC=None, client_local_config_file: str=None,
-		key_in_client: str=None):
+def load(generated_config: C, client_generated_config: CC=None, client_config_file_path: str=None,
+		 client_local_config_file: str=None, key_in_client: str=None):
 	config_sources = []
 
 	default_config_source = ConfigSource(_get_project_main_module_name(generated_config), key_in_client)
 	config_sources.append(default_config_source)
 
 	if client_generated_config:
-		default_client_config_source = ConfigSource(_get_project_main_module_name(client_generated_config))
+		config_source = client_config_file_path if client_config_file_path \
+			else _get_project_main_module_name(client_generated_config)
+		default_client_config_source = ConfigSource(config_source)
 		config_sources.append(default_client_config_source)
 
 	if client_local_config_file:
