@@ -36,6 +36,9 @@ class ConfigDataObject:
 	def put(self, key, value):
 		self.config_object[key] = value
 
+	def contains(self, key: str) -> bool:
+		return key in self.config_object
+
 	def get(self, key: str):
 		return self.config_object[key]
 

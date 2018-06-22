@@ -53,7 +53,10 @@ class Resolver:
 
 	def _process_queue(self):
 		last_queue_length = len(self.reference_queue)
+
+		# at least one variable has to be resolved before trying the same variables again
 		check_counter = last_queue_length
+
 		while self.reference_queue:
 			config_property = self.reference_queue.popleft()
 			variable_value = self._parse_expression_with_references(config_property.value)
@@ -72,7 +75,7 @@ class Resolver:
 				last_queue_length = len(self.reference_queue)
 				check_counter = last_queue_length
 
-				check_counter -= check_counter
+			check_counter -= 1
 
 	def _parse_expression_with_references(self, value: str):
 		references = self._parse_references(value)
@@ -110,7 +113,7 @@ class Resolver:
 		parts = reference.split(".")
 
 		for i, part in enumerate(parts):
-			if current_object.get(part):
+			if current_object.contains(part):
 				if i < len(parts) - 1:
 					current_object = current_object.get(part)
 				else:
