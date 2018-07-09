@@ -2,12 +2,17 @@ import logging
 import fconfig.parser as parser
 import re
 import sys
+from typing import List, Union
 from collections import deque
 
 from fconfig.config_data_object import ConfigDataObject
 
 from fconfig.config_property import ConfigProperty
 
+class Reference:
+	def __init__(self, reference_token: str):
+		self.path_string = reference_token
+		self.path = reference_token.split(".")
 
 class Resolver:
 	STRING_VALUE_PATTERN_STRING = r"(?:'[^']*'|\"[^']*\")"
@@ -38,7 +43,7 @@ class Resolver:
 		self.root_object = config_data_object
 		self.reference_queue = deque()
 
-	def resolve_variables(self):
+	def resolve_values(self) -> ConfigDataObject:
 		self._add_all_variables_to_queue(self.root_object)
 		self._process_queue()
 		return self.root_object
@@ -48,9 +53,12 @@ class Resolver:
 			reference_queue.append(config_property)
 			config_property.config_data_object.put(config_property.key, None)
 
-		config_data_object.iterate_properties(
-			lambda x: parser.contains_variable(x), add_to_queue, self.reference_queue)
+		# config_data_object.iterate_properties(
+		# 	lambda x: parser.contains_variable(x), add_to_queue, self.reference_queue)
 
+		config_data_object.iterate_properties(
+			lambda x: len(x) > 1 or isinstance(x[0], Reference), add_to_queue, self.reference_queue)
+		
 	def _process_queue(self):
 		last_queue_length = len(self.reference_queue)
 
@@ -59,7 +67,9 @@ class Resolver:
 
 		while self.reference_queue:
 			config_property = self.reference_queue.popleft()
-			variable_value = self._parse_expression_with_references(config_property.value)
+
+			# if any token remains unresolved
+			variable_value = self._resolve_value(config_property.value)
 			if variable_value:
 				config_property.config_data_object.put(config_property.key, variable_value)
 			else:
@@ -77,22 +87,60 @@ class Resolver:
 
 			check_counter -= 1
 
-	def _parse_expression_with_references(self, value: str):
-		references = self._parse_references(value)
-		for reference in references:
-			variable = self._get_referenced_value(reference)
-			if not variable:
+	# def _resolve_value(self, value: str):
+	# 	references = self._parse_references(value)
+	# 	for reference in references:
+	# 		variable = self._get_referenced_value(reference)
+	# 		if not variable:
+	# 			return None
+	#
+	# 		# now String variables only
+	# 		value = value.replace("$" + reference, "'" + variable + "'")
+	#
+	# 	if parser.OPERATOR_PATTERN.search(value):
+	# 		return self._parse_expression_with_operators(value)
+	# 	else:
+	# 		return parser.parse_simple_value(value)
+
+	def _resolve_value(self, config_property: ConfigProperty) -> Union[str, int, float, bool, ConfigDataObject, None]:
+
+		# token resolving
+		parsed_tokens: List[Union[str, int, bool, float]] = config_property.value
+		resolved_tokens = []
+		unresolved_count = 0
+		for token in parsed_tokens:
+			if isinstance(token, Reference):
+				variable = self._get_referenced_value(token.path)
+				if variable:
+					resolved_tokens.append(variable)
+				else:
+					resolved_tokens.append(token)
+					unresolved_count += 1
+			else:
+				resolved_tokens.append(token)
+		if unresolved_count > 0:
+			config_property.value = resolved_tokens
+			return None
+
+		# expression resolving
+		if len(resolved_tokens) > 1:
+			return self._resolve_expression_with_operators(resolved_tokens)
+		else:
+			return resolved_tokens[1]
+
+	def _get_referenced_value(self, reference_path: List[str]):
+		current_object = self.root_object
+
+		for i, part in enumerate(reference_path):
+			if current_object.contains(part):
+				if i < len(reference_path) - 1:
+					current_object = current_object.get(part)
+				else:
+					return current_object.get(part)
+			else:
 				return None
 
-			# now String variables only
-			value = value.replace("$" + reference, "'" + variable + "'")
-
-		if parser.OPERATOR_PATTERN.search(value):
-			return self._parse_expression_with_operators(value)
-		else:
-			return parser.parse_simple_value(value)
-
-	def _parse_expression_with_operators(self, value: str):
+	def _resolve_expression_with_operators(self, resolved_tokens: List[str]):
 		operands = []
 		operators = []
 		match_list = Resolver.OPERATOR_EXPRESSION_PATTERN.findall(value)
@@ -107,26 +155,3 @@ class Resolver:
 
 		if isinstance(operands_parsed[0], str):
 			return self._resolve_string_expression(operands_parsed, operators)
-
-	def _get_referenced_value(self, reference: str):
-		current_object = self.root_object
-		parts = reference.split(".")
-
-		for i, part in enumerate(parts):
-			if current_object.contains(part):
-				if i < len(parts) - 1:
-					current_object = current_object.get(part)
-				else:
-					return current_object.get(part)
-			else:
-				return None
-
-
-		# class QueueEntry:
-		# 	def __init__(self, key: any, value: str, parent: ConfigDataObject):
-		# 		self.key = key
-		# 		self.value = value
-		# 		self.parent = parent
-		#
-		# 	def to_string():
-		# 		return new ConfigProperty(parent, key, value).getPath() + ": " + value;

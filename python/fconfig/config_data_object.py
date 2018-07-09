@@ -1,5 +1,5 @@
 
-from typing import Callable
+from typing import Callable, Union
 
 from fconfig.config_property import ConfigProperty
 
@@ -20,7 +20,7 @@ class ConfigDataObject:
 	# 	self.key_in_parent = key_in_parent
 	# 	self.path = self.create_path()
 
-	def __init__(self, is_array: bool, parent_config_object=None, key_in_parent: str=None, config_object: dict=None):
+	def __init__(self, is_array: bool, parent_config_object=None, key_in_parent: Union[str, int]=None, config_object: dict=None):
 		self.is_array = is_array
 		self.config_object = config_object if config_object else {}
 		self.parent_config_object = parent_config_object

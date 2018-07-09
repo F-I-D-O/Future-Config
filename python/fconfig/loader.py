@@ -37,7 +37,7 @@ def load_config_data(*config_source_definitions: ConfigSource, use_builder_direc
 
 		config_data_list.append(config_map_from_source)
 
-	config_root = Resolver(merger.merge(config_data_list)).resolve_variables()
+	config_root = Resolver(merger.merge(config_data_list)).resolve_values()
 
 	# LOGGER.debug(configRoot.getStringForPrint());
 
