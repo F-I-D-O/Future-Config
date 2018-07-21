@@ -23,7 +23,7 @@ class ConfigProperty:
 			return "{}.{}".format(self.config_data_object.path, self.key)
 
 	def to_string(self) -> str:
-		return self.get_path() + ": " + self.value
+		return self.get_path() + ": " + str(self.value)
 
 	def __str__(self) -> str:
 		return self.to_string()

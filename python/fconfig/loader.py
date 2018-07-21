@@ -1,3 +1,5 @@
+import logging
+import sys
 import pkgutil
 import fconfig.parser as parser
 import fconfig.merger as merger
@@ -8,7 +10,7 @@ from fconfig.config_data_object import ConfigDataObject
 from fconfig.config_property import ConfigProperty
 from fconfig.resolver import Resolver
 from fconfig.config import Config
-from fconfig.parser import Parser
+from fconfig.parser import Parser, Reference
 
 DEFAULT_CONFIG_FILE_NAME = "config.cfg"
 DEFAULT_CONFIG_PACKAGE = "resources"
@@ -66,13 +68,16 @@ def get_master_config_content(package: str=None, generated_config: C=None) -> st
 def _change_config_context(config_map_from_source: ConfigDataObject, path: str):
 
 	def add_prefix(config_property: ConfigProperty, object_name: str):
-		result = parser.REFERENCE_PATTERN.sub(r"\$" + object_name + r".\1", config_property.value)
-		config_property.set_value(result)
+		new_value = config_property.value
+		for token in config_property.value:
+			if isinstance(token, Reference):
+				token.add_prefix(object_name)
+		# config_property.set_value(new_value)
 
 	for object_name in reversed(path.split(".")):
 
 		# add prefix to all variables path_in_config
-		config_map_from_source.iterate_properties(lambda x: parser.contains_variable(x), add_prefix, object_name)
+		config_map_from_source.iterate_properties(lambda x: len(x) > 1, add_prefix, object_name)
 
 		# move object to new parent
 		parent_map = ConfigDataObject(False)
@@ -87,12 +92,21 @@ def get_config_content(source: str):
 
 	# source defined as path
 	if source.endswith(".cfg"):
-		with open(source) as f:
-			content = f.readlines()
+		try:
+			with open(source) as f:
+				content = f.readlines()
+		except FileNotFoundError as e:
+			logging.critical("Specified file does not exist: %s", source)
+			sys.exit(1)
 
 	# source defined as resource
 	else:
-		content = pkgutil.get_data(source, DEFAULT_CONFIG_FILE_NAME).decode("utf-8").split("\n")
+		resource = pkgutil.get_data(source, DEFAULT_CONFIG_FILE_NAME)
+		if resource:
+			content = pkgutil.get_data(source, DEFAULT_CONFIG_FILE_NAME).decode("utf-8").split("\n")
+		else:
+			logging.critical("Specified project does not contain config file in resources: %s", source)
+			sys.exit(1)
 
 	return content
 

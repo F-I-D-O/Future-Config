@@ -5,7 +5,7 @@ import inspect
 import argparse
 import fconfig.loader as loader
 
-from os.path import dirname as dirname
+# from os.path import dirname as dirname
 from typing import Tuple, TypeVar, Type, Union
 from fconfig.builder import Builder
 from fconfig.config import Config

@@ -72,7 +72,7 @@ class Builder:
 					# parent config test
 					if value.path in self.parent_config_map:
 						import_module = self.parent_config_map[value.path].__module__
-						class_name = get_class_name(key + "_config")
+						class_name = self.parent_config_map[value.path].__name__
 						is_parent = True
 					else:
 						self._generate_config(value, key)

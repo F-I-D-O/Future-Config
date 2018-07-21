@@ -4,7 +4,6 @@ import sys
 
 from typing import List, Union
 from fconfig.config_data_object import ConfigDataObject
-from fconfig.resolver import Reference
 # from fconfig.loader import ConfigSource
 
 NAME_PATTERN_STRING = "[a-zA-Z][a-zA-Z0-9_]+"
@@ -32,6 +31,22 @@ def parse_simple_value(value: str):
 		logging.critical("Unsupported value type: %s", value)
 
 
+class Reference:
+	def __init__(self, reference_token: str):
+		self.path_string = reference_token
+		self.path = reference_token.split(".")
+		self.path[0] = self.path[0][1:]
+
+	def add_prefix(self, prefix: str):
+		new_path = []
+		new_path.append(prefix)
+		for part in self.path:
+			new_path.append(part)
+		self.path = new_path
+		self.path_string = "$" + ".".join(new_path)
+
+
+
 class Parser:
 	WHITESPACE_LINE_PATTERN = re.compile(r"^\s*$")
 	WHITESPACE_PATTERN = re.compile(r"[\r\n\s]+")
@@ -39,6 +54,7 @@ class Parser:
 	KEY_PATTERN = re.compile("^({})(:)".format(NAME_PATTERN_STRING))
 	VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
 	BUILDER_DIRECTIVE_PATTERN = re.compile(r"^!([^\s]*)")
+	TOKEN_PATTERN = re.compile(r"[^\s'\"]+|'[^']*'|\"[^\"]*\"")
 	# LINE_END_PATTERN = re.compile(r"[\r\n]+")
 
 	# @staticmethod
@@ -64,6 +80,9 @@ class Parser:
 	def parse_value_token(token: str) -> Union[str, int, bool, float, Reference]:
 		if token.startswith("$"):
 			return Reference(token)
+		# operators are left as strings now
+		elif OPERATOR_PATTERN.match(token):
+			return token
 		else:
 			return parse_simple_value(token)
 
@@ -152,7 +171,8 @@ class Parser:
 	# 		self.skip_next_object = True
 
 	def tokenize(self, line: str) -> List[str]:
-		return self.WHITESPACE_PATTERN.split(line)
+		# return self.WHITESPACE_PATTERN.split(line)
+		return self.TOKEN_PATTERN.findall(line)
 
 	def process_open_bracket(self, first_token: str):
 		# push old context to stack
@@ -186,7 +206,10 @@ class Parser:
 		if not self.in_array:
 			self.parse_key(tokens[0])
 
-		if self.parse_value(tokens[1:]):
+			# remove key from tokens
+			tokens = tokens[1:]
+
+		if self.parse_value(tokens):
 			self.current_object.put(self.current_key, self.current_value)
 
 		if self.in_array:

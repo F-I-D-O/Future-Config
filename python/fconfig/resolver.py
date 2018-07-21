@@ -8,11 +8,7 @@ from collections import deque
 from fconfig.config_data_object import ConfigDataObject
 
 from fconfig.config_property import ConfigProperty
-
-class Reference:
-	def __init__(self, reference_token: str):
-		self.path_string = reference_token
-		self.path = reference_token.split(".")
+from fconfig.parser import Reference
 
 class Resolver:
 	STRING_VALUE_PATTERN_STRING = r"(?:'[^']*'|\"[^']*\")"
@@ -22,10 +18,10 @@ class Resolver:
 
 	@staticmethod
 	def _resolve_string_expression(operands_parsed: list, operators: list) -> str:
-		result_sting = ""
+		result_string = ""
 		for operand in operands_parsed:
-			result_sting += operand
-		return result_sting
+			result_string += operand
+		return result_string
 
 	@staticmethod
 	def _parse_references(value: str) -> list:
@@ -50,14 +46,17 @@ class Resolver:
 
 	def _add_all_variables_to_queue(self, config_data_object: ConfigDataObject):
 		def add_to_queue(config_property: ConfigProperty, reference_queue: deque):
-			reference_queue.append(config_property)
-			config_property.config_data_object.put(config_property.key, None)
-
+			if len(config_property.value) > 1 or isinstance(config_property.value[0], Reference):
+				reference_queue.append(config_property)
+				config_property.config_data_object.put(config_property.key, None)
+			else:
+				config_property.config_data_object.put(config_property.key, config_property.value[0])
 		# config_data_object.iterate_properties(
 		# 	lambda x: parser.contains_variable(x), add_to_queue, self.reference_queue)
 
 		config_data_object.iterate_properties(
-			lambda x: len(x) > 1 or isinstance(x[0], Reference), add_to_queue, self.reference_queue)
+			lambda x: True, add_to_queue, self.reference_queue)
+			# lambda x: len(x) > 1 or isinstance(x[0], Reference), add_to_queue, self.reference_queue)
 		
 	def _process_queue(self):
 		last_queue_length = len(self.reference_queue)
@@ -69,8 +68,8 @@ class Resolver:
 			config_property = self.reference_queue.popleft()
 
 			# if any token remains unresolved
-			variable_value = self._resolve_value(config_property.value)
-			if variable_value:
+			variable_value = self._resolve_value(config_property)
+			if variable_value is not None:
 				config_property.config_data_object.put(config_property.key, variable_value)
 			else:
 				self.reference_queue.append(config_property)
@@ -111,7 +110,7 @@ class Resolver:
 		for token in parsed_tokens:
 			if isinstance(token, Reference):
 				variable = self._get_referenced_value(token.path)
-				if variable:
+				if variable is not None:
 					resolved_tokens.append(variable)
 				else:
 					resolved_tokens.append(token)
@@ -126,7 +125,7 @@ class Resolver:
 		if len(resolved_tokens) > 1:
 			return self._resolve_expression_with_operators(resolved_tokens)
 		else:
-			return resolved_tokens[1]
+			return resolved_tokens[0]
 
 	def _get_referenced_value(self, reference_path: List[str]):
 		current_object = self.root_object
@@ -143,15 +142,23 @@ class Resolver:
 	def _resolve_expression_with_operators(self, resolved_tokens: List[str]):
 		operands = []
 		operators = []
-		match_list = Resolver.OPERATOR_EXPRESSION_PATTERN.findall(value)
-		for match in match_list:
-			operands.append(match[0])
-			if len(match) > 1:
-				operators.append(match[1])
 
-		operands_parsed = []
-		for operand in operands:
-			operands_parsed.append(parser.parse_simple_value(operand))
+		for index, token in enumerate(resolved_tokens):
+			if index % 2 == 0:
+				operands.append(token)
+			else:
+				operators.append(token)
+		# match_list = Resolver.OPERATOR_EXPRESSION_PATTERN.findall(value)
+		# for match in match_list:
+		# 	operands.append(match[0])
+		# 	if len(match) > 1:
+		# 		operators.append(match[1])
+		#
+		# operands_parsed = []
+		# for operand in operands:
+		# 	operands_parsed.append(parser.parse_simple_value(operand))
 
-		if isinstance(operands_parsed[0], str):
-			return self._resolve_string_expression(operands_parsed, operators)
+		if isinstance(operands[0], str):
+			return self._resolve_string_expression(operands, operators)
+		else:
+			logging.critical("Unsupported operand type: %s (%s)", type(operands[0]), operands[0])
