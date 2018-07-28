@@ -40,7 +40,7 @@ class Builder:
 
 		parent_sources = loader.get_config_sources_from_def(self.parent_config)
 
-		source = ConfigSource(loader.get_master_config_content(self.config_package))
+		source = loader.get_master_config_content(self.config_package)
 
 		config_map = loader.load_config_data(source, *parent_sources, use_builder_directives=True)
 		self._generate_config(config_map, self.root_class_name, True)

@@ -1,3 +1,4 @@
+import logging
 import pkgutil
 import os
 import sys
@@ -18,6 +19,8 @@ C = TypeVar('C', bound=Config)
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('-lc', help='Local config file path')
 args = arg_parser.parse_args()
+
+logging.basicConfig(level=logging.INFO)
 
 
 def generate_config(*parent_config: Tuple[C, str]):
@@ -47,9 +50,10 @@ def load(*config_def: Tuple[Type[Config], Union[str, None]]):
 	# 	config_sources.append(default_client_config_source)
 
 	if args.lc:
-		local_config_source = ConfigSource(loader.get_config_content(args.lc))
+		local_config_source = ConfigSource(loader.get_local_config_content(args.lc))
 		config_sources.append(local_config_source)
 
+	logging.info("Loading config for project {} (can be overwritten later)".format(config_def[-1][0].__name__))
 	config = loader.load_config_data(*config_sources)
 
 	config_dict = config.get_internal_objects()

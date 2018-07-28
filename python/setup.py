@@ -15,6 +15,6 @@ setup(
 	license='MIT',
 	packages=setuptools.find_packages(),
 	url = 'https://github.com/F-I-D-O/Future-Config/',
-	install_requires=['Mako', 'setuptools', 'typing'],
+	install_requires=['Mako', 'setuptools', 'typing', 'pytest'],
 	python_requires='>=3'
 )

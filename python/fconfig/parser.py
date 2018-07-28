@@ -92,9 +92,9 @@ class Parser:
 
 	def __init__(self, use_builder_directives=False):
 		self.config = ConfigDataObject(False)
-		self.object_stack = []
+		self.object_stack: List[ConfigDataObject] = []
 		self.use_builder_directives = use_builder_directives
-		self.current_object = self.config
+		self.current_object: ConfigDataObject = self.config
 		self.current_key: Union[str, int] = None
 		self.current_value = None
 		self.in_array = False
@@ -194,7 +194,7 @@ class Parser:
 		self.current_object = self.object_stack.pop()
 		if self.current_object.is_array:
 			self.in_array = True
-			self.current_key = self.current_object.getSize()
+			self.current_key = self.current_object.get_size()
 		else:
 			self.in_array = False
 

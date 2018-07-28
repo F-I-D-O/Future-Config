@@ -1,5 +1,6 @@
 
 from typing import Callable, Union
+from io import StringIO
 
 from fconfig.config_property import ConfigProperty
 
@@ -30,6 +31,9 @@ class ConfigDataObject:
 	def __iter__(self):
 		return iter(self.config_object)
 
+	def __getitem__(self, item):
+		return self.get(item)
+
 	def items(self):
 		return self.config_object.items()
 
@@ -51,12 +55,14 @@ class ConfigDataObject:
 		self.create_path()
 
 	def get_string_for_print(self):
-		out = ""
+		string_builder = StringIO()
 
-		def append_line(config_property, out):
-			out += "{}: {}%n".format(config_property.get_path(), config_property.value)
+		def append_line(config_property, string_builder):
+			print("{}: {}".format(config_property.get_path(), config_property.value), file=string_builder)
 
-		self.iterate_properties(lambda x: True, append_line)
+		self.iterate_properties(lambda x: True, append_line, string_builder)
+
+		return string_builder.getvalue()
 
 	def create_path(self):
 		path = ""
