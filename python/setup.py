@@ -6,7 +6,7 @@ from setuptools import setup
 
 setup(
 	name='fconfig',
-	version='1.0',
+	version='1.0.1.1',
 	description='Python config loader for Future Config format.',
 	author='F.I.D.O.',
 	author_email='david.fido.fiedler@gmail.com',

@@ -18,7 +18,7 @@ C = TypeVar('C', bound=Config)
 # arguments
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument('-lc', help='Local config file path')
-args = arg_parser.parse_args()
+args, _unknown_args = arg_parser.parse_known_args()
 
 logging.basicConfig(level=logging.INFO)
 
