@@ -1,0 +1,53 @@
+<%
+from fconfig import builder
+from fconfig.config_data_object import ConfigDataObject
+%>
+##
+import fconfig.configuration
+
+from fconfig.config import Config
+##
+% for key, value in object_properties.items():
+% if value[3]:
+import ${value[0]}
+% endif
+from ${value[0]} import ${value[1]}
+% endfor
+
+class ${class_name}(Config):
+    ##
+    def __init__(self, properties: dict=None):
+        % for key in properties:
+        self.${key} = properties.get("${key}")
+        % endfor
+
+        % for key, value in object_properties.items():
+        self.${key} = ${value[1]}(properties.get("${key}"))
+        % if value[3]:
+        ${value[0]}.config = self.${key}
+        % endif
+        % endfor
+
+        % for key, value in array_properties.items():
+        % if isinstance(value, ConfigDataObject) and not value.is_array:
+        <%
+        item_class_name = builder.get_class_name(value.name_in_parent)
+        %>
+        self.${key} = []
+        for item in properties.get("${key}")
+            self.${key}.append(${item_class_name}(item))
+        % else:
+        self.${key} = properties.get("${key}")
+        % endif
+        % endfor
+        pass
+
+config: ${class_name} = fconfig.configuration.load(${parent_parameter_string})
+
+<%doc>
+config: ${class_name} = None
+
+if not config:
+    config = fconfig.configuration.load(${parent_parameter_string})
+
+         </%doc>

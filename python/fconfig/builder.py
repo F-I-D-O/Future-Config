@@ -85,7 +85,7 @@ class Builder:
 
 		template_filename = 'config_root_template.txt' if is_root else 'config_template.txt'
 		# template_filename = 'config_template.txt'
-		template_data = pkgutil.get_data("fconfig.configuration", template_filename)
+		template_data = pkgutil.get_data("fconfig.templates", template_filename)
 		lookup = TemplateLookup(module_directory="/tmp")
 		class_template = Template(template_data, lookup=lookup)
 

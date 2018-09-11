@@ -1,0 +1,38 @@
+<% from fconfig import builder%>
+##
+% for key, value in object_properties.items():
+% if value[3]:
+import ${value[0]}
+% endif
+from ${value[0]} import ${value[1]}
+% endfor
+##
+class ${class_name}:
+    ##
+    def __init__(self, properties: dict=None):
+        % for key in properties:
+        self.${key} = properties.get("${key}")
+        % endfor
+
+        % for key, value in object_properties.items():
+        self.${key} = ${value[1]}(properties.get("${key}"))
+        % if value[3]:
+        ${value[0]}.config = self.${key}
+        % endif
+        % endfor
+
+        % for key, value in array_properties.items():
+        % if isinstance(value[0], ConfigDataObject):
+        <%
+        item_class_name = builder.get_class_name(value[0])
+        %>
+        self.${key} = []
+        for item in properties.get("${key}")
+            self.${key}.append(${item_class_name}(item))
+        % else:
+        self.${key} = [', '.join(properties.get("${key}"))]
+        % endif
+        % endfor
+        pass
+<%doc>
+         </%doc>
