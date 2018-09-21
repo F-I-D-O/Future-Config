@@ -30,3 +30,4 @@ temp/
 /test-project-gradle/build/
 /gradle-plugin/.nb-gradle/
 .gradle
+python/dist/

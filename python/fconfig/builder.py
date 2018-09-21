@@ -45,6 +45,8 @@ class Builder:
 		config_map = loader.load_config_data(source, *parent_sources, use_builder_directives=True)
 		self._generate_config(config_map, self.root_class_name, True)
 
+		self._create_init()
+
 	def _delete_old_files(self):
 		if os.path.isdir(self.output_dir):
 			for the_file in os.listdir(self.output_dir):
@@ -107,4 +109,5 @@ class Builder:
 			output_file.write(class_template.render(properties=properties, object_properties=object_properties,
 				array_properties=array_properties, class_name=class_name))
 
-
+	def _create_init(self):
+		open("{}/__init__.py".format(self.output_dir), 'a').close()
