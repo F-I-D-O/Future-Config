@@ -117,9 +117,12 @@ public class ConfigBuilder {
 
 	private void generateConfig(ConfigDataMap configMap, String mapName, boolean isRoot) {
 
-		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
 		TypeSpec.Builder objectBuilder
 				= TypeSpec.classBuilder(getClassName(mapName)).addModifiers(Modifier.PUBLIC);
+		
+		Builder constructorBuilder = MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC);
+		
+		
 
 		String mapParamName = JavaLanguageUtil.getPropertyName(mapName);
 
@@ -193,9 +196,16 @@ public class ConfigBuilder {
 			parametrBuilder.addStatement("return this");
 			objectBuilder.addMethod(parametrBuilder.build());
 		}
+		
+		// add reference to object in constructor
+		if(isRoot){
+			ClassName rootObjectClassName = ClassName.get(configPackageName, getClassName(mapName));
+			objectBuilder.addField(rootObjectClassName, JavaLanguageUtil.getPropertyName(mapName), 
+					Modifier.PUBLIC, Modifier.STATIC).build();
+		}
 
 		TypeSpec object = objectBuilder.addMethod(constructorBuilder.build()).build();
-
+		
 		JavaFile javaFile = JavaFile.builder(configPackageName, object).build();
 		try {
 			javaFile.writeTo(outputSrcDir);
