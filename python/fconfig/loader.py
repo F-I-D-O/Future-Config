@@ -11,7 +11,9 @@ from fconfig.config_property import ConfigProperty
 from fconfig.resolver import Resolver
 from fconfig.config import Config
 from fconfig.parser import Parser, Reference
+from fconfig.common import ConfigException
 
+DEFAULT_CONFIG_NAME = "config"
 DEFAULT_CONFIG_FILE_NAME = "config.cfg"
 DEFAULT_CONFIG_PACKAGE = "resources"
 DEFAULT_GENERATED_CONFIG_PACKAGE = "config"
@@ -68,19 +70,31 @@ def get_master_config_content(package: str=None, generated_config: C=None, path_
 	return content
 
 
-def get_config_content_from_resource(package: str, config_name: str, path_in_config: str=None) -> ConfigSource:
+def get_config_content_from_resource(package: str, config_name: str = DEFAULT_CONFIG_FILE_NAME, path_in_config: str=None) -> ConfigSource:
+	"""
+	Load config from project resources. The location is determined by the package param
+	@param package: Determines the location where the config file is stored starting with the root package
+	@param config_name: The name of the config file. Defaults to config.cfg
+	@param path_in_config: The name of this config  inside the top level config
+	@return:
+	"""
+
 	config_filename = "{}.cfg".format(config_name)
 
-	resource = pkgutil.get_data(package, DEFAULT_CONFIG_FILE_NAME)
-	if resource:
-		content = resource.decode("utf-8").split("\n")
-	else:
-		logging.critical("Specified project does not contain config file in resources: %s", package)
-		sys.exit(1)
+	try:
+		resource = pkgutil.get_data(package, config_filename)
+		if resource:
+			content = resource.decode("utf-8").split("\n")
+		else:
+			logging.critical("Config file %s cannot be loaded from resource path: %s", config_filename, package)
+			raise ConfigException("Config file cannot be loaded", "{}/{}".format(package, config_filename))
 
-	# content = resource_string(package, config_filename).decode("utf-8").split("\n")
-	config_source = ConfigSource(content, path_in_config)
-	return config_source
+		# content = resource_string(package, config_filename).decode("utf-8").split("\n")
+		config_source = ConfigSource(content, path_in_config)
+		return config_source
+	except FileNotFoundError as e:
+		logging.critical("Config file %s cannot be found in resource path: %s", config_filename, package)
+		raise ConfigException("Config file not found", "{}/{}".format(package, config_filename))
 
 
 def _change_config_context(config_map_from_source: ConfigDataObject, path: str):

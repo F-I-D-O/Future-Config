@@ -96,3 +96,15 @@ def test_config_override():
 	assert 3 == innerInnerObjectArray[0]
 	assert 2 == innerInnerObjectArray[1]
 	assert 1 == innerInnerObjectArray[2]
+
+
+def test_config_override():
+	config = common.load_test_config_file("use_vars_from_master-master", "use_vars_from_master-client")
+	# using master variable in client
+	assert "base/path/specific/file" == config["specific_path"]
+
+	# overiding master variable
+	assert "client_base_path/" == config["another_base_path"]
+
+	# client override of master variable should be reflected in master config
+	assert "client_base_path/specific" == config["master_specific_path"]

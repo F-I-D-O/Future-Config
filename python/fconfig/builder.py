@@ -28,6 +28,8 @@ class Builder:
 		self.output_dir = output_dir
 		self.parent_config = parent_config
 		self.parent_config_map: Dict[str, object] = {}
+		self.rendered_config_objects = dict()
+
 		for pc in parent_config:
 			self.parent_config_map[pc[1]] = pc[0]
 
@@ -44,6 +46,7 @@ class Builder:
 
 		config_map = loader.load_config_data(source, *parent_sources, use_builder_directives=True)
 		self._generate_config(config_map, self.root_class_name, True)
+		self._write_config()
 
 		self._create_init()
 
@@ -85,7 +88,8 @@ class Builder:
 			else:
 				properties[key] = value
 
-		template_filename = 'config_root_template.txt' if is_root else 'config_template.txt'
+		template_filename = 'config_template.txt'
+			# if is_root else 'config_template.txt'
 		# template_filename = 'config_template.txt'
 		template_data = pkgutil.get_data("fconfig.templates", template_filename)
 		lookup = TemplateLookup(module_directory="/tmp")
@@ -94,20 +98,39 @@ class Builder:
 		if not os.path.exists(self.output_dir):
 			os.makedirs(self.output_dir)
 
-		output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
+		# output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
 		class_name = get_class_name(map_name)
 		if is_root:
 			parent_parameter_strings = []
 			for pc in self.parent_config:
 				parent_parameter_strings.append("({}, '{}')".format(pc[0].__name__, pc[1]))
 			parent_parameter_strings.append("({}, None)".format(class_name))
-			output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-													array_properties=array_properties,
-													class_name=class_name, map_name=map_name,
-													parent_parameter_string=", ".join(parent_parameter_strings)))
+			self.rendered_config_objects[map_name] = class_template.render(
+				is_root=True,
+				properties=properties,
+				object_properties=object_properties,
+				array_properties=array_properties,
+				class_name=class_name,
+				map_name=map_name,
+				parent_parameter_string=", ".join(parent_parameter_strings))
+			# output_file.write(class_template.render(properties=properties, object_properties=object_properties,
+			# 										array_properties=array_properties,
+			# 										class_name=class_name, map_name=map_name,
+			# 										parent_parameter_string=", ".join(parent_parameter_strings)))
 		else:
-			output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-				array_properties=array_properties, class_name=class_name))
+			self.rendered_config_objects[map_name] = class_template.render(
+				is_root=False,
+				properties=properties,
+				object_properties=object_properties,
+				array_properties=array_properties,
+				class_name=class_name)
+			# output_file.write(class_template.render(properties=properties, object_properties=object_properties,
+			# 	array_properties=array_properties, class_name=class_name))
 
 	def _create_init(self):
 		open("{}/__init__.py".format(self.output_dir), 'a').close()
+
+	def _write_config(self):
+		for map_name, rendered_object in self.rendered_config_objects:
+			with open("{}/{}.py".format(self.output_dir, map_name), 'w') as out:
+				out.write(rendered_object)
