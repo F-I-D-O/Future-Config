@@ -12,7 +12,10 @@
     
 ## Fixed
 - array generation in builder for root file
+- array of objects building
 
 ## Tests
 - new test for correct variable overiding added to `resolver_test.py`: `test_config_override`
 - builder tests
+- builder complete test (test the whole process from parsing to building)
+- special test based on issue #40 (https://github.com/F-I-D-O/Future-Config/issues/40)

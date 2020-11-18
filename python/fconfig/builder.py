@@ -68,11 +68,12 @@ class Builder:
 		for key, value in config_map.items():
 			if isinstance(value, ConfigDataObject):
 				if value.is_array:
+					item_name = "plain"
 					if isinstance(value.get(0), ConfigDataObject):
 						item_name \
 							= config_map.path + "_" + key + "_item" if config_map.path else key + "_item"
 						self._generate_config(value.get(0), item_name)
-					array_properties[key] = value
+					array_properties[key] = (value, item_name)
 				else:
 					# parent config test
 					if value.path in self.parent_config_map:

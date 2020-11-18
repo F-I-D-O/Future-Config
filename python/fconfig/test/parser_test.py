@@ -21,8 +21,24 @@ def test_simple_array():
 	array = config["array"]
 
 	assert 1 == array[0]
+	assert 2 == array[1]
 	assert 3 == array[2]
-	assert 6 == array[5]
+
+
+def test_string_array_in_object():
+	config = common.load_test_config_file("string_array_in_object")
+
+	assert "comparison" in config
+	assert isinstance(config["comparison"], ConfigDataObject)
+
+	assert "experiment_names" in config["comparison"]
+	assert isinstance(config["comparison"]["experiment_names"], ConfigDataObject)
+
+	array = config["comparison"]["experiment_names"]
+
+	assert 'IH-constraint4min-capacity1' == array[0]
+	assert 'IH-constraint4min' == array[1]
+	assert 'vga-constraint4min' == array[2]
 
 
 def test_two_level_array():
