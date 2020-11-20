@@ -9,6 +9,8 @@
 ## Added
 - docstring comments for several methods:
     - `loader.get_config_content_from_resource`
+- support for negative numbers
+- support for one letter names/keys
     
 ## Fixed
 - array generation in builder for root file

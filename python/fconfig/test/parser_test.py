@@ -5,11 +5,19 @@ from fconfig.config_data_object import ConfigDataObject
 
 
 def test_datatypes():
-	config = common.load_test_config_file("dataTypes")
+	config = common.load_test_config_file("data_types")
 
 	assert "String" == config["string"]
 	assert 1 == config["int"]
 	assert 1.0 == config["double"]
+	assert -3 == config["negative_int"]
+	assert -2.0 == config["negative_float"]
+
+
+def test_one_letter_key():
+	config = common.load_test_config_file("one_letter_key")
+
+	assert 1 == config["a"]
 
 
 def test_simple_array():

@@ -6,12 +6,12 @@ from typing import List, Union
 from fconfig.config_data_object import ConfigDataObject
 # from fconfig.loader import ConfigSource
 
-NAME_PATTERN_STRING = "[a-zA-Z][a-zA-Z0-9_]+"
+NAME_PATTERN_STRING = "[a-zA-Z][a-zA-Z0-9_]*"
 
-NUMBER_PATTERN = re.compile("^([0-9])")
+NUMBER_PATTERN = re.compile("^-?([0-9])")
 BOOLEAN_PATTERN = re.compile(r"^(true|false)$")
 TRUE_PATTERN = re.compile("^(true)$")
-OPERATOR_PATTERN = re.compile(r"[+\-]")
+OPERATOR_PATTERN = re.compile(r"^[+\-]$")
 REFERENCE_PATTERN = re.compile(r"\$({}(\.{})*)".format(NAME_PATTERN_STRING, NAME_PATTERN_STRING))
 
 
@@ -44,7 +44,6 @@ class Reference:
 			new_path.append(part)
 		self.path = new_path
 		self.path_string = "$" + ".".join(new_path)
-
 
 
 class Parser:
