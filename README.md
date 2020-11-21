@@ -31,7 +31,7 @@ The differenc ebetween Future-Config and other config/text formats is displayed 
 	```
 4. Use the generated config classes:
 	```
-	import zourproject.confi.zourproject_config.config
+	import yourproject.confi.zourproject_config.config
 	```
 
 
