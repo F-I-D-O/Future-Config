@@ -1,11 +1,9 @@
 import logging
 import sys
 import pkgutil
-import fconfig.parser as parser
 import fconfig.merger as merger
 
 from typing import Tuple, List, TypeVar
-from pkg_resources import resource_string
 from fconfig.config_data_object import ConfigDataObject
 from fconfig.config_property import ConfigProperty
 from fconfig.resolver import Resolver
@@ -44,8 +42,6 @@ def load_config_data(*config_source_definitions: ConfigSource, use_builder_direc
 
 	config_root = Resolver(merger.merge(config_data_list)).resolve_values()
 
-	# LOGGER.debug(configRoot.getStringForPrint());
-
 	logging.info(config_root.get_string_for_print())
 
 	return config_root
@@ -65,7 +61,6 @@ def get_master_config_content(package: str=None, generated_config: C=None, path_
 		class_module: str = generated_config.__module__
 		class_package = '.'.join(class_module.split('.')[:-1])
 		package = class_package.replace(DEFAULT_GENERATED_CONFIG_PACKAGE, DEFAULT_CONFIG_PACKAGE)
-	# content = resource_string(package, DEFAULT_CONFIG_FILE_NAME).decode("utf-8").split("\n")
 	content = get_config_content_from_resource(package, DEFAULT_CONFIG_NAME, path_in_config)
 	return content
 
@@ -89,7 +84,6 @@ def get_config_content_from_resource(package: str, config_name: str = DEFAULT_CO
 			logging.critical("Config file %s cannot be loaded from resource path: %s", config_filename, package)
 			raise ConfigException("Config file cannot be loaded", "{}/{}".format(package, config_filename))
 
-		# content = resource_string(package, config_filename).decode("utf-8").split("\n")
 		config_source = ConfigSource(content, path_in_config)
 		return config_source
 	except FileNotFoundError as e:
@@ -100,11 +94,9 @@ def get_config_content_from_resource(package: str, config_name: str = DEFAULT_CO
 def _change_config_context(config_map_from_source: ConfigDataObject, path: str):
 
 	def add_prefix(config_property: ConfigProperty, object_name: str):
-		new_value = config_property.value
 		for token in config_property.value:
 			if isinstance(token, Reference):
 				token.add_prefix(object_name)
-		# config_property.set_value(new_value)
 
 	for object_name in reversed(path.split(".")):
 

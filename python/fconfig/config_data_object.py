@@ -7,20 +7,6 @@ from fconfig.config_property import ConfigProperty
 
 class ConfigDataObject:
 
-	# def __init__(self):
-	# 	self.is_array = False
-	# 	self.config_object = {}
-	# 	self.parent_config_object = None
-	# 	self.key_in_parent = None
-	# 	self.path = self.create_path()
-	#
-	# def __init__(self, parent_config_object, key_in_parent: str, is_array):
-	# 	self.is_array = is_array
-	# 	self.config_object = {}
-	# 	self.parent_config_object = parent_config_object
-	# 	self.key_in_parent = key_in_parent
-	# 	self.path = self.create_path()
-
 	def __init__(self, is_array: bool, parent_config_object=None, key_in_parent: Union[str, int]=None, config_object: dict=None):
 		self.is_array = is_array
 		self.config_object = config_object if config_object else {}
@@ -99,62 +85,3 @@ class ConfigDataObject:
 				out[key] = value
 
 		return out
-
-	# class Entry:
-	#     def __init__(self, key, value):
-	#         self.key = key
-	#         self.value = value
-	#
-	# class VariableIterator:
-	#
-	#     def __init__(self, self, vars_only):
-	#         self.context_stack = []
-	#         self.vars_only = vars_only
-	#         self.current_context = self.VariableIteratorContext(self, 0)
-	#         self.current_object = self;
-	#         self.current_entry = None;
-	#
-	#     def __iter__(self):
-	#         return self
-	#
-	#     def next(self):
-	#         # if not self.current_entry is None and self.is_requested_type(self.current_entry.value))
-	#         # self.check_iterator()
-	#
-	#         while not self.current_context.finished() or self.context_stack:
-	#             if self.current_context.finished():
-	#                 self.current_context = self.context_stack.pop()
-	#                 self.current_object = self.current_context.self
-	#             else:
-	#                 self.current_entry =
-	#                 current_value = self.current_entry.value
-	#                 if self.is_requested_type(current_value):
-	#                     return ConfigProperty(self.current_object, self.current_entry.key, current_value)
-	#                 elif isinstance(current_value, ConfigDataObject):
-	#                     self.context_stack.push(self.current_context)
-	#                     self.current_contex = self.VariableIteratorContext(current_value, 0)
-	#                 self.check_iterator()
-	#
-	#     def is_requested_type(self, value):
-	#         if self.varsOnly:
-	#             return parser.contains_variable(value)
-	#         else:
-	#             return not isinstance(value, ConfigDataObject)
-	#
-	#     def check_iterator(self):
-	#         while self.current_context.finished() and self.context_stack:
-	#             self.current_context = self.context_stack.pop()
-	#             self.current_object = self.current_context.self
-	#
-	#
-	#     class VariableIteratorContext:
-	#
-	#         def __init__(self, self, position):
-	#             self.self = self
-	#             self.position = position
-	#
-	#         def finished(self):
-	#             return self.position >= len(self.self)
-	#
-	#         def increment(self):
-	#             self.position += 1

@@ -7,7 +7,6 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 
 from fconfig import loader
-from fconfig.loader import ConfigSource
 from fconfig.config import Config
 
 C = TypeVar('C', bound=Config)
@@ -57,7 +56,6 @@ class Builder:
 				try:
 					if os.path.isfile(file_path):
 						os.unlink(file_path)
-					# elif os.path_in_config.isdir(file_path): shutil.rmtree(file_path)
 				except Exception as e:
 					print(e)
 
@@ -90,8 +88,6 @@ class Builder:
 				properties[key] = value
 
 		template_filename = 'config_template.txt'
-			# if is_root else 'config_template.txt'
-		# template_filename = 'config_template.txt'
 		template_data = pkgutil.get_data("fconfig.templates", template_filename)
 		lookup = TemplateLookup(module_directory="/tmp")
 		class_template = Template(template_data, lookup=lookup)
@@ -99,7 +95,6 @@ class Builder:
 		if not os.path.exists(self.output_dir):
 			os.makedirs(self.output_dir)
 
-		# output_file = open("{}/{}.py".format(self.output_dir, map_name), 'w')
 		class_name = get_class_name(map_name)
 		if is_root:
 			parent_parameter_strings = []
@@ -114,10 +109,6 @@ class Builder:
 				class_name=class_name,
 				map_name=map_name,
 				parent_parameter_string=", ".join(parent_parameter_strings))
-			# output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-			# 										array_properties=array_properties,
-			# 										class_name=class_name, map_name=map_name,
-			# 										parent_parameter_string=", ".join(parent_parameter_strings)))
 		else:
 			self.rendered_config_objects[map_name] = class_template.render(
 				is_root=False,
@@ -125,8 +116,6 @@ class Builder:
 				object_properties=object_properties,
 				array_properties=array_properties,
 				class_name=class_name)
-			# output_file.write(class_template.render(properties=properties, object_properties=object_properties,
-			# 	array_properties=array_properties, class_name=class_name))
 
 	def _create_init(self):
 		open("{}/__init__.py".format(self.output_dir), 'a').close()

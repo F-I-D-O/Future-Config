@@ -4,7 +4,7 @@ import sys
 
 from typing import List, Union
 from fconfig.config_data_object import ConfigDataObject
-# from fconfig.loader import ConfigSource
+
 
 NAME_PATTERN_STRING = "[a-zA-Z][a-zA-Z0-9_]*"
 
@@ -49,31 +49,10 @@ class Reference:
 class Parser:
 	WHITESPACE_LINE_PATTERN = re.compile(r"^\s*$")
 	WHITESPACE_PATTERN = re.compile(r"[\r\n\s]+")
-	# INDENTION_PATTERN = re.compile("^(    |	)*")
 	KEY_PATTERN = re.compile("^({})(:)".format(NAME_PATTERN_STRING))
 	VALUE_PATTERN = re.compile(r"^\s*([^\s]+.*)")
 	BUILDER_DIRECTIVE_PATTERN = re.compile(r"^!([^\s]*)")
 	TOKEN_PATTERN = re.compile(r"[^\s'\"]+|'[^']*'|\"[^\"]*\"")
-	# LINE_END_PATTERN = re.compile(r"[\r\n]+")
-
-	# @staticmethod
-	# def strip_indention(line):
-	# 	line = Parser.INDENTION_PATTERN.sub("", line)
-	# 	return line
-	#
-	# @staticmethod
-	# def remove_line_ends(line):
-	# 	line = Parser.LINE_END_PATTERN.sub("", line)
-	# 	return line
-
-	# @staticmethod
-	# def parse_expression(value):
-	#
-	# 	# do not parse before references are resolved
-	# 	if contains_variable(value):
-	# 		return value
-	# 	else:
-	# 		return parse_simple_value(value)
 
 	@staticmethod
 	def parse_value_token(token: str) -> Union[str, int, bool, float, Reference]:
@@ -105,17 +84,6 @@ class Parser:
 			# skip blank lines
 			if Parser.WHITESPACE_LINE_PATTERN.match(line):
 				continue
-
-			# # comment line
-			# elif "#" in line:
-			#
-			# 	# possible comment processing
-			# 	pass
-
-			# # directive line
-			# elif line.startswith("!"):
-			# 	if self.use_builder_directives:
-			# 		self.resolve_builder_directive(line)
 			
 			tokens = self.tokenize(line)
 			first_token = tokens[0]
@@ -133,41 +101,10 @@ class Parser:
 			elif first_token == "}" or first_token == "]":
 				self.process_close_bracket()
 
-			# # new array or object
-			# if "{" in line or "[" in line:
-			#
-			# 	# push old context to stack
-			# 	self.object_stack.append(self.current_object)
-			#
-			# 	self.in_array = "[" in line
-			#
-			# 	self.current_object = ConfigDataObject(self.in_array, self.current_object, self.current_key)
-			#
-			# 	# add new object to parent object
-			# 	if self.skip_next_object:
-			# 		self.skip_next_object = False
-			# 	else:
-			# 		self.object_stack[-1].put(self.current_key, self.current_object)
-			# 	if self.in_array:
-			# 		self.current_key = 0
-			#
-			# elif "}" in line or "]" in line:
-			# 	self.current_object = self.object_stack.pop()
-			# 	if self.current_object.is_array:
-			# 		self.in_array = True
-			# 		self.current_key = self.current_object.getSize()
-			# 	else:
-			# 		self.in_array = False
 			else:
 				self.parse_line(tokens)
 
 		return self.config
-
-	# def resolve_builder_directive(self, line):
-	# 	match = self.BUILDER_DIRECTIVE_PATTERN.match(line)
-	# 	directive = match.group(1)
-	# 	if directive == "parent":
-	# 		self.skip_next_object = True
 
 	def tokenize(self, line: str) -> List[str]:
 		# return self.WHITESPACE_PATTERN.split(line)
@@ -198,9 +135,6 @@ class Parser:
 			self.in_array = False
 
 	def parse_line(self, tokens: List[str]):
-		# line = self.strip_indention(line)
-
-		# line = self.remove_line_ends(line)
 
 		if not self.in_array:
 			self.parse_key(tokens[0])
@@ -223,9 +157,7 @@ class Parser:
 			self.terminate()
 
 	def parse_value(self, tokens: List[str]) -> bool:
-		# match = Parser.VALUE_PATTERN.match(line)
 		if tokens:
-			# self.current_value = self.parse_expression(match.group(1))
 			parsed_tokens = []
 			for token in tokens:
 				parsed_tokens.append(self.parse_value_token(token))

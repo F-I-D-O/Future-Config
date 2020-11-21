@@ -10,8 +10,6 @@ setup(
 	description='Python config loader for Future Config format.',
 	author='F.I.D.O.',
 	author_email='david.fido.fiedler@gmail.com',
-	# long_description=long_description,
-	# long_description_content_type="text/markdown",
 	license='MIT',
 	packages=setuptools.find_packages(),
 	url = 'https://github.com/F-I-D-O/Future-Config/',
