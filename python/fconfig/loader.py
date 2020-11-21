@@ -66,7 +66,7 @@ def get_master_config_content(package: str=None, generated_config: C=None, path_
 		class_package = '.'.join(class_module.split('.')[:-1])
 		package = class_package.replace(DEFAULT_GENERATED_CONFIG_PACKAGE, DEFAULT_CONFIG_PACKAGE)
 	# content = resource_string(package, DEFAULT_CONFIG_FILE_NAME).decode("utf-8").split("\n")
-	content = get_config_content_from_resource(package, DEFAULT_CONFIG_FILE_NAME, path_in_config)
+	content = get_config_content_from_resource(package, DEFAULT_CONFIG_NAME, path_in_config)
 	return content
 
 
