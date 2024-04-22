@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.26)
 project(FutureConfig)
 
-set(CMAKE_CXX_STANDARD 14) # for google test
+set(CMAKE_CXX_STANDARD 17) # for filesystem
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # search for dependencies
 find_package(yaml-cpp CONFIG REQUIRED)
+find_package(inja CONFIG REQUIRED)
 
 
 # GOOGLE TEST
@@ -21,5 +22,9 @@ FetchContent_MakeAvailable(googletest)
 
 add_library(future-config STATIC library.cpp
 	src/Parser.cpp
-	src/Parser.h)
+	src/Parser.h
+	src/Builder.cpp
+	src/Builder.h
+	src/common.h)
 target_link_libraries(future-config PRIVATE yaml-cpp)
+target_link_libraries(future-config PRIVATE pantor::inja)
