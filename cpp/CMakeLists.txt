@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 project(FutureConfig)
 
-set(CMAKE_CXX_STANDARD 17) # for filesystem
+set(CMAKE_CXX_STANDARD 20) # for map.contains()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # search for dependencies
@@ -25,6 +25,7 @@ add_library(future-config STATIC library.cpp
 	src/Parser.h
 	src/Builder.cpp
 	src/Builder.h
-	src/common.h)
+	src/common.h
+	src/common.cpp)
 target_link_libraries(future-config PRIVATE yaml-cpp)
 target_link_libraries(future-config PRIVATE pantor::inja)

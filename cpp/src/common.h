@@ -4,4 +4,9 @@
 
 #pragma once
 
+#include <string>
+#include <vector>
+
 class Config;
+
+std::string join(const std::vector<std::string>& v, const std::string& delimiter);
