@@ -33,11 +33,16 @@ private:
 
 	void clean_build_dir();
 
-	void generate_config_class(
+	std::string get_template_data_for_class(
 		const YAML::Node& config_object,
 		const std::string& key,
-		const std::vector<std::string>& path
+		const std::vector<std::string>& path,
+		inja::json& template_data
 	);
 
+	void generate_config();
+
 	static std::string get_class_name(const std::string& basic_string);
+
+	std::string get_type(const std::string& value);
 };

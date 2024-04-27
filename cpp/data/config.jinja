@@ -1,0 +1,42 @@
+#pragma once
+
+{% for include in includes %}
+#include "{{ include }}"
+{% endfor %}
+
+{% for class in class_data %}
+struct {{ class.class_name }} {
+	{% for property in class.properties %}
+		{% if property.mode == "scalar" %}
+	{{ property.type }} {{ property.key }};
+		{% elif property.mode == "object" %}
+	{{ property.class_name }} {{ property.key };
+		{% elif property.mode == "array" %}
+	std::vector<{{ property.item_name }}> {{ property.key }};
+		{% endif %}
+	{% endfor %}
+
+	{{ class.class_name }}(const YAML::Node& yaml_config):
+{% for property in class.properties %}
+	{% if property.mode == "scalar" %}
+		{{ property.key }}(yaml_config["{{ property.key }}"].as<{{ property.type }}>())
+	{% elif property.mode == "object" %}
+		{{ property.key }}(yaml_config["{{ property.key }}"])
+	{% elif property.mode == "array" %}
+	{
+		const YAML::Node& yaml_array = yaml_config["{{ property.key }}"];
+		for (const auto& yaml_item : yaml_array) {
+			{{ property.item_name }} item(yaml_item);
+			{{ property.key }}.push_back(item);
+		}
+	}
+	{% endif %}
+	{% if not loop.last %}
+	,
+	{% endif %}
+{% endfor %}
+	{};
+
+};
+
+{% endfor %}
