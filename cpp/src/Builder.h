@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 #include <unordered_map>
+#include "inja/inja.hpp"
 
 #include "common.h"
 
@@ -17,8 +18,9 @@ class Builder {
 public:
 	Builder(
 		const YAML::Node& config,
-		const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map,
-		const fs::path& output_dir
+		const fs::path& output_dir,
+		const std::string& root_object_name,
+		const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map = {}
 	);
 
 
@@ -30,6 +32,8 @@ private:
 	const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map;
 
 	const fs::path& output_dir;
+
+	const std::string& root_object_name;
 
 	void clean_build_dir();
 
@@ -44,5 +48,5 @@ private:
 
 	static std::string get_class_name(const std::string& basic_string);
 
-	std::string get_type(const std::string& value);
+	static std::string get_type(const std::string& value);
 };

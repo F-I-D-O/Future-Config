@@ -19,13 +19,30 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+include_directories(src) # for including files relative to src dir
+
 
 add_library(future-config STATIC library.cpp
 	src/Parser.cpp
-	src/Parser.h
 	src/Builder.cpp
-	src/Builder.h
-	src/common.h
-	src/common.cpp)
+	src/common.cpp
+	data/test/builder/one_var.h
+)
+
+add_executable(test_run
+	src/Parser.cpp
+	src/Builder.cpp
+	src/common.cpp
+	test/bulider_tests.cpp
+)
+
 target_link_libraries(future-config PRIVATE yaml-cpp)
 target_link_libraries(future-config PRIVATE pantor::inja)
+
+target_link_libraries(test_run PRIVATE yaml-cpp)
+target_link_libraries(test_run PRIVATE pantor::inja)
+target_link_libraries(test_run PRIVATE GTest::gtest_main)
+
+# enable automatic discovery of tests
+include(GoogleTest) # cmake module
+gtest_discover_tests(test_run)

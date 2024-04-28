@@ -5,16 +5,20 @@
 #include <any>
 #include <ranges>
 #include <tuple>
-#include "inja/inja.hpp"
 
 #include "Builder.h"
 
 
 Builder::Builder(
 	const YAML::Node& config,
-	const std::unordered_map<std::string, std::tuple<std::string,std::string>>& dependency_config_map,
-	const fs::path& output_dir
-) : config(config), dependency_config_map(dependency_config_map), output_dir(output_dir) {}
+	const fs::path& output_dir,
+	const std::string& root_object_name,
+	const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map
+) :
+config(config),
+output_dir(output_dir),
+root_object_name(root_object_name),
+dependency_config_map(dependency_config_map){}
 
 void Builder::clean_build_dir() {
 	if (exists(output_dir) && !output_dir.empty()) {
@@ -38,49 +42,52 @@ std::string Builder::get_template_data_for_class(
 	for (YAML::const_iterator it = config_object.begin(); it != config_object.end(); ++it) {
 		const auto& child_key = it->first.as<std::string>();
 		const auto& child_object = it->second;
+		auto child_path = path;
+		child_path.push_back(child_key);
 
 		inja::json property_data{
 			{"key", child_key},
 		};
 
 		switch (child_object.Type()) {
-			case YAML::NodeType::Scalar:
+			case YAML::NodeType::Scalar: {
 				property_data["mode"] = "scalar";
 				auto value = child_object.as<std::string>();
 				property_data["type"] = get_type(value);
 				property_data["value"] = value;
 				break;
-			case YAML::NodeType::Map:
-				auto child_path= path;
-				child_path.push_back(child_key);
+			}
+			case YAML::NodeType::Map: {
 				std::string child_class_name;
 				bool dependency = false;
 
-				if(dependency_config_map.contains(child_key)) {
+				if (dependency_config_map.contains(child_key)) {
 					std::string include_string;
 					std::tie(include_string, child_class_name) = dependency_config_map.at(child_key);
 					dependency = true;
 					template_data["includes"].push_back(include_string);
-				}
-				else {
+				} else {
 					child_class_name = get_template_data_for_class(child_object, child_key, child_path, template_data);
 				}
 				property_data["mode"] = "object";
 				property_data["class_name"] = child_class_name;
 				break;
-			case YAML::NodeType::Sequence:
+			}
+			case YAML::NodeType::Sequence: {
 				std::string item_name = "plain";
 
 				// if the array contains objects, generate a class for those objects
-				if(child_object[0].Type() == YAML::NodeType::Map) {
+				if (child_object[0].Type() == YAML::NodeType::Map) {
 					item_name = std::format("{}_item", join(child_path, "_"));
 					get_template_data_for_class(child_object[0], item_name, child_path, template_data);
 				}
 				property_data["mode"] = "array";
 				property_data["item_name"] = item_name;
 				break;
-			default:
+			}
+			default: {
 				throw std::runtime_error("Unsupported YAML node type");
+			}
 		}
 		class_data["properties"].push_back(property_data);
 	}
@@ -109,8 +116,12 @@ void Builder::generate_config() {
 	template_data["includes"] = inja::json::array();
 	template_data["class_data"] = inja::json::array();
 
-	get_template_data_for_class(config, "", {}, template_data);
-	env.write(config_template, template_data, output_dir.string());
+//	std::string root_class_name = root_object_name;
+//	root_class_name[0] = static_cast<char>(std::toupper(root_class_name.at(0)));
+
+	get_template_data_for_class(config, root_object_name, {}, template_data);
+	auto out_path= output_dir / std::format("{}_config.h", root_object_name);
+	env.write(config_template, template_data, out_path.string());
 }
 
 std::string Builder::get_type(const std::string& value) {
@@ -123,5 +134,5 @@ std::string Builder::get_type(const std::string& value) {
 	if(value.find_first_not_of("0123456789") == std::string::npos) {
 		return "int";
 	}
-	return "string";
+	return "std::string";
 }
