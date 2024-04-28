@@ -28,6 +28,7 @@ void Builder::clean_build_dir() {
 
 void Builder::build_config() {
 	clean_build_dir();
+	generate_config();
 }
 
 std::string Builder::get_template_data_for_class(
@@ -110,18 +111,23 @@ void Builder::generate_config() {
 	fs::create_directories(output_dir);
 	inja::Environment env;
 	const auto template_filename = "config.jinja";
-	inja::Template config_template = env.parse_template(template_filename);
+	try{
+		inja::Template config_template = env.parse_template(template_filename);
 
-	inja::json template_data;
-	template_data["includes"] = inja::json::array();
-	template_data["class_data"] = inja::json::array();
+		inja::json template_data;
+		template_data["includes"] = inja::json::array();
+		template_data["class_data"] = inja::json::array();
 
-//	std::string root_class_name = root_object_name;
-//	root_class_name[0] = static_cast<char>(std::toupper(root_class_name.at(0)));
+	//	std::string root_class_name = root_object_name;
+	//	root_class_name[0] = static_cast<char>(std::toupper(root_class_name.at(0)));
 
-	get_template_data_for_class(config, root_object_name, {}, template_data);
-	auto out_path= output_dir / std::format("{}_config.h", root_object_name);
-	env.write(config_template, template_data, out_path.string());
+		get_template_data_for_class(config, root_object_name, {}, template_data);
+		auto out_path= output_dir / std::format("{}_config.h", root_object_name);
+		env.write(config_template, template_data, out_path.string());
+	}
+	catch(const inja::ParserError& e){
+		throw std::runtime_error(e.what());
+	}
 }
 
 std::string Builder::get_type(const std::string& value) {

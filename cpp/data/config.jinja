@@ -13,7 +13,7 @@ struct {{ class.class_name }} {
 		{% if property.mode == "scalar" %}
 	{{ property.type }} {{ property.key }};
 		{% elif property.mode == "object" %}
-	{{ property.class_name }} {{ property.key };
+	{{ property.class_name }} {{ property.key }};
 		{% elif property.mode == "array" %}
 	std::vector<{{ property.item_name }}> {{ property.key }};
 		{% endif %}

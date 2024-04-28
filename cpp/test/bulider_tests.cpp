@@ -25,10 +25,11 @@ void compare_generated_config_content(const std::string& expected, const std::st
 
 void check_generated_config(const YAML::Node& config, const fs::path& expected_file) {
 	fs::path output_dir = fs::temp_directory_path() / "test_output";
-	Builder builder(config, output_dir, <#initializer#>);
+	std::string root_object_name = expected_file.stem().string();
+	Builder builder(config, output_dir, root_object_name);
 	builder.build_config();
 
-	fs::path actual_file = output_dir / "config.h";
+	fs::path actual_file = output_dir / std::format("{}_config.h", root_object_name);
 	ASSERT_TRUE(fs::exists(actual_file));
 
 	std::ifstream expected_file_stream(expected_file);
@@ -41,7 +42,7 @@ void check_generated_config(const YAML::Node& config, const fs::path& expected_f
 }
 
 TEST(Builder, test_one_var) {
-	YAML::Node config = YAML::Load("{var: test_var");
+	YAML::Node config = YAML::Load("{var: test_var}");
 	check_generated_config(config, TEST_DATA_DIR / "one_var.h");
 }
 
