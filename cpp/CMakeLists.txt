@@ -46,3 +46,21 @@ target_link_libraries(test_run PRIVATE GTest::gtest_main)
 # enable automatic discovery of tests
 include(GoogleTest) # cmake module
 gtest_discover_tests(test_run)
+
+
+
+# RESOURCE COPYING TO BUILD DIR
+
+# test data
+add_custom_command(
+	TARGET test_run
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data/test $<TARGET_FILE_DIR:test_run>/data/test
+)
+
+# config template
+add_custom_command(
+	TARGET test_run
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja $<TARGET_FILE_DIR:test_run>/data/config.jinja
+)

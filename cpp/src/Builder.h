@@ -48,5 +48,5 @@ private:
 
 	static std::string get_class_name(const std::string& basic_string);
 
-	static std::string get_type(const std::string& value);
+//	static std::string get_type(const std::string& value);
 };
