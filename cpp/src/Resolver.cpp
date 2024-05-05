@@ -99,7 +99,7 @@ std::tuple<Resolve_status,std::string> Resolver::resolve_value(YAML::Node & node
 			}
 		}
 		else {
-			string_value.replace(match.first, match.second, variable_value);
+			string_value = string_value.replace(match.first - 2, match.second + 1, variable_value);
 		}
 	}
 	return {Resolve_status::COMPLETE, string_value};

@@ -18,7 +18,7 @@ enum class Resolve_status {
 
 
 class Resolver {
-	const std::regex variable_regex = std::regex(R"regex(${([^}]+)})regex");
+	const std::regex variable_regex = std::regex(R"regex(\$\{([^\}]+)\})regex");
 
 	const YAML::Node& yaml_config;
 
