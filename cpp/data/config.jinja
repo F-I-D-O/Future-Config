@@ -35,9 +35,12 @@ struct {{ class.class_name }} {
 	{
 	{% for property in class.properties %}
 		{% if property.mode == "array" %}
-		const YAML::Node& yaml_array = yaml_config["{{ property.key }}"];
-		for (const auto& yaml_item: yaml_array) {
+		for (const auto& yaml_item: yaml_config["{{ property.key }}"]) {
+			{% if property.scalar_item %}
 			{{ property.key }}.push_back(yaml_item.as<{{ property.item_type }}>());
+			{% else %}
+			{{ property.key }}.emplace_back(yaml_item);
+			{% endif %}
 		}
 		{% endif %}
 	{% endfor %}

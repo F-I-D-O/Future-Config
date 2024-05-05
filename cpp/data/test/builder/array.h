@@ -8,8 +8,7 @@ struct Array_config {
 
 	explicit Array_config(const YAML::Node& yaml_config)
 	{
-		const YAML::Node& yaml_array = yaml_config["array"];
-		for (const auto& yaml_item: yaml_array) {
+		for (const auto& yaml_item: yaml_config["array"]) {
 			array.push_back(yaml_item.as<int>());
 		}
 	};

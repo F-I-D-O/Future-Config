@@ -20,7 +20,7 @@ public:
 		const YAML::Node& config,
 		const fs::path& output_dir,
 		const std::string& root_object_name,
-		const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map = {}
+		const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map
 	);
 
 

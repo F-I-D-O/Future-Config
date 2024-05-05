@@ -79,16 +79,21 @@ std::string Builder::get_template_data_for_class(
 			}
 			case YAML::NodeType::Sequence: {
 				std::string item_type;
+				bool scalar_item = true;
 
 				// if the array contains objects, generate a class for those objects
 				if (child_object[0].Type() == YAML::NodeType::Map) {
 					item_type = std::format("{}_item", join(child_path, "_"));
+					item_type[0] = static_cast<char>(std::toupper(item_type.at(0)));
+
+					scalar_item = false;
 					get_template_data_for_class(child_object[0], item_type, child_path, template_data);
 				}
 				else {
 					item_type = get_scalar_type_from_yaml_node(child_object[0]);
 				}
 				property_data["mode"] = "array";
+				property_data["scalar_item"] = scalar_item;
 				property_data["item_type"] = item_type;
 				array_properties_count++;
 				break;
