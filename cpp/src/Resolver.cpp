@@ -83,15 +83,15 @@ void Resolver::process_queue() {
 std::tuple<Resolve_status,std::string> Resolver::resolve_value(YAML::Node & node) const {
 	auto string_value = node.as<std::string>();
 	std::smatch matches;
-	std::regex_search(string_value, matches, variable_regex);
-	for(auto i = 1; i < matches.size(); i++) {
-		const auto& match = matches[i];
+	unsigned short variable_counter = 1;
+	while(std::regex_search(string_value, matches, variable_regex)){
+		auto match = matches[1];
 		auto variable = match.str();
 		auto variable_value = get_value(variable);
 		std::smatch variable_value_matches;
 		bool contains_variable = std::regex_search(variable_value, variable_value_matches, variable_regex);
 		if(contains_variable) {
-			if(i == 1) {
+			if(variable_counter == 1) {
 				return {Resolve_status::FAILED, string_value};
 			}
 			else {
@@ -101,6 +101,7 @@ std::tuple<Resolve_status,std::string> Resolver::resolve_value(YAML::Node & node
 		else {
 			string_value = string_value.replace(match.first - 2, match.second + 1, variable_value);
 		}
+		++variable_counter;
 	}
 	return {Resolve_status::COMPLETE, string_value};
 }
