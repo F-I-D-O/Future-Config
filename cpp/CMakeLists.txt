@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.22)
 project(FutureConfig)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -27,18 +27,22 @@ add_library(future-config STATIC library.cpp
 	src/Parser.cpp
 	src/Builder.cpp
 	src/common.cpp
-	data/test/builder/one_var.h
 	src/Resolver.cpp
-	src/Resolver.h
+	src/Merger.cpp
+	src/Config_object.cpp
 )
 
 add_executable(test_run
 	src/Builder.cpp
 	src/common.cpp
+	src/Merger.cpp
 	src/Parser.cpp
 	src/Resolver.cpp
 	test/bulider_tests.cpp
+	test/merger_test.cpp
 	test/resolver_tests.cpp
+	src/Config_object.cpp
+	test/common.cpp
 )
 
 target_link_libraries(future-config PRIVATE yaml-cpp)

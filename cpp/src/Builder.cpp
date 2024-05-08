@@ -55,7 +55,7 @@ std::string Builder::get_template_data_for_class(
 		switch (child_object.Type()) {
 			case YAML::NodeType::Scalar: {
 				property_data["mode"] = "scalar";
-				property_data["type"] = get_scalar_type_from_yaml_node(child_object);
+				property_data["type"] = get_scalar_type_from_yaml_node(child_object).cpp_source_string();
 				property_data["value"] = child_object.as<std::string>();
 				non_array_properties_count++;
 				break;
@@ -90,7 +90,7 @@ std::string Builder::get_template_data_for_class(
 					get_template_data_for_class(child_object[0], item_type, child_path, template_data);
 				}
 				else {
-					item_type = get_scalar_type_from_yaml_node(child_object[0]);
+					item_type = get_scalar_type_from_yaml_node(child_object[0]).cpp_source_string();
 				}
 				property_data["mode"] = "array";
 				property_data["scalar_item"] = scalar_item;

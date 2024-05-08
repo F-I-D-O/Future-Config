@@ -1,6 +1,13 @@
 #include <sstream>
 #include "common.h"
 
+const std::unordered_map<Scalar_type::Value, std::string> Scalar_type::cpp_source_type_string_map = {
+	{STRING, "std::string"},
+	{INT, "int"},
+	{FLOAT, "double"},
+	{BOOL, "bool"}
+};
+
 std::string join(const std::vector <std::string>& v, const std::string& delimiter) {
 	std::ostringstream ss;
 	auto begin = v.begin();
@@ -20,16 +27,18 @@ std::string join(const std::vector <std::string>& v, const std::string& delimite
 	return ss.str();
 }
 
-std::string get_scalar_type_from_yaml_node(const YAML::Node& node) {
+Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node) {
 	if (node.IsScalar()) {
 		if (node.as<std::string>() == "true" || node.as<std::string>() == "false") {
-			return "bool";
+			return Scalar_type::BOOL;
 		} else if (node.as<std::string>().find('.') != std::string::npos) {
-			return "double";
+			return Scalar_type::FLOAT;
 		} else if (node.as<std::string>().find_first_not_of("0123456789") == std::string::npos) {
-			return "int";
+			return Scalar_type::INT;
 		}
-		return "std::string";
+		return Scalar_type::STRING;
 	}
 	throw std::runtime_error("Unsupported YAML node type");
 }
+
+
