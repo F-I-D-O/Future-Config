@@ -30,6 +30,7 @@ add_library(future-config STATIC library.cpp
 	src/Resolver.cpp
 	src/Merger.cpp
 	src/Config_object.cpp
+	src/configuration.cpp
 )
 
 add_executable(test_run

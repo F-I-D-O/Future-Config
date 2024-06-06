@@ -133,9 +133,6 @@ void Builder::generate_config() {
 		template_data["class_data"] = inja::json::array();
 		template_data["empty_body"] = "{}";
 
-	//	std::string root_class_name = root_object_name;
-	//	root_class_name[0] = static_cast<char>(std::toupper(root_class_name.at(0)));
-
 		get_template_data_for_class(config, root_object_name, {}, template_data);
 		auto out_path= output_dir / std::format("{}_config.h", root_object_name);
 		try {
@@ -149,16 +146,3 @@ void Builder::generate_config() {
 		throw std::runtime_error(e.what());
 	}
 }
-
-//std::string Builder::get_type(const std::string& value) {
-//	if(value == "true" || value == "false") {
-//		return "bool";
-//	}
-//	if(value.find('.') != std::string::npos){
-//		return "double";
-//	}
-//	if(value.find_first_not_of("0123456789") == std::string::npos) {
-//		return "int";
-//	}
-//	return "std::string";
-//}

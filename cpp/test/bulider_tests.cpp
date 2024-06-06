@@ -26,10 +26,13 @@ void compare_generated_config_content(const std::string& expected, const std::st
 	ASSERT_EQ(remove_empty_lines(expected), remove_empty_lines(actual));
 }
 
-void check_generated_config(const YAML::Node& config, const fs::path& expected_file) {
+void check_generated_config(
+	const YAML::Node& config,
+	const fs::path& expected_file,
+	std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map
+) {
 	fs::path output_dir = fs::temp_directory_path() / "test_output";
 	std::string root_object_name = std::format("{}_config", expected_file.stem().string());
-	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
 	Builder builder(config, output_dir, root_object_name, dependency_config_map);
 	builder.build_config();
 
@@ -43,6 +46,11 @@ void check_generated_config(const YAML::Node& config, const fs::path& expected_f
 	std::string actual_content(std::istreambuf_iterator<char>{actual_file_stream}, {});
 
 	compare_generated_config_content(expected_content, actual_content);
+}
+
+void check_generated_config(const YAML::Node& config, const fs::path& expected_file) {
+	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
+	check_generated_config(config, expected_file, dependency_config_map);
 }
 
 TEST(Builder, test_one_var) {
@@ -78,5 +86,22 @@ TEST(Builder, test_array_of_objects) {
 		)"
 	);
 	check_generated_config(config, TEST_DATA_DIR / "array_of_objects.h");
+}
+
+TEST(Builder, test_parent_config) {
+	YAML::Node config = YAML::Load(
+		R"({parent_config:
+					{
+						var: test_var
+					}
+				}
+		)"
+	);
+
+	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map{
+		{"parent_config", {"dependency.h", "Parent_config"}}
+	};
+
+	check_generated_config(config, TEST_DATA_DIR / "dependency_test.h", dependency_config_map);
 }
 
