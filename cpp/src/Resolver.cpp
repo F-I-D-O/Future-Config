@@ -8,31 +8,30 @@
 
 #include "Resolver.h"
 
-YAML::Node Resolver::resolve() {
-	add_all_variables_to_queue(yaml_config);
+void Resolver::resolve() {
+	add_all_variables_to_queue(config_object);
 	process_queue();
-	return yaml_config;
 }
 
-void Resolver::add_all_variables_to_queue(const YAML::Node& yaml_config_object) {
-	for(YAML::const_iterator it = yaml_config_object.begin(); it != yaml_config_object.end(); ++it) {
-		auto node = it->second;
-		if(node.IsScalar()) {
-			auto scalar = node.as<std::string>();
+void Resolver::add_all_variables_to_queue(const Config_object& config_object) {
+	for(const auto&[key, value]: config_object) {
+		if(std::holds_alternative<Config_object>(value)) {
+			add_all_variables_to_queue(std::get<Config_object>(value));
+		}
+		else if(std::holds_alternative<std::vector<Config_object>>(value)) {
+			for(const auto& object: std::get<std::vector<Config_object>>(value)) {
+				add_all_variables_to_queue(object);
+			}
+		}
+		else {
+			auto scalar = std::get<std::string>(value);
 			std::smatch matches;
 			const auto found = std::regex_search(scalar, matches, variable_regex);
 			if(found) {
-				unresolved_variables.emplace(yaml_config_object, it->first.as<std::string>());
+				unresolved_variables.emplace(config_object, key);
 			}
 		}
-		else if(node.IsMap()) {
-			add_all_variables_to_queue(node);
-		}
-		else if(node.IsSequence()) {
-			for(const auto& sequence_node: node) {
-				add_all_variables_to_queue(sequence_node);
-			}
-		}
+		// variables in scalar arrays are not supported
 	}
 }
 
@@ -62,7 +61,7 @@ void Resolver::process_queue() {
 				while(!unresolved_variables.empty()) {
 					auto [unresolved_parent, unresolved_key] = unresolved_variables.front();
 					unresolved_variables.pop();
-					auto value = unresolved_parent[unresolved_key].as<std::string>();
+					auto value = std::get<std::string>(unresolved_parent[unresolved_key]);
 					unresolved_variables_str += std::format("{}: {}\n", unresolved_key, value);
 				}
 				spdlog::error(
@@ -80,8 +79,8 @@ void Resolver::process_queue() {
 	}
 }
 
-std::tuple<Resolve_status,std::string> Resolver::resolve_value(YAML::Node & node) const {
-	auto string_value = node.as<std::string>();
+std::tuple<Resolve_status,std::string> Resolver::resolve_value(config_property_value& config_property_val) const {
+	auto string_value = std::get<std::string>(config_property_val);
 	std::smatch matches;
 	unsigned short variable_counter = 1;
 	while(std::regex_search(string_value, matches, variable_regex)){
@@ -107,19 +106,19 @@ std::tuple<Resolve_status,std::string> Resolver::resolve_value(YAML::Node & node
 }
 
 std::string Resolver::get_value(const std::string& var_name) const {
-	auto current_object = yaml_config;
+	const auto* current_object = &config_object;
 	auto split_view = std::views::split(var_name, '.');
 	auto part_count = std::ranges::distance(split_view);
 	unsigned short i = 0;
 	for(auto key: split_view
 		| std::views::transform([](auto&& r) { return std::string(r.begin(), r.end()); })
 	){
-		if(current_object[key]) {
+		if(current_object->contains(key)) {
 			if(i < part_count - 1) {
-				current_object = current_object[key];
+				current_object = &std::get<Config_object>(current_object->operator[](key));
 			}
 			else {
-				return current_object[key].as<std::string>();
+				return std::get<std::string>(current_object->operator[](key));
 			}
 		}
 		else{

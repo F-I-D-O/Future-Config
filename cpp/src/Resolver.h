@@ -10,6 +10,9 @@
 #include <optional>
 #include "yaml-cpp/yaml.h"
 
+#include "Config_object.h"
+
+
 enum class Resolve_status {
 	FAILED,
 	PARTIAL,
@@ -20,22 +23,22 @@ enum class Resolve_status {
 class Resolver {
 	const std::regex variable_regex = std::regex(R"regex(\$\{([^\}]+)\})regex");
 
-	const YAML::Node& yaml_config;
+	const Config_object& config_object;
 
-	std::queue<std::pair<YAML::Node, std::string>> unresolved_variables;
+	std::queue<std::pair<Config_object&, std::string>> unresolved_variables;
 
 public:
-	explicit Resolver(const YAML::Node& yaml_config):
-		yaml_config(yaml_config)
+	explicit Resolver(const Config_object& yaml_config):
+		config_object(yaml_config)
 	{}
 
-	YAML::Node resolve();
+	void resolve();
 
-	void add_all_variables_to_queue(const YAML::Node& yaml_config_object);
+	void add_all_variables_to_queue(const Config_object& config_object);
 
 	void process_queue();
 
-	[[nodiscard]] std::tuple<Resolve_status, std::string> resolve_value(YAML::Node & node) const;
+	[[nodiscard]] std::tuple<Resolve_status, std::string> resolve_value(config_property_value& config_property_val) const;
 
 	[[nodiscard]] std::string get_value(const std::string& var_name) const;
 };

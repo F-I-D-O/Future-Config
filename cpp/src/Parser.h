@@ -8,6 +8,8 @@
 #include <string>
 #include <yaml-cpp/node/node.h>
 
+#include "Config_object.h"
+
 class Parser {
-	YAML::Node parse(const std::string& yaml_content);
+	Config_object parse(const std::string& yaml_content);
 };

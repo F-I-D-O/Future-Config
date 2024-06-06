@@ -1,11 +1,12 @@
 # Future-Config
-Future config is a configuration format and a set of libraries to use the config files.
+Future config is a configuration system and a set of libraries to make this system work in different programming languages.
 Currently supported languages are Python and Java.
 
 ## Why another config format?
 Future-Config is designed for complicated projects with dozens or hundereds configurable properties that needs to be appropriately structured. 
-If you want simple config files, you should opt for some well-established alternative.
-The differenc ebetween Future-Config and other config/text formats is displayed in table bellow:
+If you want a very basic config system, you should opt for some well-established alternative.
+The following table lists the features of Future-Config and the support of those features in different config formats.
+
 
 |                         | Future-Config | ini | XML | YAML | TOML | JSON |
 |-------------------------|---------------|-----|-----|------|------|------|
@@ -13,10 +14,13 @@ The differenc ebetween Future-Config and other config/text formats is displayed 
 | Objects                 | yes           | yes | yes | yes  | yes  | yes  |
 | Arrays                  | yes           | no  | yes | yes  | yes  | yes  |
 | Variables               | yes           | no  | no  | no   | no   | no   |
-| Comments                | yes           | yes | yes | yes  | yes  | no   |
-| Config Inheritance      | yes           | no  | no  | no   | no   | no   |
-| Config Class Generation | yes           | no  | yes | yes  | no   | yes  |
 | Unlimited Hierarchy     | yes           | no  | yes | yes  | yes  | yes  |
+| Comments                | yes           | yes | yes | yes  | yes  | no   |
+| Config Class Generation | yes           | no  | yes | yes  | no   | yes  |
+| Master/Local Configs    | yes           | no  | no  | no   | no   | no   |
+| Config Inheritance      | yes           | no  | no  | no   | no   | no   |
+
+
 
 ## Usage
 
@@ -118,3 +122,11 @@ object_hierarchy:
 	]
 }
 ```
+
+
+# Principles
+- Config propagation to config instances of the dependencies is handled automatically by the builder. The data transfer is a part of the generated code.
+- There is only one config instance per project. Dependency config instance in the main/child project is the same as in the dependency project.
+- dependency configs need to be specified in a form of key value pairs, where:
+	- key is the name (key) of the in the master config file of the main project
+	- value is the specification of the dependency config
