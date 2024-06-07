@@ -23,18 +23,18 @@ enum class Resolve_status {
 class Resolver {
 	const std::regex variable_regex = std::regex(R"regex(\$\{([^\}]+)\})regex");
 
-	const Config_object& config_object;
+	Config_object& config_object;
 
 	std::queue<std::pair<Config_object&, std::string>> unresolved_variables;
 
 public:
-	explicit Resolver(const Config_object& yaml_config):
-		config_object(yaml_config)
+	explicit Resolver(Config_object& config):
+		config_object(config)
 	{}
 
 	void resolve();
 
-	void add_all_variables_to_queue(const Config_object& config_object);
+	void add_all_variables_to_queue(Config_object& config_object);
 
 	void process_queue();
 

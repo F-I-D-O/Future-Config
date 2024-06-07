@@ -13,13 +13,13 @@ void Resolver::resolve() {
 	process_queue();
 }
 
-void Resolver::add_all_variables_to_queue(const Config_object& config_object) {
-	for(const auto&[key, value]: config_object) {
+void Resolver::add_all_variables_to_queue(Config_object& config_object) {
+	for(auto&[key, value]: config_object) {
 		if(std::holds_alternative<Config_object>(value)) {
 			add_all_variables_to_queue(std::get<Config_object>(value));
 		}
 		else if(std::holds_alternative<std::vector<Config_object>>(value)) {
-			for(const auto& object: std::get<std::vector<Config_object>>(value)) {
+			for(auto& object: std::get<std::vector<Config_object>>(value)) {
 				add_all_variables_to_queue(object);
 			}
 		}

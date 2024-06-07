@@ -5,10 +5,13 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <unordered_map>
+#include <filesystem>
 #include <yaml-cpp/yaml.h>
 
+namespace fs = std::filesystem;
 
 struct Scalar_type {
 	enum Value {
@@ -34,6 +37,29 @@ private:
 	Value value;
 };
 
+enum class Config_type {
+	MAIN,
+	DEPENDENCY,
+	LOCAL
+};
+
+struct Config_definition {
+	const Config_type type;
+	const fs::path yaml_file_path;
+
+	Config_definition(Config_type type, fs::path yaml_file_path) : type(type), yaml_file_path(std::move(yaml_file_path)) {}
+
+	virtual ~Config_definition() = default;
+};
+
+struct Dependency_config_definition: public Config_definition {
+	const std::string key_in_main_config;
+	const fs::path include_path;
+};
+
+
 std::string join(const std::vector<std::string>& v, const std::string& delimiter);
+
+Scalar_type get_scalar_type_from_string(const std::string& string);
 
 Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node);

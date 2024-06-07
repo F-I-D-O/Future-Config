@@ -29,16 +29,18 @@ std::string join(const std::vector <std::string>& v, const std::string& delimite
 
 Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node) {
 	if (node.IsScalar()) {
-		if (node.as<std::string>() == "true" || node.as<std::string>() == "false") {
-			return Scalar_type::BOOL;
-		} else if (node.as<std::string>().find('.') != std::string::npos) {
-			return Scalar_type::FLOAT;
-		} else if (node.as<std::string>().find_first_not_of("0123456789") == std::string::npos) {
-			return Scalar_type::INT;
-		}
-		return Scalar_type::STRING;
+		return get_scalar_type_from_string(node.as<std::string>());
 	}
 	throw std::runtime_error("Unsupported YAML node type");
 }
 
-
+Scalar_type get_scalar_type_from_string(const std::string& string) {
+	if (string == "true" || string == "false") {
+		return Scalar_type::BOOL;
+	} else if (string.find('.') != std::string::npos) {
+		return Scalar_type::FLOAT;
+	} else if (string.find_first_not_of("0123456789") == std::string::npos) {
+		return Scalar_type::INT;
+	}
+	return Scalar_type::STRING;
+}

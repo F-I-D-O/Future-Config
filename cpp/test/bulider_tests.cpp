@@ -27,7 +27,7 @@ void compare_generated_config_content(const std::string& expected, const std::st
 }
 
 void check_generated_config(
-	const YAML::Node& config,
+	const Config_object& config,
 	const fs::path& expected_file,
 	std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map
 ) {
@@ -48,7 +48,7 @@ void check_generated_config(
 	compare_generated_config_content(expected_content, actual_content);
 }
 
-void check_generated_config(const YAML::Node& config, const fs::path& expected_file) {
+void check_generated_config(const Config_object& config, const fs::path& expected_file) {
 	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
 	check_generated_config(config, expected_file, dependency_config_map);
 }

@@ -7,19 +7,19 @@
 #include "Resolver.h"
 
 TEST(Resolver, test_single_variable) {
-	YAML::Node yaml_config = YAML::Load(
+	Config_object config = YAML::Load(
 		R"({
 			var: value,
 			var_2: "${var}_2"
 		})"
 	);
-	Resolver resolver(yaml_config);
-	YAML::Node resolved_config = resolver.resolve();
-	EXPECT_EQ(resolved_config["var_2"].as<std::string>(), "value_2");
+	Resolver resolver(config);
+	resolver.resolve();
+	EXPECT_EQ(std::get<std::string>(config["var_2"]), "value_2");
 }
 
 TEST(Resolver, test_multiple_variables) {
-	YAML::Node yaml_config = YAML::Load(
+	Config_object config = YAML::Load(
 		R"({
 			string: String,
 			string2: "${string} composed",
@@ -29,13 +29,13 @@ TEST(Resolver, test_multiple_variables) {
 			string6: "another ${string} composed"
 		})"
 	);
-	Resolver resolver(yaml_config);
-	YAML::Node resolved_config = resolver.resolve();
+	Resolver resolver(config);
+	resolver.resolve();
 
-	ASSERT_EQ("String", resolved_config["string"].as<std::string>());
-	ASSERT_EQ("String composed", resolved_config["string2"].as<std::string>());
-	ASSERT_EQ("composed String", resolved_config["string3"].as<std::string>());
-	ASSERT_EQ("Stringcomposed String", resolved_config["string4"].as<std::string>());
-	ASSERT_EQ("String String", resolved_config["string5"].as<std::string>());
-	ASSERT_EQ("another String composed", resolved_config["string6"].as<std::string>());
+	ASSERT_EQ("String", std::get<std::string>(config["string"]));
+	ASSERT_EQ("String composed", std::get<std::string>(config["string2"]));
+	ASSERT_EQ("composed String", std::get<std::string>(config["string3"]));
+	ASSERT_EQ("Stringcomposed String", std::get<std::string>(config["string4"]));
+	ASSERT_EQ("String String", std::get<std::string>(config["string5"]));
+	ASSERT_EQ("another String composed", std::get<std::string>(config["string6"]));
 }
