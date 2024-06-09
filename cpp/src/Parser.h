@@ -6,7 +6,6 @@
 
 
 #include <string>
-#include <yaml-cpp/node/node.h>
 #include <filesystem>
 
 #include "Config_object.h"

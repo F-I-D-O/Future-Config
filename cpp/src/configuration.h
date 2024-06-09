@@ -9,6 +9,7 @@
 #include "yaml-cpp/yaml.h"
 
 #include "Config_object.h"
+#include "common.h"
 
 
 

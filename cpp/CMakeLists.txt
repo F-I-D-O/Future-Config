@@ -33,6 +33,16 @@ add_library(future-config STATIC library.cpp
 	src/configuration.cpp
 )
 
+add_executable(fconfig_builder
+	src/Builder.cpp
+	src/common.cpp
+	src/Merger.cpp
+	src/Parser.cpp
+	src/Resolver.cpp
+	src/Config_object.cpp
+	src/configuration.cpp
+)
+
 add_executable(test_run
 	src/Builder.cpp
 	src/common.cpp
@@ -46,6 +56,7 @@ add_executable(test_run
 	test/common.cpp
 )
 
+# linking
 target_link_libraries(future-config PRIVATE yaml-cpp)
 target_link_libraries(future-config PRIVATE pantor::inja)
 
@@ -53,6 +64,10 @@ target_link_libraries(test_run PRIVATE yaml-cpp)
 target_link_libraries(test_run PRIVATE pantor::inja)
 target_link_libraries(test_run PRIVATE GTest::gtest_main)
 target_link_libraries(test_run PRIVATE spdlog::spdlog)
+
+target_link_libraries(fconfig_builder PRIVATE yaml-cpp)
+target_link_libraries(fconfig_builder PRIVATE pantor::inja)
+target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
 
 # enable automatic discovery of tests
 include(GoogleTest) # cmake module

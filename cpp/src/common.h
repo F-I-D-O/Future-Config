@@ -47,14 +47,28 @@ struct Config_definition {
 	const Config_type type;
 	const fs::path yaml_file_path;
 
+protected:
 	Config_definition(Config_type type, fs::path yaml_file_path) : type(type), yaml_file_path(std::move(yaml_file_path)) {}
+public:
+	explicit Config_definition(fs::path yaml_file_path):
+		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
+		{}
 
 	virtual ~Config_definition() = default;
+
+protected:
+	Config_definition(const Config_definition&) = default;
+	Config_definition(Config_definition&&) = default;
 };
 
 struct Dependency_config_definition: public Config_definition {
 	const std::string key_in_main_config;
 	const fs::path include_path;
+
+	Dependency_config_definition(fs::path yaml_file_path, std::string key_in_main_config, fs::path include_path):
+		Config_definition(Config_type::DEPENDENCY, std::move(yaml_file_path)),
+		key_in_main_config(std::move(key_in_main_config)),
+		include_path(std::move(include_path)) {}
 };
 
 

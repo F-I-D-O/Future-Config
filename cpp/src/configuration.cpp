@@ -37,7 +37,7 @@ void generate_config(
 ) {
 	// add main config definition
 	dependency_config_definitions.emplace_back(
-		std::make_unique<Config_definition>(Config_type::MAIN, source_dir / "config.yaml")
+		std::make_unique<Config_definition>(source_dir / "config.yaml")
 	);
 
 	// config loading
@@ -49,4 +49,38 @@ void generate_config(
 
 
 	Builder(config_object, output_dir, root_config_object_name, dependency_config_definitions).build_config();
+}
+
+std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definitions(
+	int argc, char* argv[], const fs::path& source_dir
+) {
+	std::vector<std::unique_ptr<Config_definition>> dependency_config_definitions;
+	for(int i = 1; i < argc; i++) {
+		// parse the dependency config definition tuple argument
+		auto parts_view = std::ranges::views::split(std::string(argv[i]), ',');
+		std::vector<std::string> parts;
+		for(const auto& part: parts_view) {
+			parts.emplace_back(part.begin(), part.end());
+		}
+
+		dependency_config_definitions.emplace_back(std::make_unique<Dependency_config_definition>(
+			fs::path(parts.at(0)),
+			parts.at(1),
+			fs::path(parts.at(2))
+		));
+	}
+	return dependency_config_definitions;
+}
+
+int main(int argc, char* argv[]) {
+	std::string executable_name = argv[0];
+	fs::path source_dir = fs::current_path();
+
+	std::vector<std::unique_ptr<Config_definition>> dependency_config_definitions = parse_dependency_config_definitions(
+		argc, argv, source_dir
+	);
+
+	generate_config(executable_name, source_dir, dependency_config_definitions);
+
+	return 0;
 }
