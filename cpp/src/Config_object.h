@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <format>
 #include <yaml-cpp/yaml.h>
 
 
@@ -117,7 +118,39 @@ public:
 	}
 
 	[[nodiscard]] unsigned short size() const {
-		return properties.size();
+		return static_cast<unsigned short>(properties.size());
+	}
+
+	template<typename T>
+	T get(const std::string& key) const {
+//		return std::get<T>(properties.at(key));
+
+		if(std::holds_alternative<std::string>(properties.at(key))) {
+			const auto& string_value = std::get<std::string>(properties.at(key));
+			if constexpr(std::is_same_v<T, std::string>) {
+				return string_value;
+			}
+			else if constexpr(std::is_same_v<T, int>) {
+				return std::stoi(string_value);
+			}
+			else if constexpr(std::is_same_v<T, double>) {
+				return std::stod(string_value);
+			}
+			else if constexpr(std::is_same_v<T, bool>) {
+				if(string_value == "true") {
+					return true;
+				}
+				else if(string_value == "false") {
+					return false;
+				}
+				else {
+					throw std::runtime_error(std::format("Property {} is not a boolean", key));
+				}
+			}
+		}
+		else {
+			throw std::runtime_error(std::format("Property {} is not a scalar", key));
+		}
 	}
 };
 

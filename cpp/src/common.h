@@ -11,7 +11,14 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 
+#include "Config_object.h"
+
+
 namespace fs = std::filesystem;
+
+
+const std::string default_config_folder = "config";
+
 
 struct Scalar_type {
 	enum Value {
@@ -47,9 +54,10 @@ struct Config_definition {
 	const Config_type type;
 	const fs::path yaml_file_path;
 
-protected:
+
+
 	Config_definition(Config_type type, fs::path yaml_file_path) : type(type), yaml_file_path(std::move(yaml_file_path)) {}
-public:
+
 	explicit Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
 		{}
@@ -77,3 +85,11 @@ std::string join(const std::vector<std::string>& v, const std::string& delimiter
 Scalar_type get_scalar_type_from_string(const std::string& string);
 
 Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node);
+
+std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definitions(
+	const std::vector<std::string>& dependency_config_strings
+);
+
+Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
+
+std::filesystem::path check_path(const std::filesystem::path& path);

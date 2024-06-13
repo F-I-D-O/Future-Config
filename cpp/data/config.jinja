@@ -1,6 +1,6 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+#include <Config_object.h>
 #include <string>
 
 {% for include in includes %}
@@ -19,31 +19,32 @@ struct {{ class.class_name }} {
 		{% endif %}
 	{% endfor %}
 
-	explicit {{ class.class_name }}(const YAML::Node& yaml_config){% if class.non_array_properties_count > 0 %}:
+	explicit {{ class.class_name }}(const Config_object& config_object){% if class.non_array_properties_count > 0 %}:
 		{% for property in class.properties %}
-			{% if property.mode == "scalar" %}
-		{{ property.key }}(yaml_config["{{ property.key }}"].as<{{ property.type }}>())
-			{% else if property.mode == "object" %}
-		{{ property.key }}(yaml_config["{{ property.key }}"])
-			{% endif %}
 			{% if not loop.is_last %}
-	,
+				{% set divider = "," %}
+			{% else %}
+				{% set divider = "" %}
+			{% endif %}
+			{% if property.mode == "scalar" %}
+		{{ property.key }}(config_object.get<{{ property.type }}>("{{ property.key }}")){{ divider }}
+			{% else if property.mode == "object" %}
+		{{ property.key }}(config_object["{{ property.key }}"]){{ divider }}
 			{% endif %}
 		{% endfor %}
 	{% endif %}
-	{% if class.array_properties_count > 0 %}
-	{
-	{% for property in class.properties %}
-		{% if property.mode == "array" %}
-		for (const auto& yaml_item: yaml_config["{{ property.key }}"]) {
-			{% if property.scalar_item %}
-			{{ property.key }}.push_back(yaml_item.as<{{ property.item_type }}>());
-			{% else %}
-			{{ property.key }}.emplace_back(yaml_item);
-			{% endif %}
+	{% if class.array_properties_count > 0 %}{
+		{% for property in class.properties %}
+			{% if property.mode == "array" %}
+		for (const auto& item: config_object["{{ property.key }}"]) {
+				{% if property.scalar_item %}
+			{{ property.key }}.push_back(item.as<{{ property.item_type }}>());
+				{% else %}
+			{{ property.key }}.emplace_back(item);
+				{% endif %}
 		}
-		{% endif %}
-	{% endfor %}
+			{% endif %}
+		{% endfor %}
 	};
 	{% else %}
 	{{empty_body}};

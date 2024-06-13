@@ -23,14 +23,14 @@ FetchContent_MakeAvailable(googletest)
 include_directories(src) # for including files relative to src dir
 
 
-add_library(future-config STATIC library.cpp
-	src/Parser.cpp
+add_library(future-config STATIC
 	src/Builder.cpp
 	src/common.cpp
-	src/Resolver.cpp
-	src/Merger.cpp
 	src/Config_object.cpp
 	src/configuration.cpp
+	src/Merger.cpp
+	src/Parser.cpp
+	src/Resolver.cpp
 )
 
 add_executable(fconfig_builder
@@ -41,6 +41,7 @@ add_executable(fconfig_builder
 	src/Resolver.cpp
 	src/Config_object.cpp
 	src/configuration.cpp
+	src/builder_runner.cpp
 )
 
 add_executable(test_run
@@ -57,8 +58,7 @@ add_executable(test_run
 )
 
 # linking
-target_link_libraries(future-config PRIVATE yaml-cpp)
-target_link_libraries(future-config PRIVATE pantor::inja)
+target_link_libraries(future-config PUBLIC yaml-cpp)
 
 target_link_libraries(test_run PRIVATE yaml-cpp)
 target_link_libraries(test_run PRIVATE pantor::inja)
@@ -85,6 +85,12 @@ add_custom_command(
 )
 
 # config template
+add_custom_command(
+	TARGET fconfig_builder
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja $<TARGET_FILE_DIR:test_run>/data/config.jinja
+)
+
 add_custom_command(
 	TARGET test_run
 	POST_BUILD

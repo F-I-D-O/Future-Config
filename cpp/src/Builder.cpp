@@ -139,6 +139,11 @@ std::string Builder::get_class_name(const std::string& snake_case_property_name)
 void Builder::generate_config() {
 	fs::create_directories(output_dir);
 	inja::Environment env;
+
+	// environment configuration
+	env.set_trim_blocks(true); // remove newlines after jinja control statements
+	env.set_lstrip_blocks(true); // remove leading whitespace before jinja control statements
+
 	const auto template_filepath = "data/config.jinja";
 	try {
 		inja::Template config_template = env.parse_template(template_filepath);
@@ -160,7 +165,7 @@ void Builder::generate_config() {
 	}
 }
 
-const std::unordered_map<std::string, std::tuple<std::string, std::string>> Builder::generate_dependency_config_map(
+std::unordered_map<std::string, std::tuple<std::string, std::string>> Builder::generate_dependency_config_map(
 	const std::vector<std::unique_ptr<Config_definition>>& config_definitions
 ) {
 	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;

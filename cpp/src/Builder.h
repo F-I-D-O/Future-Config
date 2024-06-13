@@ -39,7 +39,7 @@ public:
 private:
 	const Config_object& config;
 
-	const std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map;
+	const std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
 
 	const fs::path& output_dir;
 
@@ -59,6 +59,6 @@ private:
 	static std::string get_class_name(const std::string& basic_string);
 
 //	static std::string get_type(const std::string& value);
-	static const std::unordered_map<std::string, std::tuple<std::string, std::string>>
+	static std::unordered_map<std::string, std::tuple<std::string, std::string>>
 		generate_dependency_config_map(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
 };
