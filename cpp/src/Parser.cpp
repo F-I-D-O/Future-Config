@@ -20,7 +20,32 @@ Config_object Parser::parse(const std::string& yaml_content) {
 
 Config_object Parser::parse(const fs::path& yaml_file_path) {
 	auto canonical_path = check_path(yaml_file_path);
-	return YAML::LoadFile(canonical_path.string());
+	auto yaml_content = YAML::LoadFile(canonical_path.string());
+
+	// check that the root object is of the correct type
+	auto type = yaml_content.Type();
+	if (type != YAML::NodeType::Map) {
+		std::string type_str = "";
+		switch(type){
+			case YAML::NodeType::Undefined:
+				type_str = "Undefined";
+				break;
+			case YAML::NodeType::Null:
+				type_str = "Null";
+				break;
+			case YAML::NodeType::Scalar:
+				type_str = "Scalar";
+				break;
+			case YAML::NodeType::Sequence:
+				type_str = "Sequence";
+				break;
+		}
+
+		throw std::runtime_error(std::format(
+			"The root node of configuration file must be a map. Root node: {}", type_str));
+	}
+
+	return yaml_content;
 }
 
         

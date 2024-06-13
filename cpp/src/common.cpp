@@ -90,9 +90,19 @@ std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definiti
 
 Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions) {
 	std::vector<Config_object> configs;
+	unsigned counter = 1;
 	for(const auto& config_definition: config_definitions) {
-		auto config_object = Parser().parse(config_definition->yaml_file_path);
-		configs.push_back(config_object);
+		try{
+			auto config_object = Parser().parse(config_definition->yaml_file_path);
+			configs.push_back(config_object);
+		} catch(const std::runtime_error& e) {
+			throw std::runtime_error(std::format(
+				"Failed to parse the {}. configuration ({}): {}",
+				counter,
+				config_definition->yaml_file_path.string(),
+				e.what()
+			));
+		}
 	}
 	auto merged_config = Merger().merge(configs);
 	Resolver(merged_config).resolve();
