@@ -7,6 +7,11 @@
 #include "spdlog/spdlog.h"
 
 #include "Resolver.h"
+    
+    
+namespace fc {    
+
+    
 
 void Resolver::resolve() {
 	add_all_variables_to_queue(config_object);
@@ -129,3 +134,7 @@ std::string Resolver::get_value(const std::string& var_name) const {
 
 	throw std::runtime_error("Variable not found in config: " + var_name + " (should not reach this point)");
 }
+
+        
+}
+    

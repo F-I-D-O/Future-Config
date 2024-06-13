@@ -11,6 +11,11 @@
 #include "yaml-cpp/yaml.h"
 
 #include "Config_object.h"
+    
+    
+namespace fc {    
+
+    
 
 
 enum class Resolve_status {
@@ -42,3 +47,7 @@ public:
 
 	[[nodiscard]] std::string get_value(const std::string& var_name) const;
 };
+
+        
+}
+    

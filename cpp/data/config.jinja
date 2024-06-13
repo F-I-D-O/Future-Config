@@ -19,7 +19,7 @@ struct {{ class.class_name }} {
 		{% endif %}
 	{% endfor %}
 
-	explicit {{ class.class_name }}(const Config_object& config_object){% if class.non_array_properties_count > 0 %}:
+	explicit {{ class.class_name }}(const fc::Config_object& config_object){% if class.non_array_properties_count > 0 %}:
 		{% for property in class.properties %}
 			{% if not loop.is_last %}
 				{% set divider = "," %}

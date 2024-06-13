@@ -12,6 +12,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Config_object.h"
+    
+    
+namespace fc {    
+
+    
 
 
 namespace fs = std::filesystem;
@@ -93,3 +98,6 @@ std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definiti
 Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
 
 std::filesystem::path check_path(const std::filesystem::path& path);
+        
+}
+    

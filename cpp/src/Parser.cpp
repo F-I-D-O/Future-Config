@@ -6,6 +6,11 @@
 
 #include "Parser.h"
 #include "common.h"
+    
+    
+namespace fc {    
+
+    
 
 
 Config_object Parser::parse(const std::string& yaml_content) {
@@ -17,3 +22,7 @@ Config_object Parser::parse(const fs::path& yaml_file_path) {
 	auto canonical_path = check_path(yaml_file_path);
 	return YAML::LoadFile(canonical_path.string());
 }
+
+        
+}
+    

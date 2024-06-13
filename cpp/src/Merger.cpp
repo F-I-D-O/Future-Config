@@ -3,6 +3,11 @@
 //
 
 #include "Merger.h"
+    
+    
+namespace fc {    
+
+    
 
 Config_object Merger::merge(const std::vector<Config_object>& configs) {
 	auto final_config_data = configs[0];
@@ -25,3 +30,7 @@ void Merger::override_level(Config_object& config, const Config_object& overridi
 		}
 	}
 }
+
+        
+}
+    

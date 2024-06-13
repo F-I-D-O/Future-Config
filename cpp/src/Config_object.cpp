@@ -4,6 +4,11 @@
 
 #include <format>
 #include "Config_object.h"
+    
+    
+namespace fc {    
+
+    
 
 Config_object::Config_object(const YAML::Node& yaml_config) {
 	for(YAML::const_iterator it = yaml_config.begin(); it != yaml_config.end(); ++it) {
@@ -63,3 +68,7 @@ Config_object::Config_object(const YAML::Node& yaml_config) {
 		}
 	}
 }
+
+        
+}
+    

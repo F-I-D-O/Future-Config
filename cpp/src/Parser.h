@@ -9,6 +9,11 @@
 #include <filesystem>
 
 #include "Config_object.h"
+    
+    
+namespace fc {    
+
+    
 
 namespace fs = std::filesystem;
 
@@ -18,3 +23,7 @@ public:
 
 	Config_object parse(const fs::path& yaml_file_path);
 };
+
+        
+}
+    

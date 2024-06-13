@@ -7,6 +7,11 @@
 #include <tuple>
 
 #include "Builder.h"
+    
+    
+namespace fc {    
+
+    
 
 
 Builder::Builder(
@@ -154,7 +159,7 @@ void Builder::generate_config() {
 		template_data["empty_body"] = "{}";
 
 		get_template_data_for_class(config, root_object_name, {}, template_data);
-		auto out_path = output_dir / std::format("{}_config.h", root_object_name);
+		auto out_path = output_dir / std::format("{}.h", root_object_name);
 		try {
 			env.write(config_template, template_data, out_path.string());
 		} catch(const inja::RenderError& e) {
@@ -192,3 +197,7 @@ Builder::Builder(
 	root_object_name(root_object_name),
    	dependency_config_map(dependency_config_map)
 {}
+
+        
+}
+    

@@ -6,6 +6,11 @@
 #include "Parser.h"
 #include "Merger.h"
 #include "Resolver.h"
+    
+    
+namespace fc {    
+
+    
 
 
 const std::regex float_regex(R"regex([-+]?[0-9]+\.[0-9]+?)regex");
@@ -108,3 +113,6 @@ std::filesystem::path check_path(const std::filesystem::path& path) {
 
 	return std::filesystem::canonical(path);
 }
+        
+}
+    

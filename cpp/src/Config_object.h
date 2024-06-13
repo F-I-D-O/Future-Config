@@ -10,6 +10,11 @@
 #include <unordered_map>
 #include <format>
 #include <yaml-cpp/yaml.h>
+    
+    
+namespace fc {    
+
+    
 
 
 class Config_object;
@@ -155,3 +160,7 @@ public:
 };
 
 static_assert(std::ranges::input_range<Config_object>);
+
+        
+}
+    

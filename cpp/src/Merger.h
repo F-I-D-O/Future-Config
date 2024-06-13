@@ -8,6 +8,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Config_object.h"
+    
+    
+namespace fc {    
+
+    
 
 
 class Merger {
@@ -17,3 +22,7 @@ public:
 private:
 	void override_level(Config_object& config, const Config_object& overriding_config);
 };
+
+        
+}
+    

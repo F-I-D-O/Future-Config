@@ -12,6 +12,11 @@
 #include "common.h"
 #include "Config_object.h"
 #include "configuration.h"
+    
+    
+namespace fc {    
+
+    
 
 
 namespace fs = std::filesystem;
@@ -62,3 +67,7 @@ private:
 	static std::unordered_map<std::string, std::tuple<std::string, std::string>>
 		generate_dependency_config_map(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
 };
+
+        
+}
+    

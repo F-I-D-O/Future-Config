@@ -7,6 +7,9 @@
 #include "builder_runner.h"
 #include "common.h"
 #include "Builder.h"
+    
+
+    
 
 namespace fs = std::filesystem;
 
@@ -14,17 +17,17 @@ namespace fs = std::filesystem;
 void generate_config(
 	std::string& main_config_name,
 	fs::path& source_dir,
-	std::vector<std::unique_ptr<Config_definition>>& config_definitions
+	std::vector<std::unique_ptr<fc::Config_definition>>& config_definitions
 ) {
 	// config loading
 	auto config_object = load_config(config_definitions);
 
-	fs::path output_dir = source_dir / default_config_folder;
+	fs::path output_dir = source_dir / fc::default_config_folder;
 
 	std::string root_config_object_name = std::format("{}_config", main_config_name);
 
 
-	Builder(config_object, output_dir, root_config_object_name, config_definitions).build_config();
+	fc::Builder(config_object, output_dir, root_config_object_name, config_definitions).build_config();
 }
 
 
@@ -76,12 +79,12 @@ int main(int argc, char* argv[]) {
 
 		fs::path source_dir = source_dir_path_arg.getValue();
 
-		std::vector<std::unique_ptr<Config_definition>> config_definitions = parse_dependency_config_definitions(
+		std::vector<std::unique_ptr<fc::Config_definition>> config_definitions = fc::parse_dependency_config_definitions(
 			dependency_config_definitions_arg.getValue()
 		);
 
 		// add main config definition
-		config_definitions.emplace_back(std::make_unique<Config_definition>(main_config_path_arg.getValue()));
+		config_definitions.emplace_back(std::make_unique<fc::Config_definition>(main_config_path_arg.getValue()));
 
 		generate_config(main_config_name, source_dir, config_definitions);
 
@@ -91,3 +94,6 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 }
+
+
+    
