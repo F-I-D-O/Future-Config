@@ -83,6 +83,7 @@ std::string Builder::get_template_data_for_class(
 					);
 				}
 				property_data["mode"] = "object";
+				property_data["type"] = "fc::Config_object";
 				property_data["class_name"] = child_class_name;
 				non_array_properties_count++;
 				break;

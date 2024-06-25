@@ -127,37 +127,62 @@ public:
 	}
 
 	template<typename T>
-	T get(const std::string& key) const {
-//		return std::get<T>(properties.at(key));
+	T transform_value(const std::string& string_value) const {
+		if constexpr(std::is_same_v<T, std::string>) {
+			return string_value;
+		}
+		else if constexpr(std::is_same_v<T, int>) {
+			return std::stoi(string_value);
+		}
+		else if constexpr(std::is_same_v<T, double>) {
+			return std::stod(string_value);
+		}
+		else if constexpr(std::is_same_v<T, bool>) {
+			if(string_value == "true") {
+				return true;
+			}
+			else if(string_value == "false") {
+				return false;
+			}
+			else {
+				throw std::runtime_error(std::format("Value is not a boolean", string_value));
+			}
+		}
+	}
 
+	template<typename T>
+	T get(const std::string& key) const {
 		if(std::holds_alternative<std::string>(properties.at(key))) {
 			const auto& string_value = std::get<std::string>(properties.at(key));
-			if constexpr(std::is_same_v<T, std::string>) {
-				return string_value;
-			}
-			else if constexpr(std::is_same_v<T, int>) {
-				return std::stoi(string_value);
-			}
-			else if constexpr(std::is_same_v<T, double>) {
-				return std::stod(string_value);
-			}
-			else if constexpr(std::is_same_v<T, bool>) {
-				if(string_value == "true") {
-					return true;
-				}
-				else if(string_value == "false") {
-					return false;
-				}
-				else {
-					throw std::runtime_error(std::format("Property {} is not a boolean", key));
-				}
-			}
+			return transform_value<T>(string_value);
 		}
 		else {
 			throw std::runtime_error(std::format("Property {} is not a scalar", key));
 		}
 	}
+
+	template<typename T>
+	std::vector<T> get_array(const std::string& key) const {
+		if(std::holds_alternative<std::vector<std::string>>(properties.at(key))) {
+			std::vector<T> result;
+			std::ranges::transform(
+				std::get<std::vector<std::string>>(properties.at(key)),
+				std::back_inserter(result),
+				[this](const std::string& string_value) {
+					return transform_value<T>(string_value);
+				}
+			);
+			return result;
+		}
+		else {
+			throw std::runtime_error(std::format("Property {} is not an array of scalars", key));
+		}
+	}
+
+
 };
+
+
 
 static_assert(std::ranges::input_range<Config_object>);
 

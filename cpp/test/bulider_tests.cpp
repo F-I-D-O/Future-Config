@@ -8,14 +8,16 @@
 
 #include "Builder.h"
 
+namespace fc {
+
 const auto TEST_DATA_DIR = fs::path("data/test/builder");
 
 std::string remove_empty_lines(const std::string& str) {
 	std::string result;
 	std::istringstream iss(str);
 	std::string line;
-	while (std::getline(iss, line)) {
-		if (!line.empty() && !std::all_of(line.begin(), line.end(),isspace)) {
+	while(std::getline(iss, line)) {
+		if(!line.empty() && !std::all_of(line.begin(), line.end(), isspace)) {
 			result += line + "\n";
 		}
 	}
@@ -36,7 +38,7 @@ void check_generated_config(
 	Builder builder(config, output_dir, root_object_name, dependency_config_map);
 	builder.build_config();
 
-	fs::path actual_file = output_dir / std::format("{}_config.h", root_object_name);
+	fs::path actual_file = output_dir / std::format("{}.h", root_object_name);
 	ASSERT_TRUE(fs::exists(actual_file));
 
 	std::ifstream expected_file_stream(expected_file);
@@ -98,10 +100,10 @@ TEST(Builder, test_parent_config) {
 		)"
 	);
 
-	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map{
-		{"parent_config", {"dependency.h", "Parent_config"}}
-	};
+	std::unordered_map<std::string, std::tuple<std::string, std::string>>
+		dependency_config_map{{"parent_config", {"dependency.h", "Parent_config"}}};
 
 	check_generated_config(config, TEST_DATA_DIR / "dependency_test.h", dependency_config_map);
 }
 
+} // namespace fc

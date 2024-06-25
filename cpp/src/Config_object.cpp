@@ -16,40 +16,10 @@ Config_object::Config_object(const YAML::Node& yaml_config) {
 		auto value = it->second;
 
 		if(value.IsScalar()) {
-//			Scalar_type scalar_type = get_scalar_type_from_yaml_node(value);
-//			switch(scalar_type()) {
-//				case Scalar_type::STRING:
-//					properties[key] = value.as<std::string>();
-//					break;
-//				case Scalar_type::INT:
-//					properties[key] = value.as<int>();
-//					break;
-//				case Scalar_type::FLOAT:
-//					properties[key] = value.as<double>();
-//					break;
-//				case Scalar_type::BOOL:
-//					properties[key] = value.as<bool>();
-//					break;
-//			}
 			properties.emplace(key, value.as<std::string>());
 		}
 		else if(value.IsSequence()) {
 			if(value[0].IsScalar()) {
-//				Scalar_type scalar_type = get_scalar_type_from_yaml_node(value[0]);
-//				switch(scalar_type()) {
-//					case Scalar_type::STRING:
-//						properties[key] = value.as<std::vector<std::string>>();
-//						break;
-//					case Scalar_type::INT:
-//						properties[key] = value.as<std::vector<int>>();
-//						break;
-//					case Scalar_type::FLOAT:
-//						properties[key] = value.as<std::vector<double>>();
-//						break;
-//					case Scalar_type::BOOL:
-//						properties[key] = value.as<std::vector<bool>>();
-//						break;
-//				}
 				properties.emplace(key, value.as<std::vector<std::string>>());
 			}
 			else if(value[0].IsMap()) {
@@ -66,6 +36,36 @@ Config_object::Config_object(const YAML::Node& yaml_config) {
 		else if(value.IsMap()) {
 			properties.emplace(key, Config_object(value));
 		}
+	}
+}
+
+/**
+ * Specialization for Config_object property
+ * @param key key of the property in parent object
+ * @return Config_object
+ */
+template<>
+Config_object Config_object::get<Config_object>(const std::string& key) const {
+	if(std::holds_alternative<Config_object>(properties.at(key))) {
+		return std::get<Config_object>(properties.at(key));
+	}
+	else {
+		throw std::runtime_error(std::format("Property {} is not an object", key));
+	}
+}
+
+/**
+ * Specialization for array of objects
+ * @param key key of the property in parent object
+ * @return vector of Config_object
+ */
+template<>
+std::vector<Config_object> Config_object::get_array(const std::string& key) const {
+	if(std::holds_alternative<std::vector<Config_object>>(properties.at(key))) {
+		return std::get<std::vector<Config_object>>(properties.at(key));
+	}
+	else {
+		throw std::runtime_error(std::format("Property {} is not an array of objects", key));
 	}
 }
 

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+#include <Config_object.h>
 #include <string>
 
 struct One_var_config {
 	std::string var;
 
-	explicit One_var_config(const YAML::Node& yaml_config):
-		var(yaml_config["var"].as<std::string>())
+	explicit One_var_config(const fc::Config_object& config_object):
+		var(config_object.get<std::string>("var"))
 	{};
 };

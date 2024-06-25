@@ -8,7 +8,10 @@
 
 #include "Config_object.h"
 
+namespace fc {
 
 void compare_config_objects(const Config_object& expected, const Config_object& actual);
+
+} // namespace fc
 
 

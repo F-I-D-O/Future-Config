@@ -1,14 +1,14 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+#include <Config_object.h>
 #include <string>
 
 struct Comparison {
 	std::vector<std::string> experiment_names;
 
-	explicit Comparison(const YAML::Node& yaml_config){
-		for (const auto& yaml_item: yaml_config["experiment_names"]) {
-			experiment_names.push_back(yaml_item.as<std::string>());
+	explicit Comparison(const fc::Config_object& config_object){
+		for (const auto& item: config_object.get_array<std::string>("experiment_names")) {
+			experiment_names.emplace_back(item);
 		}
 	};
 };
@@ -16,7 +16,7 @@ struct Comparison {
 struct String_array_in_object_config {
 	Comparison comparison;
 
-	explicit String_array_in_object_config(const YAML::Node& yaml_config):
-		comparison(yaml_config["comparison"])
+	explicit String_array_in_object_config(const fc::Config_object& config_object):
+		comparison(config_object.get<fc::Config_object>("comparison"))
 	{};
 };

@@ -1,12 +1,12 @@
 #pragma once
 
-#include <yaml-cpp/yaml.h>
+#include <Config_object.h>
 #include <string>
 
 struct Parent_config {
 	std::string parent_var;
 
-	explicit Parent_config(const YAML::Node& yaml_config):
-		parent_var(yaml_config["var"].as<std::string>())
+	explicit Parent_config(const fc::Config_object& config_object):
+		parent_var(config_object.get<std::string>("var"))
 	{};
 };

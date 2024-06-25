@@ -4,6 +4,8 @@
 
 #include "common.h"
 
+namespace fc {
+
 void compare_config_objects(const Config_object& expected, const Config_object& actual) {
 	ASSERT_EQ(expected.size(), actual.size());
 
@@ -54,3 +56,5 @@ void compare_config_objects(const Config_object& expected, const Config_object& 
 
 
 }
+
+} // namespace fc

@@ -6,6 +6,8 @@
 
 #include "Resolver.h"
 
+namespace fc {
+
 TEST(Resolver, test_single_variable) {
 	Config_object config = YAML::Load(
 		R"({
@@ -39,3 +41,5 @@ TEST(Resolver, test_multiple_variables) {
 	ASSERT_EQ("String String", std::get<std::string>(config["string5"]));
 	ASSERT_EQ("another String composed", std::get<std::string>(config["string6"]));
 }
+
+} // namespace fc
