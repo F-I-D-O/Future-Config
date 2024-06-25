@@ -100,18 +100,21 @@ std::string Builder::get_template_data_for_class(
 
 				// if the array contains objects, generate a class for those objects
 				if(child_object.index() == object_array_index) {
-					item_type = std::format("{}_item", join(child_path, "_"));
-					item_type[0] = static_cast<char>(std::toupper(item_type.at(0)));
+					item_type = "fc::Config_object";
+					auto class_name = std::format("{}_item", join(child_path, "_"));
+					class_name[0] = static_cast<char>(std::toupper(class_name.at(0)));
+					property_data["array_type_name"] = class_name;
 					scalar_item = false;
 					get_template_data_for_class(
 						std::get<std::vector<Config_object>>(child_object)[0],
-						item_type,
+						class_name,
 						child_path,
 						template_data
 					);
 				}
 				else {
 					item_type = get_scalar_type_from_string(std::get<std::vector<std::string>>(child_object)[0]).cpp_source_string();
+					property_data["array_type_name"] = item_type;
 				}
 				property_data["mode"] = "array";
 				property_data["scalar_item"] = scalar_item;

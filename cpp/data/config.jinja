@@ -15,7 +15,7 @@ struct {{ class.class_name }} {
 		{% else if property.mode == "object" %}
 	{{ property.class_name }} {{ property.key }};
 		{% else if property.mode == "array" %}
-	std::vector<{{ property.item_type }}> {{ property.key }};
+	std::vector<{{ property.array_type_name }}> {{ property.key }};
 		{% endif %}
 	{% endfor %}
 
