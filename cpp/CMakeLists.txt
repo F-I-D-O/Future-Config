@@ -20,7 +20,7 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-include_directories(src) # for including files relative to src dir
+include_directories(src) # for including files relative to src dir for the compilation of all targets
 
 
 add_library(future-config STATIC
@@ -56,6 +56,9 @@ add_executable(test_run
 	src/Config_object.cpp
 	test/common.cpp
 )
+
+# include directories for linking
+target_include_directories(future-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 # linking
 target_link_libraries(future-config PUBLIC yaml-cpp)
