@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
+
+option(VCPKG_APPLOCAL_DEPS ON)
+
 project(FutureConfig)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -58,7 +61,7 @@ add_executable(test_run
 )
 
 # include directories for linking
-target_include_directories(future-config PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(future-config PUBLIC src)
 
 # linking
 target_link_libraries(future-config PUBLIC yaml-cpp)
