@@ -2,14 +2,16 @@ vcpkg_from_github(
 	OUT_SOURCE_PATH SOURCE_PATH
 	REPO F-I-D-O/Future-Config
 	REF master
-	SHA512 d8a9bc00ee312d04f5f575f5b1636d830d088ead93a9de662bdf2910b9ea6981bd3a202eb34e013b0ec99ef4fee75f8a315bccd1c8a2aaee27adad67b7f6699c
+	SHA512 ab8cc92b3f0b2344c8e22f6d9522f64dd00c556f1cd5a8a139a1981d227bc371550de695c0a1ccd93e13526c9a74e69a0c8927faf5436f965147a822354a6fa7
 )
 
 vcpkg_cmake_configure(
 	SOURCE_PATH ${SOURCE_PATH}/cpp
-	OPTIONS -DVCPKG_APPLOCAL_DEPS=ON
 )
 
-vcpkg_cmake_install()
+vcpkg_cmake_install(
+	ADD_BIN_TO_PATH
+)
 
 vcpkg_cmake_config_fixup(PACKAGE_NAME "FutureConfig")
+
