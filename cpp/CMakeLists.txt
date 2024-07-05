@@ -14,6 +14,9 @@ find_package(spdlog CONFIG REQUIRED)
 
 
 # GOOGLE TEST
+# do not install gtest
+set(INSTALL_GTEST OFF)
+
 include(FetchContent)
 FetchContent_Declare(
 	googletest
@@ -102,3 +105,8 @@ add_custom_command(
 	POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja $<TARGET_FILE_DIR:test_run>/data/config.jinja
 )
+
+# Installation
+install(TARGETS future-config fconfig_builder)
+
+message(STATUS test)
