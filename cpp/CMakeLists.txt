@@ -53,6 +53,7 @@ add_library(future-config STATIC
 	src/Resolver.cpp
 )
 
+
 add_executable(fconfig_builder
 	src/Builder.cpp
 	src/common.cpp
@@ -63,6 +64,17 @@ add_executable(fconfig_builder
 	src/configuration.cpp
 	src/builder_runner.cpp
 )
+
+## disable building of the builder tool in debug mode
+## for multi-configuration generators
+#if(CMAKE_CONFIGURATION_TYPES)
+#	set_target_properties(MyTarget PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
+## for single-configuration generators
+#else ()
+#	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+#		set_target_properties(MyTarget PROPERTIES EXCLUDE_FROM_ALL TRUE)
+#	endif()
+#endif()
 
 add_executable(test_run EXCLUDE_FROM_ALL
 	src/Builder.cpp
@@ -84,7 +96,7 @@ target_include_directories(
 	future-config
 	PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/src
-	$<INSTALL_INTERFACE:include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 # linking
@@ -103,7 +115,13 @@ target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
 include(GoogleTest) # cmake module
 gtest_discover_tests(test_run)
 
-
+# Copy shared libraries to the build directory (required by the Visual Studio generator)
+add_custom_command(
+	TARGET fconfig_builder
+	POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:fconfig_builder> $<TARGET_FILE_DIR:fconfig_builder>
+	COMMAND_EXPAND_LISTS
+)
 
 # RESOURCE COPYING TO BUILD DIR
 
@@ -114,7 +132,7 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data/test $<TARGET_FILE_DIR:test_run>/data/test
 )
 
-# config template
+# config template for the builder tool
 add_custom_command(
 	TARGET fconfig_builder
 	POST_BUILD
@@ -130,11 +148,26 @@ add_custom_command(
 # INSTALLATION
 # targets installation
 install(
-	TARGETS future-config fconfig_builder
+	TARGETS future-config
 	EXPORT "${FCONFIG_EXPORT_NAME}"
 )
 
-# cmake files installation
+# builder tool installation
+install(
+	TARGETS fconfig_builder
+	DESTINATION tools
+	CONFIGURATIONS Release
+)
+
+
+# headers installation
+install(
+	FILES src/Config_object.h src/configuration.h
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+	CONFIGURATIONS Release
+)
+
+# cmake targets installation
 install(
 	EXPORT "${FCONFIG_EXPORT_NAME}"
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
@@ -159,3 +192,5 @@ install(FILES
 	${FCONFIG_VERSION_BUILD_PATH}
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 )
+
+#file(GENERATE OUTPUT test.log CONTENT "the target file dir is $<TARGET_FILE_DIR:fconfig_builder>")

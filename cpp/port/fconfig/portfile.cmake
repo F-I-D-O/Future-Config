@@ -15,12 +15,9 @@ vcpkg_cmake_configure(
 	SOURCE_PATH ${SOURCE_PATH}/cpp
 )
 
-vcpkg_cmake_install(
-#	ADD_BIN_TO_PATH
-)
-#message(STATUS "setting CONFIG_PATH to ${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}")
-vcpkg_cmake_config_fixup(
-#	PACKAGE_NAME ${PACKAGE_NAME}
-#	CONFIG_PATH ${CMAKE_INSTALL_LIBDIR}/cmake/${PACKAGE_NAME}
-)
+vcpkg_cmake_install()
+
+vcpkg_cmake_config_fixup()
+
+file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 
