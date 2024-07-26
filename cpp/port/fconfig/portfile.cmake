@@ -19,5 +19,18 @@ vcpkg_cmake_install()
 
 vcpkg_cmake_config_fixup()
 
+# Copy the builder tool dependencies
+vcpkg_copy_tools(
+	TOOL_NAMES fconfig_builder
+	AUTO_CLEAN
+)
+
+# move the jinja template for the builder tool from bin directory to tools directory
+set(BIN_DATA_DIR "${CURRENT_PACKAGES_DIR}/bin/data")
+set(PORT_TOOL_DATA_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/data")
+file(MAKE_DIRECTORY "${PORT_TOOL_DATA_DIR}")
+file(RENAME "${BIN_DATA_DIR}/config.jinja" "${PORT_TOOL_DATA_DIR}/config.jinja")
+file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/bin")
+
 file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
 

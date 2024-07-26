@@ -15,6 +15,7 @@ set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
 set(FCONFIG_CMAKE_FILES_INSTALL_DIR "share/${PROJECT_NAME}")
 set(FCONFIG_PACKAGE_CONFIG_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 set(FCONFIG_VERSION_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
+set(FCONFIG_JINJA_TEMPLATE_BUILD_PATH $<TARGET_FILE_DIR:fconfig_builder>/data/config.jinja)
 
 # search for dependencies
 find_package(yaml-cpp CONFIG REQUIRED)
@@ -136,7 +137,7 @@ add_custom_command(
 add_custom_command(
 	TARGET fconfig_builder
 	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja $<TARGET_FILE_DIR:test_run>/data/config.jinja
+	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja ${FCONFIG_JINJA_TEMPLATE_BUILD_PATH}
 )
 
 add_custom_command(
@@ -152,18 +153,30 @@ install(
 	EXPORT "${FCONFIG_EXPORT_NAME}"
 )
 
-# builder tool installation
 install(
 	TARGETS fconfig_builder
-	DESTINATION tools
 	CONFIGURATIONS Release
 )
+
+## builder tool installation
+#install(
+#	TARGETS fconfig_builder
+#	DESTINATION tools/${PROJECT_NAME}
+#	CONFIGURATIONS Release
+#)
 
 
 # headers installation
 install(
 	FILES src/Config_object.h src/configuration.h
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+	CONFIGURATIONS Release
+)
+
+# builder tool template installation
+install(
+	FILES ${FCONFIG_JINJA_TEMPLATE_BUILD_PATH}
+	DESTINATION ${CMAKE_INSTALL_BINDIR}/data/
 	CONFIGURATIONS Release
 )
 
