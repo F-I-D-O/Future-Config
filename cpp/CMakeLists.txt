@@ -12,6 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # path configuration
 set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
+set(FCONFIG_INSTALL_INCLUDE_DIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
 set(FCONFIG_CMAKE_FILES_INSTALL_DIR "share/${PROJECT_NAME}")
 set(FCONFIG_PACKAGE_CONFIG_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake")
 set(FCONFIG_VERSION_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
@@ -96,8 +97,8 @@ add_executable(test_run EXCLUDE_FROM_ALL
 target_include_directories(
 	future-config
 	PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>/src
-	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+	$<INSTALL_INTERFACE:${FCONFIG_INSTALL_INCLUDE_DIR}>
 )
 
 # linking
@@ -168,8 +169,14 @@ install(
 
 # headers installation
 install(
-	FILES src/Config_object.h src/configuration.h
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+	FILES
+		src/common.h
+		src/Config_object.h
+		src/configuration.h
+		src/Merger.h
+		src/Parser.h
+		src/Resolver.h
+	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
 	CONFIGURATIONS Release
 )
 
