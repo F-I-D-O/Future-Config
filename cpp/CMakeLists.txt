@@ -1,14 +1,24 @@
+
 cmake_minimum_required(VERSION 3.22)
 
 option(VCPKG_APPLOCAL_DEPS ON)
 
 project(fconfig)
 
+# requirements
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# minimum version of GCC (because it incorrectly reports C++20 support)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
+	message(FATAL_ERROR "GCC version must be at least 13.0.0 while yours is ${CMAKE_CXX_COMPILER_VERSION}")
+endif()
+
+# used modules
 include(GNUInstallDirs) # for standard install directories
 include(CMakePackageConfigHelpers) # for generating the package configuration file and version file
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 # path configuration
 set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
@@ -118,12 +128,14 @@ include(GoogleTest) # cmake module
 gtest_discover_tests(test_run)
 
 # Copy shared libraries to the build directory (required by the Visual Studio generator)
-add_custom_command(
-	TARGET fconfig_builder
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:fconfig_builder> $<TARGET_FILE_DIR:fconfig_builder>
-	COMMAND_EXPAND_LISTS
-)
+if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
+	add_custom_command(
+		TARGET fconfig_builder
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:fconfig_builder> $<TARGET_FILE_DIR:fconfig_builder>
+		COMMAND_EXPAND_LISTS
+	)
+endif()
 
 # RESOURCE COPYING TO BUILD DIR
 
@@ -212,5 +224,3 @@ install(FILES
 	${FCONFIG_VERSION_BUILD_PATH}
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 )
-
-#file(GENERATE OUTPUT test.log CONTENT "the target file dir is $<TARGET_FILE_DIR:fconfig_builder>")
