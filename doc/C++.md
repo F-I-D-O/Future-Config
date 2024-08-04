@@ -24,9 +24,9 @@ run_fconfig_builder( # Run the fconfig builder tool that generates the config cl
 
 ```
 The `run_fconfig_builder` function has the following arguments:
-- `MAIN_CONFIG_FILE` - the path to the main config file for the project. By default, it is `<CMakelists.txt directory>/config.yaml`.
-- `ROOT_CONFIG_CLASS_NAME` - the name of the root config class. By default, it is the name of the CMake project.
-- `SOURCE_DIR` - the directory where the generated config classes will be placed. By default, it is `<CMakeLists.txt directory>/src`.
+- `MAIN_CONFIG_FILE`: the path to the main config file for the project. By default, it is `<CMakelists.txt directory>/config.yaml`.
+- `ROOT_CONFIG_CLASS_NAME`: the name of the root config class. By default, it is the name of the CMake project.
+- `SOURCE_DIR`: the directory where the generated config classes will be placed. By default, it is `<CMakeLists.txt directory>/src`.
 
 After CMake project configuration, you should see the generated config classes in the specified directory. To obtain the root config object in your code, you can use the following code:
 
