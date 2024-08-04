@@ -1,3 +1,4 @@
+include(GNUInstallDirs) # for standard install directories
 
 function(run_fconfig_builder)
 	cmake_parse_arguments(
@@ -24,8 +25,21 @@ function(run_fconfig_builder)
 		set(RUN_FCONFIG_BUILDER_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
 	endif()
 
+	# check if fconfig_builder is installed with vcpkg
 	set(FCONFIG_BUILDER_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/fconfig")
-	set(FCONFIG_BUILDER_EXECUTABLE "${FCONFIG_BUILDER_DIR}/fconfig_builder")
+	if(EXISTS "${FCONFIG_BUILDER_DIR}")
+		message(STATUS "Found fconfig_builder installed with vcpkg")
+		set(FCONFIG_BUILDER_EXECUTABLE "${FCONFIG_BUILDER_DIR}/fconfig_builder")
+	else()
+		set(FCONFIG_BUILDER_DIR "${CMAKE_INSTALL_FULL_BINDIR}")
+		set(FCONFIG_BUILDER_EXECUTABLE "${FCONFIG_BUILDER_DIR}/fconfig_builder")
+		if(EXISTS "${FCONFIG_BUILDER_EXECUTABLE}")
+			message(STATUS "fconfig_builder found in the local bin directory")
+		else()
+			message(FATAL_ERROR "Could not find fconfig_builder. Local path tried: ${FCONFIG_BUILDER_EXECUTABLE}")
+		endif()
+	endif()
+
 	set(FCONFIG_BUILDER_ARGS
 		--main "${RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH}"
 		--name ${RUN_FCONFIG_BUILDER_ROOT_CONFIG_CLASS_NAME}

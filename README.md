@@ -1,10 +1,34 @@
-# Future-Config
-Future config is a configuration system and a set of libraries to make this system work in different programming languages.
-Currently supported languages are Python and Java.
+# Future Config
+Future config is a configuration system for software projects and a set of libraries to make this system work in various programming languages.
+Currently supported languages are C++, Python and Java.
+
+Future Config can be used as a configuration system for any project but it is designed for complicated projects with dozens of configurable properties. For just a few properties, using program arguments or environment variables may be a better choice.
+
+The main features of Future Config are:
+- **Established Config File Format**: Future Config uses [YAML](https://yaml.org/) as the config file format. 
+- **Default/User Configs**: The configuration is defined in a *default* config file specifying the default values for the project. The user can then create a *user* config file, which is supplied at runtime and overrides the values from the default config file. 
+- **Config Class Generation**: Future Config generates config classes representing the config file structure. This allows for reliable and type-safe access to the config properties. The classes are generated automatically, no manual work is needed.
+- **Config Hierarchy**: Future Config is designed to support the configuration of whole project dependency chains. This means that a *project B* depending on a *project A* can specify some configuration for *project A* in its own config file. Moreover, the user can then use a single config file for the whole project chain.
+- **String Variables**: Future Config supports string variables/placeholders in the config file. This allows for the reuse of values and the composition of more complex values.
+
+Note that Future Config is still not fully implemented. The following table shows the current status of the implementation in different programming languages.
+
+| Feature | C++ | Python | Java |
+|---------|-----|--------|------|
+| Config File Format | YAML | custom temporary format | custom temporary format |
+| Default/User Configs | yes | yes | yes |
+| Config Class Generation | yes | yes | yes |
+| Config Hierarchy | yes | yes | yes |
+| String Variables | yes | yes | yes |
+| Documentation | yes | no | no |
+
+Although the config system should be identical in all supported languages, the necessary integration steps differ. Use the following links to get more information about the integration in a specific language:
+- [C++](doc/C++.md)
+- Python
+- Java
 
 ## Why another config format?
-Future-Config is designed for complicated projects with dozens or hundereds configurable properties that needs to be appropriately structured. 
-If you want a very basic config system, you should opt for some well-established alternative.
+
 The following table lists the features of Future-Config and the support of those features in different config formats.
 
 
