@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 
 option(VCPKG_APPLOCAL_DEPS ON)
 
-project(fconfig)
+project(future-config)
 
 # requirements
 set(CMAKE_CXX_STANDARD 20)

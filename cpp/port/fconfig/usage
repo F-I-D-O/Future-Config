@@ -3,11 +3,11 @@
 Future Config CMake integration
 -------------------------------
 
-find_package(fconfig REQUIRED) # Find the fconfig package
+find_package(future-config REQUIRED) # Find the future-config package
 
 target_link_libraries(<your target> PRIVATE future-config) # Link the library
 
-run_fconfig_builder( # Run the fconfig builder tool that generates the config classes
+run_fconfig_builder( # Run the builder tool that generates the config classes
 	<optional arguments here>
 )
 

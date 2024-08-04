@@ -26,7 +26,7 @@ function(run_fconfig_builder)
 	endif()
 
 	# check if fconfig_builder is installed with vcpkg
-	set(FCONFIG_BUILDER_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/fconfig")
+	set(FCONFIG_BUILDER_DIR "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/future-config")
 	if(EXISTS "${FCONFIG_BUILDER_DIR}")
 		message(STATUS "Found fconfig_builder installed with vcpkg")
 		set(FCONFIG_BUILDER_EXECUTABLE "${FCONFIG_BUILDER_DIR}/fconfig_builder")
