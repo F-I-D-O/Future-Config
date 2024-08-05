@@ -2,6 +2,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 option(VCPKG_APPLOCAL_DEPS ON)
+option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be build. Otherwise, static libraries are build" OFF)
 
 project(future-config)
 
@@ -47,15 +48,13 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+# disable building google test targets by default
 set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gmock PROPERTIES EXCLUDE_FROM_ALL TRUE)
 set_target_properties(gmock_main PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
-
-
-
-add_library(future-config STATIC
+set(future_config_lib_files
 	src/Builder.cpp
 	src/common.cpp
 	src/Config_object.cpp
@@ -64,6 +63,10 @@ add_library(future-config STATIC
 	src/Parser.cpp
 	src/Resolver.cpp
 )
+
+add_library(future-config SHARED ${future_config_lib_files})
+
+add_library(future-config-static STATIC ${future_config_lib_files})
 
 
 add_executable(fconfig_builder
@@ -76,17 +79,6 @@ add_executable(fconfig_builder
 	src/configuration.cpp
 	src/builder_runner.cpp
 )
-
-## disable building of the builder tool in debug mode
-## for multi-configuration generators
-#if(CMAKE_CONFIGURATION_TYPES)
-#	set_target_properties(MyTarget PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD_DEBUG TRUE)
-## for single-configuration generators
-#else ()
-#	if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-#		set_target_properties(MyTarget PROPERTIES EXCLUDE_FROM_ALL TRUE)
-#	endif()
-#endif()
 
 add_executable(test_run EXCLUDE_FROM_ALL
 	src/Builder.cpp
@@ -110,9 +102,18 @@ target_include_directories(
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	$<INSTALL_INTERFACE:${FCONFIG_INSTALL_INCLUDE_DIR}>
 )
+target_include_directories(
+	future-config-static
+	PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+	$<INSTALL_INTERFACE:${FCONFIG_INSTALL_INCLUDE_DIR}>
+)
 
 # linking
 target_link_libraries(future-config PUBLIC yaml-cpp)
+target_link_libraries(future-config-static PUBLIC yaml-cpp)
+target_link_libraries(future-config PRIVATE spdlog::spdlog)
+target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 
 target_link_libraries(test_run PRIVATE yaml-cpp)
 target_link_libraries(test_run PRIVATE pantor::inja)
@@ -136,6 +137,7 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
 		COMMAND_EXPAND_LISTS
 	)
 endif()
+
 
 # RESOURCE COPYING TO BUILD DIR
 
@@ -161,23 +163,18 @@ add_custom_command(
 
 # INSTALLATION
 # targets installation
-install(
-	TARGETS future-config
-	EXPORT "${FCONFIG_EXPORT_NAME}"
-)
+if(FCONFIG_BUILD_SHARED_LIBS)
+	set_target_properties(future-config-static PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	install(TARGETS future-config EXPORT "${FCONFIG_EXPORT_NAME}")
+else()
+	set_target_properties(future-config PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	install(TARGETS future-config-static EXPORT "${FCONFIG_EXPORT_NAME}")
+endif()
 
 install(
 	TARGETS fconfig_builder
 	CONFIGURATIONS Release
 )
-
-## builder tool installation
-#install(
-#	TARGETS fconfig_builder
-#	DESTINATION tools/${PROJECT_NAME}
-#	CONFIGURATIONS Release
-#)
-
 
 # headers installation
 install(
