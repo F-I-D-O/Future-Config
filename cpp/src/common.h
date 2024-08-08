@@ -12,6 +12,7 @@
 #include <yaml-cpp/yaml.h>
 
 #include "Config_object.h"
+#include "future-config_export.h"
     
     
 namespace fc {    
@@ -55,7 +56,7 @@ enum class Config_type {
 	LOCAL
 };
 
-struct Config_definition {
+struct FUTURE_CONFIG_EXPORT Config_definition {
 	const Config_type type;
 	const fs::path yaml_file_path;
 

@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 option(VCPKG_APPLOCAL_DEPS ON)
-option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be build. Otherwise, static libraries are build" OFF)
+option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
 
 project(future-config)
 
@@ -18,6 +18,7 @@ endif()
 # used modules
 include(GNUInstallDirs) # for standard install directories
 include(CMakePackageConfigHelpers) # for generating the package configuration file and version file
+#include(GenerateExportHeader) # for generating the export headers
 
 
 
@@ -65,8 +66,14 @@ set(future_config_lib_files
 )
 
 add_library(future-config SHARED ${future_config_lib_files})
+#generate_export_header(future-config)
 
 add_library(future-config-static STATIC ${future_config_lib_files})
+target_compile_definitions(future-config-static PUBLIC FUTURE_CONFIG_STATIC_DEFINE) # static flag for the export header
+#set_target_properties(
+#	future-config-static
+#	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
+#)
 
 
 add_executable(fconfig_builder
@@ -78,6 +85,10 @@ add_executable(fconfig_builder
 	src/Config_object.cpp
 	src/configuration.cpp
 	src/builder_runner.cpp
+)
+set_target_properties(
+	fconfig_builder
+	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
 )
 
 add_executable(test_run EXCLUDE_FROM_ALL
@@ -110,17 +121,17 @@ target_include_directories(
 )
 
 # linking
-target_link_libraries(future-config PUBLIC yaml-cpp)
-target_link_libraries(future-config-static PUBLIC yaml-cpp)
+target_link_libraries(future-config PUBLIC yaml-cpp::yaml-cpp)
+target_link_libraries(future-config-static PUBLIC yaml-cpp::yaml-cpp)
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 
-target_link_libraries(test_run PRIVATE yaml-cpp)
+target_link_libraries(test_run PRIVATE yaml-cpp::yaml-cpp)
 target_link_libraries(test_run PRIVATE pantor::inja)
 target_link_libraries(test_run PRIVATE GTest::gtest_main)
 target_link_libraries(test_run PRIVATE spdlog::spdlog)
 
-target_link_libraries(fconfig_builder PRIVATE yaml-cpp)
+target_link_libraries(fconfig_builder PRIVATE yaml-cpp::yaml-cpp)
 target_link_libraries(fconfig_builder PRIVATE pantor::inja)
 target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
 
@@ -168,6 +179,7 @@ if(FCONFIG_BUILD_SHARED_LIBS)
 	install(TARGETS future-config EXPORT "${FCONFIG_EXPORT_NAME}")
 else()
 	set_target_properties(future-config PROPERTIES EXCLUDE_FROM_ALL TRUE)
+	set_target_properties(future-config-static PROPERTIES EXPORT_NAME "future-config")
 	install(TARGETS future-config-static EXPORT "${FCONFIG_EXPORT_NAME}")
 endif()
 
@@ -182,12 +194,19 @@ install(
 		src/common.h
 		src/Config_object.h
 		src/configuration.h
+		src/future-config_export.h
 		src/Merger.h
 		src/Parser.h
 		src/Resolver.h
 	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
 	CONFIGURATIONS Release
 )
+## export header installation
+#install(
+#	FILES ${PROJECT_BINARY_DIR}/future-config_export.h
+#	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
+#	CONFIGURATIONS Release
+#)
 
 # builder tool template installation
 install(
@@ -200,6 +219,7 @@ install(
 install(
 	EXPORT "${FCONFIG_EXPORT_NAME}"
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
+	NAMESPACE future-config::
 )
 
 # Generate the package configuration file

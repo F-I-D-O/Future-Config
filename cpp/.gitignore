@@ -3,5 +3,6 @@ cmake-build-release/
 out/
 build/
 build_WSL/
+build_WSL_shared/
 
 .vs/

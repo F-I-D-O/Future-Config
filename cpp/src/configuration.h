@@ -11,6 +11,7 @@
 
 #include "Config_object.h"
 #include "common.h"
+#include "future-config_export.h"
     
     
 namespace fc {    
@@ -27,10 +28,7 @@ concept Config_class = requires(C c, const Config_object& config) {
 
 
 template<Config_class C>
-C load(
-	std::vector<std::unique_ptr<Config_definition>>& config_definitions,
-	const fs::path& local_config_path
-);
+FUTURE_CONFIG_EXPORT C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, const fs::path& local_config_path);
 
 template<Config_class C>
 C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, const fs::path& local_config_path) {
@@ -64,6 +62,6 @@ C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, cons
 	return C(config_object);
 
 }
-        
+
 }
     

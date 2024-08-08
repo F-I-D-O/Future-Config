@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <format>
 #include <yaml-cpp/yaml.h>
+
+#include "future-config_export.h"
     
     
 namespace fc {    
@@ -73,7 +75,7 @@ constexpr unsigned short string_array_index = 3;
 //static_assert(std::input_iterator<Config_object_iterator>);
 
 
-class Config_object {
+class FUTURE_CONFIG_EXPORT Config_object {
 	std::unordered_map<std::string, config_property_value> properties;
 
 public:
