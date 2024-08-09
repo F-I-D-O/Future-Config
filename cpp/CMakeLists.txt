@@ -35,6 +35,13 @@ find_package(yaml-cpp CONFIG REQUIRED)
 find_package(inja CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
+#message(STATUS "yaml-cpp version: ${yaml-cpp_VERSION}")
+if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
+	set(YAML_CPP_TARGET yaml-cpp)
+else()
+	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
+endif()
+
 
 # GOOGLE TEST
 # do not install gtest
@@ -121,17 +128,17 @@ target_include_directories(
 )
 
 # linking
-target_link_libraries(future-config PUBLIC yaml-cpp::yaml-cpp)
-target_link_libraries(future-config-static PUBLIC yaml-cpp::yaml-cpp)
+target_link_libraries(future-config PUBLIC ${YAML_CPP_TARGET})
+target_link_libraries(future-config-static PUBLIC ${YAML_CPP_TARGET})
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 
-target_link_libraries(test_run PRIVATE yaml-cpp::yaml-cpp)
+target_link_libraries(test_run PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(test_run PRIVATE pantor::inja)
 target_link_libraries(test_run PRIVATE GTest::gtest_main)
 target_link_libraries(test_run PRIVATE spdlog::spdlog)
 
-target_link_libraries(fconfig_builder PRIVATE yaml-cpp::yaml-cpp)
+target_link_libraries(fconfig_builder PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(fconfig_builder PRIVATE pantor::inja)
 target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
 
