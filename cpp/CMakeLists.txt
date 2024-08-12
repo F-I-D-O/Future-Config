@@ -128,8 +128,8 @@ target_include_directories(
 )
 
 # linking
-target_link_libraries(future-config PUBLIC ${YAML_CPP_TARGET})
-target_link_libraries(future-config-static PUBLIC ${YAML_CPP_TARGET})
+target_link_libraries(future-config PRIVATE ${YAML_CPP_TARGET})
+target_link_libraries(future-config-static PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 

@@ -6,6 +6,7 @@
   "dependencies": [
     "inja",
     "spdlog",
+    "tclap",
     {
       "name": "vcpkg-cmake",
       "host": true
