@@ -1,6 +1,12 @@
 @PACKAGE_INIT@
 
+include(CMakeFindDependencyMacro)
+
+# dependencies
+find_dependency(yaml-cpp)
+find_dependency(spdlog)
+
 include ("${CMAKE_CURRENT_LIST_DIR}/future-configTargets.cmake")
 
-# include fconfig builder function
+# include future config builder runner cmake function
 include("${CMAKE_CURRENT_LIST_DIR}/builderRunner.cmake")
