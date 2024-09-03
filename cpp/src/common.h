@@ -96,9 +96,9 @@ std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definiti
 	const std::vector<std::string>& dependency_config_strings
 );
 
-Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
+Config_object FUTURE_CONFIG_EXPORT load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
 
-std::filesystem::path check_path(const std::filesystem::path& path);
+std::filesystem::path FUTURE_CONFIG_EXPORT check_path(const std::filesystem::path& path);
         
 }
     
