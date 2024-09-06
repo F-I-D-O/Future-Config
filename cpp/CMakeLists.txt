@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 
 option(VCPKG_APPLOCAL_DEPS ON)
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
+option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
 
 project(future-config)
 
@@ -42,36 +43,6 @@ else()
 	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
 endif()
 
-
-# GOOGLE TEST
-# do not install gtest
-set(INSTALL_GTEST OFF)
-
-include(FetchContent)
-FetchContent_Declare(
-	googletest
-	URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
-	EXCLUDE_FROM_ALL
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-# disable building google test targets by default
-set_target_properties(gtest PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(gtest_main PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(gmock PROPERTIES EXCLUDE_FROM_ALL TRUE)
-set_target_properties(gmock_main PROPERTIES EXCLUDE_FROM_ALL TRUE)
-
-set(future_config_lib_files
-	src/Builder.cpp
-	src/common.cpp
-	src/Config_object.cpp
-	src/configuration.cpp
-	src/Merger.cpp
-	src/Parser.cpp
-	src/Resolver.cpp
-)
-
 add_library(future-config SHARED ${future_config_lib_files})
 #generate_export_header(future-config)
 
@@ -81,7 +52,6 @@ target_compile_definitions(future-config-static PUBLIC FUTURE_CONFIG_STATIC_DEFI
 #	future-config-static
 #	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
 #)
-
 
 add_executable(fconfig_builder
 	src/Builder.cpp
@@ -96,19 +66,6 @@ add_executable(fconfig_builder
 set_target_properties(
 	fconfig_builder
 	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
-)
-
-add_executable(test_run EXCLUDE_FROM_ALL
-	src/Builder.cpp
-	src/common.cpp
-	src/Merger.cpp
-	src/Parser.cpp
-	src/Resolver.cpp
-	test/bulider_tests.cpp
-	test/merger_test.cpp
-	test/resolver_tests.cpp
-	src/Config_object.cpp
-	test/common.cpp
 )
 
 # include directories
@@ -133,18 +90,9 @@ target_link_libraries(future-config-static PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 
-target_link_libraries(test_run PRIVATE ${YAML_CPP_TARGET})
-target_link_libraries(test_run PRIVATE pantor::inja)
-target_link_libraries(test_run PRIVATE GTest::gtest_main)
-target_link_libraries(test_run PRIVATE spdlog::spdlog)
-
 target_link_libraries(fconfig_builder PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(fconfig_builder PRIVATE pantor::inja)
 target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
-
-# enable automatic discovery of tests
-include(GoogleTest) # cmake module
-gtest_discover_tests(test_run)
 
 # Copy shared libraries to the build directory (required by the Visual Studio generator)
 if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
@@ -159,13 +107,6 @@ endif()
 
 # RESOURCE COPYING TO BUILD DIR
 
-# test data
-add_custom_command(
-	TARGET test_run
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/data/test $<TARGET_FILE_DIR:test_run>/data/test
-)
-
 # config template for the builder tool
 add_custom_command(
 	TARGET fconfig_builder
@@ -173,11 +114,6 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja ${FCONFIG_JINJA_TEMPLATE_BUILD_PATH}
 )
 
-add_custom_command(
-	TARGET test_run
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.jinja $<TARGET_FILE_DIR:test_run>/data/config.jinja
-)
 
 # INSTALLATION
 # targets installation
@@ -256,3 +192,7 @@ install(
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 	CONFIGURATIONS Release
 )
+
+if(FCONFIG_ENABLE_TESTS)
+	add_subdirectory(test)
+endif()

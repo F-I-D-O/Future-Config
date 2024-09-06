@@ -9,13 +9,12 @@
 set(SOURCE_PATH "C:/Workspaces/ninja/Future-Config")
 #set(SOURCE_PATH "/mnt/c/Workspaces/ninja/Future-Config")
 
-set(PACKAGE_NAME "future-config")
-
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 vcpkg_cmake_configure(
 	SOURCE_PATH ${SOURCE_PATH}/cpp
-	OPTIONS -DFCONFIG_BUILD_SHARED_LIBS=${BUILD_SHARED}
+	OPTIONS
+		-DFCONFIG_BUILD_SHARED_LIBS=${BUILD_SHARED}
 )
 
 vcpkg_cmake_install()
@@ -41,7 +40,7 @@ if("${dir_to_rm_content}" STREQUAL "")
 	file(REMOVE_RECURSE "${BIN_DIR}")
 endif()
 
-file(INSTALL "${SOURCE_PATH}/LICENSE.txt" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}" RENAME copyright)
+vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
 
 # copy the usage example
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
