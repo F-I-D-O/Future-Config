@@ -1,7 +1,6 @@
 
 cmake_minimum_required(VERSION 3.22)
 
-option(VCPKG_APPLOCAL_DEPS ON)
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
 option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
 
@@ -21,7 +20,7 @@ include(GNUInstallDirs) # for standard install directories
 include(CMakePackageConfigHelpers) # for generating the package configuration file and version file
 #include(GenerateExportHeader) # for generating the export headers
 
-
+set(VCPKG_APPLOCAL_DEPS ON)
 
 # path configuration
 set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
@@ -42,6 +41,17 @@ if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
 else()
 	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
 endif()
+
+
+set(future_config_lib_files
+	src/Builder.cpp
+	src/common.cpp
+	src/Config_object.cpp
+	src/configuration.cpp
+	src/Merger.cpp
+	src/Parser.cpp
+	src/Resolver.cpp
+)
 
 add_library(future-config SHARED ${future_config_lib_files})
 #generate_export_header(future-config)

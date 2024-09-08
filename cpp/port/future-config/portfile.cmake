@@ -4,9 +4,9 @@
 #	REF master
 #	SHA512 0
 #)
-#set(SOURCE_PATH "D:/Workspaces/Fido/Future-Config")
+set(SOURCE_PATH "D:/Workspaces/Fido/Future-Config")
 #set(SOURCE_PATH "/mnt/d/Workspaces/Fido/Future-Config")
-set(SOURCE_PATH "C:/Workspaces/ninja/Future-Config")
+#set(SOURCE_PATH "C:/Workspaces/ninja/Future-Config")
 #set(SOURCE_PATH "/mnt/c/Workspaces/ninja/Future-Config")
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
@@ -15,6 +15,7 @@ vcpkg_cmake_configure(
 	SOURCE_PATH ${SOURCE_PATH}/cpp
 	OPTIONS
 		-DFCONFIG_BUILD_SHARED_LIBS=${BUILD_SHARED}
+		-DFCONFIG_ENABLE_TESTS=OFF
 )
 
 vcpkg_cmake_install()
