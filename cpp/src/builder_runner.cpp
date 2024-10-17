@@ -7,6 +7,7 @@
 #include "builder_runner.h"
 #include "common.h"
 #include "Builder.h"
+#include "format.h"
     
 
     
@@ -24,7 +25,7 @@ void generate_config(
 
 	fs::path output_dir = source_dir / fc::default_config_folder;
 
-	std::string root_config_object_name = std::format("{}_config", main_config_name);
+	std::string root_config_object_name = format::format("{}_config", main_config_name);
 
 
 	fc::Builder(config_object, output_dir, root_config_object_name, config_definitions).build_config();

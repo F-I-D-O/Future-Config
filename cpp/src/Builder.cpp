@@ -2,11 +2,11 @@
 // Created by Fido on 2024-04-21.
 //
 
-#include <any>
 #include <ranges>
 #include <tuple>
 
 #include "Builder.h"
+#include "format.h"
     
     
 namespace fc {    
@@ -101,7 +101,7 @@ std::string Builder::get_template_data_for_class(
 				// if the array contains objects, generate a class for those objects
 				if(child_object.index() == object_array_index) {
 					item_type = "fc::Config_object";
-					auto class_name = std::format("{}_item", join(child_path, "_"));
+					auto class_name = format::format("{}_item", join(child_path, "_"));
 					class_name[0] = static_cast<char>(std::toupper(class_name.at(0)));
 					property_data["array_type_name"] = class_name;
 					scalar_item = false;
@@ -163,7 +163,7 @@ void Builder::generate_config() {
 		template_data["empty_body"] = "{}";
 
 		get_template_data_for_class(config, root_object_name, {}, template_data);
-		auto out_path = output_dir / std::format("{}.h", root_object_name);
+		auto out_path = output_dir / format::format("{}.h", root_object_name);
 		try {
 			env.write(config_template, template_data, out_path.string());
 		} catch(const inja::RenderError& e) {

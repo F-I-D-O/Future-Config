@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <format>
 #include <yaml-cpp/yaml.h>
 
+#include "format.h"
 #include "future-config_export.h"
     
     
@@ -24,7 +24,7 @@ class Config_object;
 using config_property_value = std::variant<
 	// object and object array types
 	Config_object,
-	std::vector<Config_object>,
+//	std::vector<Config_object>,
 
 	// scalar and scalar array types
 	std::string,
@@ -75,12 +75,17 @@ constexpr unsigned short string_array_index = 3;
 //static_assert(std::input_iterator<Config_object_iterator>);
 
 
+
+
 class FUTURE_CONFIG_EXPORT Config_object {
-	std::unordered_map<std::string, config_property_value> properties;
+	using properties_map = std::unordered_map<std::string, std::unique_ptr<config_property_value>>;
+
+
+	properties_map properties;
 
 public:
-	using iterator = std::unordered_map<std::string, config_property_value>::iterator;
-	using const_iterator = std::unordered_map<std::string, config_property_value>::const_iterator;
+	using iterator = properties_map::iterator;
+	using const_iterator = properties_map::const_iterator;
 
 
 
@@ -88,8 +93,8 @@ public:
 
 
 
-	iterator begin() {
-		return properties.begin();
+	auto begin() {
+		return properties.begin().;
 	}
 
 	iterator end() {
@@ -117,11 +122,11 @@ public:
 //	}
 //
 	config_property_value& operator[](const std::string& key) {
-		return properties.at(key);
+		return *properties.at(key);
 	}
 
 	const config_property_value& operator[](const std::string& key) const {
-		return properties.at(key);
+		return *properties.at(key);
 	}
 
 	[[nodiscard]] unsigned short size() const {
@@ -147,7 +152,7 @@ public:
 				return false;
 			}
 			else {
-				throw std::runtime_error(std::format("Value is not a boolean", string_value));
+				throw std::runtime_error(format::format("Value is not a boolean", string_value));
 			}
 		}
 	}
@@ -159,7 +164,7 @@ public:
 			return transform_value<T>(string_value);
 		}
 		else {
-			throw std::runtime_error(std::format("Property {} is not a scalar", key));
+			throw std::runtime_error(format::format("Property {} is not a scalar", key));
 		}
 	}
 
@@ -177,7 +182,7 @@ public:
 			return result;
 		}
 		else {
-			throw std::runtime_error(std::format("Property {} is not an array of scalars", key));
+			throw std::runtime_error(format::format("Property {} is not an array of scalars", key));
 		}
 	}
 
@@ -187,6 +192,8 @@ public:
 
 
 static_assert(std::ranges::input_range<Config_object>);
+
+//static_assert(std::__is_complete_or_unbounded<std::__type_identity<fc::Config_object> >((std::__type_identity<fc::Config_object>{}, std::__type_identity<fc::Config_object>())));
 
         
 }

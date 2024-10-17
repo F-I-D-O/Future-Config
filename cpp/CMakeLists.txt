@@ -10,17 +10,20 @@ project(future-config)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# minimum version of GCC (because it incorrectly reports C++20 support)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
-	message(FATAL_ERROR "GCC version must be at least 13.0.0 while yours is ${CMAKE_CXX_COMPILER_VERSION}")
-endif()
-
 # used modules
 include(GNUInstallDirs) # for standard install directories
 include(CMakePackageConfigHelpers) # for generating the package configuration file and version file
 #include(GenerateExportHeader) # for generating the export headers
 
 set(VCPKG_APPLOCAL_DEPS ON)
+
+# minimum version of GCC (because it incorrectly reports C++20 support)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
+	set(FCONFIG_USE_FMT ON)
+	add_compile_definitions(FCONFIG_USE_FMT)
+	#	message(FATAL_ERROR "GCC version must be at least 13.0.0 while yours is ${CMAKE_CXX_COMPILER_VERSION}")
+endif()
+
 
 # path configuration
 set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
@@ -34,6 +37,9 @@ set(FCONFIG_JINJA_TEMPLATE_BUILD_PATH $<TARGET_FILE_DIR:fconfig_builder>/data/co
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(inja CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+if(FCONFIG_USE_FMT)
+	find_package(fmt CONFIG REQUIRED)
+endif()
 
 #message(STATUS "yaml-cpp version: ${yaml-cpp_VERSION}")
 if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
@@ -72,6 +78,7 @@ add_executable(fconfig_builder
 	src/Config_object.cpp
 	src/configuration.cpp
 	src/builder_runner.cpp
+	src/format.h
 )
 set_target_properties(
 	fconfig_builder
@@ -99,10 +106,17 @@ target_link_libraries(future-config PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(future-config-static PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
+if(FCONFIG_USE_FMT)
+	target_link_libraries(future-config PRIVATE fmt::fmt)
+	target_link_libraries(future-config-static PRIVATE fmt::fmt)
+endif()
 
 target_link_libraries(fconfig_builder PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(fconfig_builder PRIVATE pantor::inja)
 target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
+if(FCONFIG_USE_FMT)
+	target_link_libraries(fconfig_builder PRIVATE fmt::fmt)
+endif()
 
 # Copy shared libraries to the build directory (required by the Visual Studio generator)
 if(CMAKE_GENERATOR MATCHES "Visual Studio.*")

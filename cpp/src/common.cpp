@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include "Merger.h"
 #include "Resolver.h"
+#include "format.h"
     
     
 namespace fc {    
@@ -96,7 +97,7 @@ Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>&
 			auto config_object = Parser().parse(config_definition->yaml_file_path);
 			configs.push_back(config_object);
 		} catch(const std::runtime_error& e) {
-			throw std::runtime_error(std::format(
+			throw std::runtime_error(format::format(
 				"Failed to parse the {}. configuration ({}): {}",
 				counter,
 				config_definition->yaml_file_path.string(),
@@ -114,9 +115,9 @@ std::filesystem::path check_path(const std::filesystem::path& path) {
 
 	if(!std::filesystem::exists(abs_path)) {
 		auto message
-			= std::format("File does not exists: {} ", path.string());
+			= format::format("File does not exists: {} ", path.string());
 		if(abs_path != path) {
-			message += std::format(" absolute path: {}", abs_path.string());
+			message += format::format(" absolute path: {}", abs_path.string());
 		}
 		throw std::runtime_error(message);
 	}

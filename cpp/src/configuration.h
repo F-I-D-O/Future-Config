@@ -9,6 +9,7 @@
 #include <spdlog/spdlog.h>
 #include "yaml-cpp/yaml.h"
 
+#include "format.h"
 #include "Config_object.h"
 #include "common.h"
 #include "future-config_export.h"
@@ -36,7 +37,7 @@ C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, cons
 		// check if local config file exists
 		check_path(local_config_path);
 	} catch(const std::runtime_error& e) {
-		throw std::runtime_error(std::format("There is a problem with the user configuration: {}", e.what()));
+		throw std::runtime_error(format::format("There is a problem with the user configuration: {}", e.what()));
 	}
 
 	// check master config definitions
@@ -46,7 +47,7 @@ C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, cons
 			check_path(config_definition->yaml_file_path);
 		} catch(const std::runtime_error& e) {
 			throw std::runtime_error(
-				std::format("There is a problem with the {}. master configuration: {}", i + 1, e.what()));
+				format::format("There is a problem with the {}. master configuration: {}", i + 1, e.what()));
 		}
 	}
 

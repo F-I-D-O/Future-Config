@@ -1,7 +1,6 @@
 //
 // Created by david on 2024-06-06.
 //
-#include <format>
 #include <fstream>
 
 #include "configuration.h"

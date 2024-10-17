@@ -4,6 +4,7 @@
 
 #include "yaml-cpp/yaml.h"
 
+#include "format.h"
 #include "Parser.h"
 #include "common.h"
     
@@ -41,7 +42,7 @@ Config_object Parser::parse(const fs::path& yaml_file_path) {
 				break;
 		}
 
-		throw std::runtime_error(std::format(
+		throw std::runtime_error(format::format(
 			"The root node of configuration file must be a map. Root node: {}", type_str));
 	}
 

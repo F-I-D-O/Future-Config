@@ -2,7 +2,7 @@
 // Created by david on 2024-05-08.
 //
 
-#include <format>
+#include "format.h"
 #include "Config_object.h"
     
     
@@ -30,7 +30,7 @@ Config_object::Config_object(const YAML::Node& yaml_config) {
 				properties.emplace(key, objects);
 			}
 			else {
-				throw std::runtime_error(std::format("Unsupported as array member type"));
+				throw std::runtime_error(format::format("Unsupported as array member type"));
 			}
 		}
 		else if(value.IsMap()) {
@@ -50,7 +50,7 @@ Config_object Config_object::get<Config_object>(const std::string& key) const {
 		return std::get<Config_object>(properties.at(key));
 	}
 	else {
-		throw std::runtime_error(std::format("Property {} is not an object", key));
+		throw std::runtime_error(format::format("Property {} is not an object", key));
 	}
 }
 
@@ -65,7 +65,7 @@ std::vector<Config_object> Config_object::get_array(const std::string& key) cons
 		return std::get<std::vector<Config_object>>(properties.at(key));
 	}
 	else {
-		throw std::runtime_error(std::format("Property {} is not an array of objects", key));
+		throw std::runtime_error(format::format("Property {} is not an array of objects", key));
 	}
 }
 

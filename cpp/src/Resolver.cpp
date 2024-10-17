@@ -6,7 +6,9 @@
 #include <string>
 #include "spdlog/spdlog.h"
 
+#include "format.h"
 #include "Resolver.h"
+
     
     
 namespace fc {    
@@ -67,7 +69,7 @@ void Resolver::process_queue() {
 					auto [unresolved_parent, unresolved_key] = unresolved_variables.front();
 					unresolved_variables.pop();
 					auto value = std::get<std::string>(unresolved_parent[unresolved_key]);
-					unresolved_variables_str += std::format("{}: {}\n", unresolved_key, value);
+					unresolved_variables_str += format::format("{}: {}\n", unresolved_key, value);
 				}
 				spdlog::error(
 					"None of the remaining variables can be resolved. Remaining variables: {}",
