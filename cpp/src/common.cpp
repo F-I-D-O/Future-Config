@@ -94,8 +94,8 @@ Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>&
 	unsigned counter = 1;
 	for(const auto& config_definition: config_definitions) {
 		try{
-			auto config_object = Parser().parse(config_definition->yaml_file_path);
-			configs.push_back(config_object);
+//			auto config_object = Parser().parse(config_definition->yaml_file_path);
+			configs.emplace_back(Parser().parse(config_definition->yaml_file_path));
 		} catch(const std::runtime_error& e) {
 			throw std::runtime_error(format::format(
 				"Failed to parse the {}. configuration ({}): {}",

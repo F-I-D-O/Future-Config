@@ -22,11 +22,11 @@ void Merger::override_level(Config_object& config, const Config_object& overridi
 	auto& final_config = config;
 
 	for(const auto&[key, value]: overriding_config) {
-		if(std::holds_alternative<Config_object>(value) && config.contains(key)) {
-			override_level(std::get<Config_object>(config[key]), std::get<Config_object>(value));
+		if(std::holds_alternative<Config_object>(*value) && config.contains(key)) {
+			override_level(std::get<Config_object>(config[key]), std::get<Config_object>(*value));
 		}
 		else{
-			config[key] = value;
+			config[key] = *value;
 		}
 	}
 }

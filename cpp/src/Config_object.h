@@ -94,7 +94,7 @@ public:
 
 
 	auto begin() {
-		return properties.begin().;
+		return properties.begin();
 	}
 
 	iterator end() {
@@ -159,8 +159,8 @@ public:
 
 	template<typename T>
 	T get(const std::string& key) const {
-		if(std::holds_alternative<std::string>(properties.at(key))) {
-			const auto& string_value = std::get<std::string>(properties.at(key));
+		if(std::holds_alternative<std::string>(*properties.at(key))) {
+			const auto& string_value = std::get<std::string>(*properties.at(key));
 			return transform_value<T>(string_value);
 		}
 		else {
@@ -170,10 +170,10 @@ public:
 
 	template<typename T>
 	std::vector<T> get_array(const std::string& key) const {
-		if(std::holds_alternative<std::vector<std::string>>(properties.at(key))) {
+		if(std::holds_alternative<std::vector<std::string>>(*properties.at(key))) {
 			std::vector<T> result;
 			std::ranges::transform(
-				std::get<std::vector<std::string>>(properties.at(key)),
+				std::get<std::vector<std::string>>(*properties.at(key)),
 				std::back_inserter(result),
 				[this](const std::string& string_value) {
 					return transform_value<T>(string_value);

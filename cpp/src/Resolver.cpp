@@ -22,16 +22,16 @@ void Resolver::resolve() {
 
 void Resolver::add_all_variables_to_queue(Config_object& config_object) {
 	for(auto&[key, value]: config_object) {
-		if(std::holds_alternative<Config_object>(value)) {
-			add_all_variables_to_queue(std::get<Config_object>(value));
+		if(std::holds_alternative<Config_object>(*value)) {
+			add_all_variables_to_queue(std::get<Config_object>(*value));
 		}
-		else if(std::holds_alternative<std::vector<Config_object>>(value)) {
-			for(auto& object: std::get<std::vector<Config_object>>(value)) {
-				add_all_variables_to_queue(object);
-			}
-		}
+//		else if(std::holds_alternative<std::vector<Config_object>>(*value)) {
+//			for(auto& object: std::get<std::vector<Config_object>>(*value)) {
+//				add_all_variables_to_queue(object);
+//			}
+//		}
 		else {
-			auto scalar = std::get<std::string>(value);
+			auto scalar = std::get<std::string>(*value);
 			std::smatch matches;
 			const auto found = std::regex_search(scalar, matches, variable_regex);
 			if(found) {
