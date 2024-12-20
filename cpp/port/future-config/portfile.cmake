@@ -1,8 +1,9 @@
 #vcpkg_from_github(
 #	OUT_SOURCE_PATH SOURCE_PATH
 #	REPO F-I-D-O/Future-Config
-#	REF master
+#	REF v0.1.0
 #	SHA512 0
+#	HEAD_REF master
 #)
 set(SOURCE_PATH "D:/Workspaces/Fido/Future-Config")
 #set(SOURCE_PATH "/mnt/d/Workspaces/Fido/Future-Config")

@@ -2,7 +2,7 @@
 include(GoogleTest) # cmake module
 
 # set the policy CMP0135 to use correct timestamp for archives downloaded by FetchContent
-cmake_policy(SET CMP0135 NEW)
+#cmake_policy(SET CMP0135 NEW)
 
 # do not install gtest
 set(BUILD_GMOCK OFF)
@@ -15,6 +15,7 @@ FetchContent_Declare(
 	googletest
 	URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 	EXCLUDE_FROM_ALL
+	DOWNLOAD_EXTRACT_TIMESTAMP
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 
