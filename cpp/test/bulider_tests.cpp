@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "Builder.h"
+#include "format.h"
 
 namespace fc {
 
@@ -24,8 +25,26 @@ std::string remove_empty_lines(const std::string& str) {
 	return result;
 }
 
+std::string unify_line_endings(const std::string& str) {
+	std::string result = str;
+
+	// replace all "\r\n" with just "\n"
+	std::string::size_type pos = 0;
+	while((pos = result.find("\r\n", pos)) != std::string::npos) {
+		result.replace(pos, 2, "\n");
+	}
+
+	return result;
+}
+
+std::string cleanup_newlines(const std::string& str) {
+	std::string empty_lines_removed = remove_empty_lines(str);
+	std::string unified_line_endings = unify_line_endings(empty_lines_removed);
+	return unified_line_endings;
+}
+
 void compare_generated_config_content(const std::string& expected, const std::string& actual) {
-	ASSERT_EQ(remove_empty_lines(expected), remove_empty_lines(actual));
+	ASSERT_EQ(cleanup_newlines(expected), cleanup_newlines(actual));
 }
 
 void check_generated_config(
@@ -34,11 +53,11 @@ void check_generated_config(
 	std::unordered_map<std::string, std::tuple<std::string, std::string>>& dependency_config_map
 ) {
 	fs::path output_dir = fs::temp_directory_path() / "test_output";
-	std::string root_object_name = std::format("{}_config", expected_file.stem().string());
+	std::string root_object_name = format::format("{}_config", expected_file.stem().string());
 	Builder builder(config, output_dir, root_object_name, dependency_config_map);
 	builder.build_config();
 
-	fs::path actual_file = output_dir / std::format("{}.h", root_object_name);
+	fs::path actual_file = output_dir / format	::format("{}.h", root_object_name);
 	ASSERT_TRUE(fs::exists(actual_file));
 
 	std::ifstream expected_file_stream(expected_file);
@@ -77,18 +96,19 @@ TEST(Builder, test_string_array_in_object) {
 	check_generated_config(config, TEST_DATA_DIR / "string_array_in_object.h");
 }
 
-TEST(Builder, test_array_of_objects) {
-	YAML::Node config = YAML::Load(
-		R"({array_of_objects:
-					[
-						{property: "object's 1 property"},
-						{property: "object's 2 property"}
-					]
-				}
-		)"
-	);
-	check_generated_config(config, TEST_DATA_DIR / "array_of_objects.h");
-}
+// not supported yet
+// TEST(Builder, test_array_of_objects) {
+// 	YAML::Node config = YAML::Load(
+// 		R"({array_of_objects:
+// 					[
+// 						{property: "object's 1 property"},
+// 						{property: "object's 2 property"}
+// 					]
+// 				}
+// 		)"
+// 	);
+// 	check_generated_config(config, TEST_DATA_DIR / "array_of_objects.h");
+// }
 
 TEST(Builder, test_parent_config) {
 	YAML::Node config = YAML::Load(

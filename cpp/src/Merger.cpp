@@ -9,24 +9,24 @@ namespace fc {
 
     
 
-Config_object Merger::merge(const std::vector<Config_object>& configs) {
-	auto final_config_data = configs[0];
+Config_object Merger::merge(std::vector<Config_object>& configs) {
+	// Copy the default config here
+	Config_object final_config_data = configs[0];
+
 	for(int i = 1; i < configs.size(); ++i) {
 		override_level(final_config_data, configs[i]);
 	}
 
-	return final_config_data;
+	return std::move(final_config_data);
 }
 
-void Merger::override_level(Config_object& config, const Config_object& overriding_config) {
-	auto& final_config = config;
-
-	for(const auto&[key, value]: overriding_config) {
-		if(std::holds_alternative<Config_object>(value) && config.contains(key)) {
-			override_level(std::get<Config_object>(config[key]), std::get<Config_object>(value));
+void Merger::override_level(Config_object& config, Config_object& overriding_config) {
+	for(auto&[key, value]: overriding_config) {
+		if(std::holds_alternative<config_object_property_value>(value) && config.contains(key)) {
+			override_level(*std::get<config_object_property_value>(config[key]), *std::get<config_object_property_value >(value));
 		}
 		else{
-			config[key] = value;
+			config.emplace(key, std::move(value));
 		}
 	}
 }

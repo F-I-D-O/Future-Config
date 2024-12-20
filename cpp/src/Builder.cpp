@@ -76,7 +76,7 @@ std::string Builder::get_template_data_for_class(
 				}
 				else {
 					child_class_name = get_template_data_for_class(
-						std::get<Config_object>(child_object),
+						*std::get<config_object_property_value>(child_object),
 						child_key,
 						child_path,
 						template_data
@@ -88,7 +88,7 @@ std::string Builder::get_template_data_for_class(
 				non_array_properties_count++;
 				break;
 			}
-			case object_array_index:
+			// case object_array_index:
 			case string_array_index:
 //			case int_array_index:
 //			case double_array_index:
@@ -98,24 +98,24 @@ std::string Builder::get_template_data_for_class(
 				bool scalar_item = true;
 
 
-				// if the array contains objects, generate a class for those objects
-				if(child_object.index() == object_array_index) {
-					item_type = "fc::Config_object";
-					auto class_name = format::format("{}_item", join(child_path, "_"));
-					class_name[0] = static_cast<char>(std::toupper(class_name.at(0)));
-					property_data["array_type_name"] = class_name;
-					scalar_item = false;
-					get_template_data_for_class(
-						std::get<std::vector<Config_object>>(child_object)[0],
-						class_name,
-						child_path,
-						template_data
-					);
-				}
-				else {
+//				// if the array contains objects, generate a class for those objects
+//				if(child_object.index() == object_array_index) {
+//					item_type = "fc::Config_object";
+//					auto class_name = format::format("{}_item", join(child_path, "_"));
+//					class_name[0] = static_cast<char>(std::toupper(class_name.at(0)));
+//					property_data["array_type_name"] = class_name;
+//					scalar_item = false;
+//					get_template_data_for_class(
+//						std::get<std::vector<Config_object>>(child_object)[0],
+//						class_name,
+//						child_path,
+//						template_data
+//					);
+//				}
+//				else {
 					item_type = get_scalar_type_from_string(std::get<std::vector<std::string>>(child_object)[0]).cpp_source_string();
 					property_data["array_type_name"] = item_type;
-				}
+//				}
 				property_data["mode"] = "array";
 				property_data["scalar_item"] = scalar_item;
 				property_data["item_type"] = item_type;

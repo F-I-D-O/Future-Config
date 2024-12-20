@@ -77,7 +77,12 @@ std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definiti
 		auto parts_view = std::ranges::views::split(dependency_config_string, ',');
 		std::vector<std::string> parts;
 		for(const auto& part: parts_view) {
-			parts.emplace_back(part.begin(), part.end());
+			// this is needed for GCC11 compatibility. When dropping support, we can use the `part` range directly and
+			// emplace to the `parts` vector
+			std::string part_str;
+			std::ranges::copy(part, std::back_inserter(part_str));
+
+			parts.push_back(part_str);
 		}
 
 		dependency_config_definitions.emplace_back(std::make_unique<Dependency_config_definition>(
@@ -94,8 +99,8 @@ Config_object load_config(const std::vector<std::unique_ptr<Config_definition>>&
 	unsigned counter = 1;
 	for(const auto& config_definition: config_definitions) {
 		try{
-			auto config_object = Parser().parse(config_definition->yaml_file_path);
-			configs.push_back(config_object);
+//			auto config_object = Parser().parse(config_definition->yaml_file_path);
+			configs.push_back(Parser().parse(config_definition->yaml_file_path));
 		} catch(const std::runtime_error& e) {
 			throw std::runtime_error(format::format(
 				"Failed to parse the {}. configuration ({}): {}",

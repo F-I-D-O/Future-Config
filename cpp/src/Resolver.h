@@ -43,7 +43,7 @@ public:
 
 	void process_queue();
 
-	[[nodiscard]] std::tuple<Resolve_status, std::string> resolve_value(config_property_value& config_property_val) const;
+	[[nodiscard]] std::tuple<Resolve_status, std::string> resolve_value(const config_property_value& config_property_val) const;
 
 	[[nodiscard]] std::string get_value(const std::string& var_name) const;
 };

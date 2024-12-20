@@ -6,6 +6,8 @@
 
 namespace fc {
 
+static_assert(std::is_default_constructible_v<std::allocator<Config_object>>);
+
 TEST(Merger, single_config) {
 	Merger merger;
 	YAML::Node config = YAML::Load(
@@ -16,7 +18,8 @@ TEST(Merger, single_config) {
 	})"
 	);
 
-	std::vector<Config_object> configs = {config};
+	std::vector<Config_object> configs;
+	configs.emplace_back(config);
 	auto merged_config = merger.merge(configs);
 
 	compare_config_objects(configs[0], merged_config);
@@ -48,7 +51,9 @@ TEST(Merger, two_configs) {
 	);
 	auto expected_merged_config = Config_object(expected_merged_config_yaml);
 
-	std::vector<Config_object> configs = {config1, config2};
+	std::vector<Config_object> configs;
+	configs.emplace_back(config1);
+	configs.emplace_back(config2);
 	auto merged_config = merger.merge(configs);
 
 	compare_config_objects(expected_merged_config, merged_config);

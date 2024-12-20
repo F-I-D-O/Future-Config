@@ -17,10 +17,10 @@ namespace fc {
 
 class Merger {
 public:
-	Config_object merge(const std::vector<Config_object>& configs);
+	Config_object merge(std::vector<Config_object>& configs);
 
 private:
-	void override_level(Config_object& config, const Config_object& overriding_config);
+	void override_level(Config_object& config, Config_object& overriding_config);
 };
 
         

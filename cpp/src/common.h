@@ -101,4 +101,78 @@ Config_object FUTURE_CONFIG_EXPORT load_config(const std::vector<std::unique_ptr
 std::filesystem::path FUTURE_CONFIG_EXPORT check_path(const std::filesystem::path& path);
         
 }
-    
+
+/**
+ * Indirect iterator for iterating pointers as if they were values. Boost have this functionality, but it's a bit heavy.
+ * It's not reasonable to have a dependency on boost just for this.
+ * @tparam Iterator
+ */
+template <typename Iterator>
+class Indirect_iterator {
+public:
+	using value_type = typename std::iterator_traits<Iterator>::value_type::element_type;
+	using pointer = value_type*;
+	using reference = value_type&;
+	using difference_type = typename std::iterator_traits<Iterator>::difference_type;
+	using iterator_category = std::forward_iterator_tag;
+
+	explicit Indirect_iterator(Iterator it) : it_(it) {}
+
+	reference operator*() const { return **it_; }
+	pointer operator->() const { return &**it_; }
+
+	Indirect_iterator& operator++() {
+		++it_;
+		return *this;
+	}
+
+	Indirect_iterator operator++(int) {
+		Indirect_iterator tmp = *this;
+		++(*this);
+		return tmp;
+	}
+
+	bool operator==(const Indirect_iterator& other) const { return it_ == other.it_; }
+	bool operator!=(const Indirect_iterator& other) const { return *this != other; }
+
+private:
+	Iterator it_;
+};
+
+template <typename MapIterator>
+class Indirect_map_iterator {
+public:
+	using KeyType = typename MapIterator::value_type::first_type;
+	using ValueType = typename MapIterator::value_type::second_type::element_type;
+	using reference = std::pair<const KeyType&, ValueType&>;
+	using pointer = std::pair<const KeyType*, ValueType*>;
+	using difference_type = typename std::iterator_traits<MapIterator>::difference_type;
+	using iterator_category = std::forward_iterator_tag;
+
+	explicit Indirect_map_iterator(MapIterator it) : it_(it) {}
+
+	reference operator*() const {
+		return {it_->first, *(it_->second)};
+	}
+
+	pointer operator->() const {
+		return {&(it_->first), it_->second.get()};
+	}
+
+	Indirect_map_iterator& operator++() {
+		++it_;
+		return *this;
+	}
+
+	Indirect_map_iterator operator++(int) {
+		Indirect_map_iterator tmp = *this;
+		++(*this);
+		return tmp;
+	}
+
+	bool operator==(const Indirect_map_iterator& other) const { return it_ == other.it_; }
+	bool operator!=(const Indirect_map_iterator& other) const { return *this != other; }
+
+private:
+	MapIterator it_;
+};

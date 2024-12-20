@@ -48,9 +48,9 @@ void compare_config_objects(const Config_object& expected, const Config_object& 
 //		}
 
 		// object values: we need to compare recursively
-		if(std::holds_alternative<Config_object>(value)) {
-			ASSERT_TRUE(std::holds_alternative<Config_object>(actual_value));
-			compare_config_objects(std::get<Config_object>(value), std::get<Config_object>(actual_value));
+		if(std::holds_alternative<config_object_property_value>(value)) {
+			ASSERT_TRUE(std::holds_alternative<config_object_property_value>(actual_value));
+			compare_config_objects(*std::get<config_object_property_value>(value), *std::get<config_object_property_value>(actual_value));
 		}
 	}
 

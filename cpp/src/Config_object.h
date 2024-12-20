@@ -21,26 +21,30 @@ namespace fc {
 
 class Config_object;
 
-using config_property_value = std::variant<
-	// object and object array types
-	Config_object,
-//	std::vector<Config_object>,
+using config_object_property_value = std::unique_ptr<Config_object>;
 
+
+using config_property_value = std::variant<
 	// scalar and scalar array types
 	std::string,
-	std::vector<std::string>
+	std::vector<std::string>,
 //	int,
 //	std::vector<int>,
 //	double,
 //	std::vector<double>,
 //	bool,
 //	std::vector<bool>
+	// object and object array types
+	config_object_property_value
+//	std::vector<Config_object>,
+
+
 >;
 
-constexpr unsigned short object_index = 0;
-constexpr unsigned short object_array_index = 1;
-constexpr unsigned short string_index = 2;
-constexpr unsigned short string_array_index = 3;
+constexpr unsigned short string_index = 0;
+constexpr unsigned short string_array_index = 1;
+constexpr unsigned short object_index = 2;
+// constexpr unsigned short object_array_index = 1;
 //constexpr unsigned short int_index = 4;
 //constexpr unsigned short int_array_index = 5;
 //constexpr unsigned short double_index = 6;
@@ -48,64 +52,41 @@ constexpr unsigned short string_array_index = 3;
 //constexpr unsigned short bool_index = 8;
 //constexpr unsigned short bool_array_index = 9;
 
-//static_assert(std::is_default_constructible_v<config_property_value>);
-
-
-
-
-//class Config_object_iterator {
-//private:
-//	using it_value_type = std::pair<const std::string, config_property_value>;
-//	using it_reference_type = it_value_type&;
-//	using it_pointer_type = it_value_type*;
-//
-//	it_pointer_type current_value;
-//public:
-//	it_reference_type operator*() const {
-//		return *current_value;
-//	}
-//
-//	Config_object_iterator& operator++() {
-//		current_value++;
-//		return *this;
-//	}
-//
-//}
-//
-//static_assert(std::input_iterator<Config_object_iterator>);
-
 
 
 
 class FUTURE_CONFIG_EXPORT Config_object {
-	using properties_map = std::unordered_map<std::string, std::unique_ptr<config_property_value>>;
+	using properties_map = std::unordered_map<std::string, config_property_value>;
 
 
 	properties_map properties;
 
 public:
-	using iterator = properties_map::iterator;
-	using const_iterator = properties_map::const_iterator;
-
-
-
 	Config_object(const YAML::Node& yaml_config);
 
 
+	Config_object(const Config_object& other);
+
+	Config_object(Config_object&& other) noexcept = default;
+
+	Config_object& operator=(const Config_object& other);
+
+	Config_object& operator=(Config_object&& other) noexcept = default;
+
 
 	auto begin() {
-		return properties.begin().;
-	}
-
-	iterator end() {
-		return properties.end();
-	}
-
-	[[nodiscard]] const_iterator begin() const {
 		return properties.begin();
 	}
 
-	[[nodiscard]] const_iterator end() const {
+	auto end() {
+		return properties.end();
+	}
+
+	[[nodiscard]] auto begin() const {
+		return properties.begin();
+	}
+
+	[[nodiscard]] auto end() const {
 		return properties.end();
 	}
 
@@ -122,11 +103,21 @@ public:
 //	}
 //
 	config_property_value& operator[](const std::string& key) {
-		return *properties.at(key);
+		return properties.at(key);
 	}
 
 	const config_property_value& operator[](const std::string& key) const {
-		return *properties.at(key);
+		return properties.at(key);
+	}
+
+	/**
+	 * @brief emplace wrapper. We need it because the current implementation of config_object_property_value is
+	 * a unique_ptr to Config_object which is not copyable.
+	 * @param key
+	 * @param value
+	 */
+	void emplace(const std::string& key, config_property_value&& value) {
+		properties.insert_or_assign(key, std::move(value));
 	}
 
 	[[nodiscard]] unsigned short size() const {
@@ -163,9 +154,7 @@ public:
 			const auto& string_value = std::get<std::string>(properties.at(key));
 			return transform_value<T>(string_value);
 		}
-		else {
-			throw std::runtime_error(format::format("Property {} is not a scalar", key));
-		}
+		throw std::runtime_error(format::format("Property {} is not a scalar", key));
 	}
 
 	template<typename T>
