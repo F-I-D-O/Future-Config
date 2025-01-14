@@ -1,4 +1,5 @@
 cmake-build*/
+ctest-build*/
 out/
 build/
 build_WSL/

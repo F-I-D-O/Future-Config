@@ -7,6 +7,7 @@
 
 #include "Builder.h"
 #include "format.h"
+#include "resources.h"
     
     
 namespace fc {    
@@ -153,9 +154,10 @@ void Builder::generate_config() {
 	env.set_trim_blocks(true); // remove newlines after jinja control statements
 	env.set_lstrip_blocks(true); // remove leading whitespace before jinja control statements
 
-	const auto template_filepath = "data/config.jinja";
+	const auto template_filepath = get_resource_path("config.jinja");
+
 	try {
-		inja::Template config_template = env.parse_template(template_filepath);
+		inja::Template config_template = env.parse_template(template_filepath.string());
 
 		inja::json template_data;
 		template_data["includes"] = inja::json::array();

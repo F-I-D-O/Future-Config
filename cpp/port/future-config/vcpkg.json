@@ -16,6 +16,7 @@
       "name": "vcpkg-cmake-config",
       "host": true
     },
-    "yaml-cpp"
+    "yaml-cpp",
+    "fmt"
   ]
 }

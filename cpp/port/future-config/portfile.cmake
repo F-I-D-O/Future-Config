@@ -5,10 +5,9 @@
 #	SHA512 0
 #	HEAD_REF master
 #)
-set(SOURCE_PATH "D:/Workspaces/Fido/Future-Config")
-#set(SOURCE_PATH "/mnt/d/Workspaces/Fido/Future-Config")
-#set(SOURCE_PATH "C:/Workspaces/ninja/Future-Config")
-#set(SOURCE_PATH "/mnt/c/Workspaces/ninja/Future-Config")
+
+# for local testing, the local repository is used instead of the github remote
+cmake_path(SET SOURCE_PATH NORMALIZE "${CMAKE_CURRENT_LIST_DIR}../../../..")
 
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 

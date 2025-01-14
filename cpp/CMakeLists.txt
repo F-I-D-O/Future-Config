@@ -14,6 +14,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include(GNUInstallDirs) # for standard install directories
 include(CMakePackageConfigHelpers) # for generating the package configuration file and version file
 #include(GenerateExportHeader) # for generating the export headers
+include(CTest) # for testing
 
 set(VCPKG_APPLOCAL_DEPS ON)
 
@@ -57,6 +58,7 @@ set(future_config_lib_files
 	src/Merger.cpp
 	src/Parser.cpp
 	src/Resolver.cpp
+	src/resources.cpp
 )
 
 add_library(future-config SHARED ${future_config_lib_files})
@@ -79,6 +81,7 @@ add_executable(fconfig_builder
 	src/configuration.cpp
 	src/builder_runner.cpp
 	src/format.h
+	src/resources.cpp
 )
 set_target_properties(
 	fconfig_builder

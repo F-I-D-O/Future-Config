@@ -8,10 +8,11 @@
 
 #include "Builder.h"
 #include "format.h"
+#include "resources.h"
 
 namespace fc {
 
-const auto TEST_DATA_DIR = fs::path("data/test/builder");
+const auto TEST_DATA_DIR = get_resource_path("test/builder");
 
 std::string remove_empty_lines(const std::string& str) {
 	std::string result;
