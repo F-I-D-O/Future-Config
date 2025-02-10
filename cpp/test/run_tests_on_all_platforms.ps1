@@ -10,7 +10,7 @@ Write-Output ""
 # run Windows shared library tests
 Write-Output "Running Windows shared library tests"
 Write-Output "------------------------------------"
-ctest -S $starter_path -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON -D
+ctest -S $starter_path -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON -D FCONFIG_TEST_VCPKG_INSTALL=ON
 Write-Output ""
 
 # run WSL tests
