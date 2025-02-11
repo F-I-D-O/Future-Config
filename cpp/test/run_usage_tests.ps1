@@ -32,6 +32,6 @@ function RunUsageTest{
     Write-Output ""
 }
 
-#RunUsageTest -path "usage_test" -platform "Windows"
-#RunUsageTest -path "usage_test" -platform "Windows-shared"
+RunUsageTest -path "usage_test" -platform "Windows"
+RunUsageTest -path "usage_test" -platform "Windows-shared"
 RunUsageTest -path "usage_test" -platform "WSL"
