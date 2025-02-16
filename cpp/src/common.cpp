@@ -2,11 +2,11 @@
 #include <ranges>
 #include <regex>
 
-#include "common.h"
+#include "future-config/common.h"
 #include "Parser.h"
 #include "Merger.h"
 #include "Resolver.h"
-#include "format.h"
+#include "future-config/format.h"
     
     
 namespace fc {    

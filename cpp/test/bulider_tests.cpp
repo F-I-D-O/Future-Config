@@ -7,7 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "Builder.h"
-#include "format.h"
+#include "future-config/format.h"
 #include "resources.h"
 
 namespace fc {
@@ -112,7 +112,7 @@ TEST(Builder, test_string_array_in_object) {
 // }
 
 TEST(Builder, test_parent_config) {
-	YAML::Node config = YAML::Load(
+	Config_object config = YAML::Load(
 		R"({parent_config:
 					{
 						var: test_var
@@ -125,6 +125,29 @@ TEST(Builder, test_parent_config) {
 		dependency_config_map{{"parent_config", {"dependency.h", "Parent_config"}}};
 
 	check_generated_config(config, TEST_DATA_DIR / "dependency_test.h", dependency_config_map);
+}
+
+TEST(Builder, test_root_object_name_sanitize) {
+	Config_object config = YAML::Load(
+		R"({var: test_var})"
+	);
+
+	fs::path output_dir = fs::temp_directory_path() / "test_output";
+	std::string root_object_name = "test-project-name_config";
+	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
+	Builder builder(config, output_dir, root_object_name, dependency_config_map);
+	builder.build_config();
+
+	fs::path actual_file = output_dir / format::format("{}.h", root_object_name);
+	ASSERT_TRUE(fs::exists(actual_file));
+
+	std::ifstream expected_file_stream(TEST_DATA_DIR / "root_object_name_sanitization.h");
+	std::ifstream actual_file_stream(actual_file);
+
+	std::string expected_content(std::istreambuf_iterator<char>{expected_file_stream}, {});
+	std::string actual_content(std::istreambuf_iterator<char>{actual_file_stream}, {});
+
+	compare_generated_config_content(expected_content, actual_content);
 }
 
 } // namespace fc

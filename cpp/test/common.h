@@ -6,7 +6,7 @@
 
 #include <gtest/gtest.h>
 
-#include "Config_object.h"
+#include "future-config/Config_object.h"
 
 namespace fc {
 

@@ -80,7 +80,6 @@ add_executable(fconfig_builder
 	src/Config_object.cpp
 	src/configuration.cpp
 	src/builder_runner.cpp
-	src/format.h
 	src/resources.cpp
 )
 set_target_properties(
@@ -88,21 +87,44 @@ set_target_properties(
 	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
 )
 
-# include directories
+# INCLUDE DIRECTORIES
 
-# for enabling includes relative to src root (instead of relative to the file dir)
+# public API headers: a different include directory is used for the installation
 target_include_directories(
 	future-config
 	PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-	$<INSTALL_INTERFACE:${FCONFIG_INSTALL_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 target_include_directories(
 	future-config-static
 	PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
-	$<INSTALL_INTERFACE:${FCONFIG_INSTALL_INCLUDE_DIR}>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
+# private headers: only need to be included in during the build
+target_include_directories(
+	future-config
+	PRIVATE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+target_include_directories(
+	future-config-static
+	PRIVATE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+
+# builder tool includes
+target_include_directories(
+	fconfig_builder
+	PRIVATE
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+
+# for enabling includes relative to src root (instead of relative to the file dir)
 
 # linking
 target_link_libraries(future-config PRIVATE ${YAML_CPP_TARGET})
@@ -161,13 +183,15 @@ install(
 # headers installation
 install(
 	FILES
-		src/common.h
-		src/Config_object.h
-		src/configuration.h
-		src/future-config_export.h
-		src/Merger.h
-		src/Parser.h
-		src/Resolver.h
+		include/future-config/common.h
+		include/future-config/Config_object.h
+		include/future-config/configuration.h
+		include/future-config/format.h
+		include/future-config/future-config_export.h
+
+#		src/Merger.h
+#		src/Parser.h
+#		src/Resolver.h
 	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
 	CONFIGURATIONS Release
 )

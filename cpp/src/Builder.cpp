@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "Builder.h"
-#include "format.h"
+#include "future-config/format.h"
 #include "resources.h"
     
     
@@ -146,6 +146,12 @@ std::string Builder::get_class_name(const std::string& snake_case_property_name)
 	return class_name;
 }
 
+std::string Builder::sanitize_root_object_name(const std::string& root_object_name) {
+	std::string sanitized_root_object_name = root_object_name;
+	std::ranges::replace(sanitized_root_object_name, '-', '_');
+	return sanitized_root_object_name;
+}
+
 void Builder::generate_config() {
 	fs::create_directories(output_dir);
 	inja::Environment env;
@@ -164,7 +170,7 @@ void Builder::generate_config() {
 		template_data["class_data"] = inja::json::array();
 		template_data["empty_body"] = "{}";
 
-		get_template_data_for_class(config, root_object_name, {}, template_data);
+		get_template_data_for_class(config, sanitize_root_object_name(root_object_name), {}, template_data);
 		auto out_path = output_dir / format::format("{}.h", root_object_name);
 		try {
 			env.write(config_template, template_data, out_path.string());

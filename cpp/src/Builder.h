@@ -9,9 +9,9 @@
 #include <unordered_map>
 #include "inja/inja.hpp"
 
-#include "common.h"
-#include "Config_object.h"
-#include "configuration.h"
+#include "future-config/common.h"
+#include "future-config/Config_object.h"
+#include "future-config/configuration.h"
     
     
 namespace fc {    
@@ -63,7 +63,9 @@ private:
 
 	static std::string get_class_name(const std::string& basic_string);
 
-//	static std::string get_type(const std::string& value);
+	static std::string sanitize_root_object_name(const std::string& root_object_name);
+
+	//	static std::string get_type(const std::string& value);
 	static std::unordered_map<std::string, std::tuple<std::string, std::string>>
 		generate_dependency_config_map(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
 };

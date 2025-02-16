@@ -11,8 +11,8 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 
-#include "Config_object.h"
-#include "future-config_export.h"
+#include "future-config/Config_object.h"
+#include "future-config/future-config_export.h"
     
     
 namespace fc {    

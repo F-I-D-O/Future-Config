@@ -10,14 +10,14 @@ Write-Output ""
 # run Windows shared library tests
 Write-Output "Running Windows shared library tests"
 Write-Output "------------------------------------"
-ctest -S $starter_path -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON -D FCONFIG_TEST_VCPKG_INSTALL=ON
+ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON -D FCONFIG_TEST_VCPKG_INSTALL=ON
 Write-Output ""
 
 # run WSL tests
 Write-Output "Running WSL tests"
 Write-Output "-----------------"
 $wsl_command_latest = "$wsl_command -D FCONFIG_TEST_VCPKG_INSTALL=ON" -replace '<PLATFORM_NAME>', 'WSL'
-wsl bash -lc $wsl_command_latest
+wsl -u root bash -lc $wsl_command_latest
 Write-Output ""
 
 # run WSL shared library tests

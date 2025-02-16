@@ -3,11 +3,7 @@
 //
 #include <fstream>
 
-#include "configuration.h"
-#include "Parser.h"
-#include "Merger.h"
-#include "Resolver.h"
-#include "Builder.h"
+#include "future-config/configuration.h"
     
     
 namespace fc {    
