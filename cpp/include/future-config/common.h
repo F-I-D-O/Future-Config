@@ -13,6 +13,7 @@
 
 #include "future-config/Config_object.h"
 #include "future-config/future-config_export.h"
+#include "future-config/resources.h"
     
     
 namespace fc {    
@@ -67,6 +68,8 @@ struct FUTURE_CONFIG_EXPORT Config_definition {
 	explicit Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
 		{}
+
+	Config_definition(): Config_definition(Config_type::MAIN, get_resource_path("config.yaml")) {}
 
 	virtual ~Config_definition() = default;
 

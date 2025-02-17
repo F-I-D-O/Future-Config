@@ -4,6 +4,15 @@ project(future-config-usage-test)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(CTest)
+
+# set the MSVC runtime library to /MT or MTd if we link to a static library
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND NOT FCONFIG_TEST_BUILD_SHARED AND NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows")
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	message(STATUS "Setting static runtime library")
+endif()
+
+
 find_package(future-config CONFIG REQUIRED) # Find the future-config package
 
 add_executable(usage_test_executable
@@ -44,4 +53,8 @@ add_custom_command(
 	POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/config.yaml $<TARGET_FILE_DIR:usage_test_executable>/config.yaml
 )
+
+# add test that executes the built executable
+add_test(NAME usage_test COMMAND usage_test_executable $<TARGET_FILE_DIR:usage_test_executable>/config.yaml)
+set_property(TEST usage_test PROPERTY PASS_REGULAR_EXPRESSION "2")
 

@@ -10,12 +10,14 @@ function RunUsageTest{
     If ($platform -like "Windows*") {
         If ($platform -like "*shared*") {
             $triplet = "x64-windows"
+            $link_shared = "ON"
         }
         Else{
             $triplet = "x64-windows-static"
+            $link_shared = "OFF"
         }
 
-        ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=$platform -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_VCPKG_TRIPLET=$triplet
+        ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=$platform -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_VCPKG_TRIPLET=$triplet -D FCONFIG_TEST_BUILD_SHARED=$link_shared
 
     } Elseif ($platform -like "WSL*") {
         $wsl_command = "ctest -S `$(wslpath $starter_path) -D FCONFIG_TEST_PLATFORM_NAME=<PLATFORM_NAME> -D FCONFIG_TOOLCHAIN='/opt/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=x64-linux"

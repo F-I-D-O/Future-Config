@@ -188,6 +188,7 @@ install(
 		include/future-config/configuration.h
 		include/future-config/format.h
 		include/future-config/future-config_export.h
+		include/future-config/resources.h
 
 #		src/Merger.h
 #		src/Parser.h

@@ -8,7 +8,7 @@
 #include <unistd.h>
 #endif
 
-#include "resources.h"
+#include "future-config/resources.h"
 
 fs::path get_running_executable_path() {
 	char buffer[1024];

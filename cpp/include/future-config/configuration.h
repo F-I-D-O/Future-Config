@@ -17,19 +17,11 @@
     
 namespace fc {    
 
-    
-
-
 template<class C>
 concept Config_class = requires(C c, const Config_object& config) {
 	// requires a constructor that takes a Config_object
 	C(config);
 };
-
-
-
-template<Config_class C>
-FUTURE_CONFIG_EXPORT C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, const fs::path& local_config_path);
 
 template<Config_class C>
 C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, const fs::path& local_config_path) {

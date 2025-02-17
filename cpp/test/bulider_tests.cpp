@@ -8,7 +8,7 @@
 
 #include "Builder.h"
 #include "future-config/format.h"
-#include "resources.h"
+#include "future-config/resources.h"
 
 namespace fc {
 
