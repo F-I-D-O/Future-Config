@@ -24,13 +24,13 @@ Write-Output ""
 Write-Output "Running WSL shared library tests"
 Write-Output "--------------------------------"
 $wsl_command_shared = "$wsl_command -D FCONFIG_TEST_BUILD_SHARED=ON" -replace '<PLATFORM_NAME>', 'WSL-shared'
-wsl bash -lc $wsl_command_shared
+wsl -u root bash -lc $wsl_command_shared
 Write-Output ""
 
 # run WSL GCC 11 tests
 Write-Output "Running WSL GCC 11 tests"
 Write-Output "------------------------"
 $wsl_command = "$wsl_command -D FCONFIG_TEST_CXX_COMPILER=g++-11" -replace '<PLATFORM_NAME>', 'WSL-GCC_11'
-wsl bash -lc $wsl_command
+wsl -u root bash -lc $wsl_command
 Write-Output ""
 

@@ -12,7 +12,7 @@ function(run_fconfig_builder)
 
 	# by default, we look for the main config file in the CMakeLists.txt directory
 	if(NOT DEFINED RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH)
-		set(RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH "${CMAKE_SOURCE_DIR}/config.yaml")
+		set(RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH "${CMAKE_SOURCE_DIR}/data/config.yaml")
 	endif()
 
 	# by default, we set the root config class name to the name of the project

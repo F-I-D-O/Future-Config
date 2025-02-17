@@ -67,11 +67,14 @@ The following table lists the features of Future-Config and the support of those
 
 
 ### C++
+The C++ implementation of Future Config requires C++20 support. The library is available as a CMake package.
 
 1. Install the package:
 	- vcpkg: `vcpkg install future-config`
 1. Modify your CMakeLists.txt:
 	```cmake
+	set(CMAKE_CXX_STANDARD 20) # or higher
+
 	find_package(future-config CONFIG REQUIRED)
 	target_link_libraries(your_target PRIVATE future-config::future-config)
 
@@ -79,13 +82,25 @@ The following table lists the features of Future-Config and the support of those
 	run_fconfig_builder()
 	```
 1. create your master config file
-	- by default, the file should be: `<CMakelists.txt directory>/config.yaml`.
+	- by default, the file should be: `<CMakelists.txt directory>/data/config.yaml`.
 	- alternatively, pass the custom path to the `run_fconfig_builder` function:
 		```cmake
 		run_fconfig_builder(MAIN_CONFIG_FILE <path_to_config_file>)
 		```
 1. configure your project using cmake
-1. Now, your config classes are generated and ready to use in your project.
+1. Now, your config classes are generated and ready to use in your project. Basic usage:
+	```cpp
+	// Include the generated config file
+	#include "config/<your_project>_config.h"
+
+	int main() {
+
+		// load the config
+		auto config = load<<Your_project>_config>(local_config_path);
+	```
+
+For more details, see the [C++ documentation](cpp/Manual.md).
+
 
 ## Syntax
 

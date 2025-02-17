@@ -19,8 +19,6 @@ add_executable(usage_test_executable
 	src/main.cpp
 )
 
-#target_include_directories(usage_test_executable PRIVATE
-
 target_link_libraries(usage_test_executable PRIVATE future-config::future-config) # Link the library
 
 # Copy shared libraries to the build directory (required by the Visual Studio generator)

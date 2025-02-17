@@ -56,5 +56,12 @@ C load(std::vector<std::unique_ptr<Config_definition>>& config_definitions, cons
 
 }
 
+template<Config_class C>
+C load(const fs::path& local_config_path) {
+	std::vector<std::unique_ptr<fc::Config_definition>> config_definitions;
+	config_definitions.emplace_back(std::make_unique<fc::Config_definition>());
+	return load<C>(config_definitions, local_config_path);
+}
+
 }
     
