@@ -27,12 +27,17 @@ function(run_fconfig_builder)
 
 	# BUILDER TOOL EXECUTABLE SEARCH
 	cmake_path(GET CMAKE_INSTALL_PREFIX PARENT_PATH CMAKE_INSTALL_PARENT_DIR)
+	set(FCONFIG_BUILDER_VCPKG_PATH "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/future-config")
+	set(FCONFIG_BUILDER_SYSTEM_PATH "${CMAKE_INSTALL_PARENT_DIR}/future-config/bin")
+	message(STATUS "looking for fconfig_builder executable at the following locations:
+- ${FCONFIG_BUILDER_VCPKG_PATH}
+- ${FCONFIG_BUILDER_SYSTEM_PATH}")
 	find_program(FCONFIG_BUILDER_EXECUTABLE
 		fconfig_builder
 		REQUIRED
 		HINTS
-			"${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/tools/future-config" # check if fconfig_builder is installed with vcpkg
-			"${CMAKE_INSTALL_PARENT_DIR}/future-config/bin" # check if fconfig_builder is installed in the system
+			"${FCONFIG_BUILDER_VCPKG_PATH}"	# check if fconfig_builder is installed with vcpkg
+			"${FCONFIG_BUILDER_SYSTEM_PATH}"	 # check if fconfig_builder is installed in the system
 	)
 	message(STATUS "Future-Config Builder executable found at: ${FCONFIG_BUILDER_EXECUTABLE}")
 	cmake_path(GET FCONFIG_BUILDER_EXECUTABLE PARENT_PATH FCONFIG_BUILDER_DIR)

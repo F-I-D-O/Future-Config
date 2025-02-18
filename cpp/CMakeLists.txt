@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
 option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
+option(FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY "If ON, the library dependencies of the builder tool will be copied manually to the bin directory" ON)
 
 project(future-config)
 
@@ -16,6 +17,13 @@ include(CMakePackageConfigHelpers) # for generating the package configuration fi
 #include(GenerateExportHeader) # for generating the export headers
 include(CTest) # for testing
 
+# set the MSVC runtime library to /MT or MTd if we link to a static library
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND NOT FCONFIG_BUILD_SHARED_LIBS AND NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows")
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	message(STATUS "Setting static runtime library")
+endif()
+
+# copy runtime dependencies to the build directory using some vcpkg magic
 set(VCPKG_APPLOCAL_DEPS ON)
 
 # minimum version of GCC (because it incorrectly reports C++20 support)
@@ -126,9 +134,11 @@ target_include_directories(
 
 # for enabling includes relative to src root (instead of relative to the file dir)
 
-# linking
-target_link_libraries(future-config PRIVATE ${YAML_CPP_TARGET})
-target_link_libraries(future-config-static PRIVATE ${YAML_CPP_TARGET})
+# LINKING
+target_link_libraries(future-config PUBLIC ${YAML_CPP_TARGET})
+target_link_libraries(future-config-static PUBLIC ${YAML_CPP_TARGET})
+
+# we need to expose the spdlog headers as they are used in the public API
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
 target_link_libraries(future-config-static PRIVATE spdlog::spdlog)
 if(FCONFIG_USE_FMT)
@@ -143,15 +153,15 @@ if(FCONFIG_USE_FMT)
 	target_link_libraries(fconfig_builder PRIVATE fmt::fmt)
 endif()
 
-# Copy shared libraries to the build directory (required by the Visual Studio generator)
-if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
-	add_custom_command(
-		TARGET fconfig_builder
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:fconfig_builder> $<TARGET_FILE_DIR:fconfig_builder>
-		COMMAND_EXPAND_LISTS
-	)
-endif()
+## Copy shared libraries to the build directory (required by the Visual Studio generator)
+#if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
+#	add_custom_command(
+#		TARGET fconfig_builder
+#		POST_BUILD
+#		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:fconfig_builder> $<TARGET_FILE_DIR:fconfig_builder>
+#		COMMAND_EXPAND_LISTS
+#	)
+#endif()
 
 
 # RESOURCE COPYING TO BUILD DIR
@@ -246,12 +256,9 @@ install(
 )
 
 # install the builder tool runtime dependencies if the installation is not handled by vcpkg
-if(NOT VCPKG_APPLOCAL_DEPS)
-	install(
-		DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin/
-		DESTINATION ${CMAKE_INSTALL_BINDIR}
-		CONFIGURATIONS Release
-	)
+if(FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY)
+	install(FILES $<TARGET_RUNTIME_DLLS:fconfig_builder> DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif()
 
 if(FCONFIG_ENABLE_TESTS)
 	add_subdirectory(test)

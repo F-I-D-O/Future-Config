@@ -9,7 +9,6 @@
 #include <vector>
 #include <unordered_map>
 #include <filesystem>
-#include <yaml-cpp/yaml.h>
 
 #include "future-config/Config_object.h"
 #include "future-config/future-config_export.h"
@@ -92,8 +91,6 @@ struct Dependency_config_definition: public Config_definition {
 std::string join(const std::vector<std::string>& v, const std::string& delimiter);
 
 Scalar_type get_scalar_type_from_string(const std::string& string);
-
-Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node);
 
 std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definitions(
 	const std::vector<std::string>& dependency_config_strings

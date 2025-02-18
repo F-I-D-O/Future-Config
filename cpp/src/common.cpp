@@ -44,13 +44,6 @@ std::string join(const std::vector <std::string>& v, const std::string& delimite
 	return ss.str();
 }
 
-Scalar_type get_scalar_type_from_yaml_node(const YAML::Node& node) {
-	if (node.IsScalar()) {
-		return get_scalar_type_from_string(node.as<std::string>());
-	}
-	throw std::runtime_error("Unsupported YAML node type");
-}
-
 Scalar_type get_scalar_type_from_string(const std::string& string) {
 	if(string == "true" || string == "false") {
 		return Scalar_type::BOOL;

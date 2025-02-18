@@ -22,18 +22,13 @@ add_executable(usage_test_executable
 target_link_libraries(usage_test_executable PRIVATE future-config::future-config) # Link the library
 
 # Copy shared libraries to the build directory (required by the Visual Studio generator)
-if(CMAKE_GENERATOR MATCHES "Visual Studio.*")
-	# only call the copy when linking to a shared library
-	get_target_property(DLLS future-config::future-config TARGET_RUNTIME_DLLS)
-
-	if(DLLS)
-		add_custom_command(
-			TARGET usage_test_executable
-			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:usage_test_executable> $<TARGET_FILE_DIR:usage_test_executable>
-			COMMAND_EXPAND_LISTS
-		)
-	endif()
+if(CMAKE_GENERATOR MATCHES "Visual Studio.*" AND (FCONFIG_TEST_BUILD_SHARED OR VCPKG_TARGET_TRIPLET STREQUAL "x64-windows"))
+	add_custom_command(
+		TARGET usage_test_executable
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:usage_test_executable> $<TARGET_FILE_DIR:usage_test_executable>
+		COMMAND_EXPAND_LISTS
+	)
 endif()
 
 run_fconfig_builder()
