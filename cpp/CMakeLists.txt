@@ -245,6 +245,14 @@ install(
 	CONFIGURATIONS Release
 )
 
+# install the builder tool runtime dependencies if the installation is not handled by vcpkg
+if(NOT VCPKG_APPLOCAL_DEPS)
+	install(
+		DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin/
+		DESTINATION ${CMAKE_INSTALL_BINDIR}
+		CONFIGURATIONS Release
+	)
+
 if(FCONFIG_ENABLE_TESTS)
 	add_subdirectory(test)
 endif()
