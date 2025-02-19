@@ -22,6 +22,8 @@ message("Removing future-config from vcpkg")
 # vcpkg remove future-config
 execute_process(COMMAND vcpkg remove future-config --triplet ${FCONFIG_VCPKG_TRIPLET})
 
+message("Deleting previous test build directory")
+file(REMOVE_RECURSE "${CTEST_BINARY_DIRECTORY}")
 
 if(FCONFIG_VCPKG_INSTALL)
 	# vcpkg install future-config
@@ -42,11 +44,10 @@ else()
 		-D CMAKE_BUILD_TYPE=Release
 		-D VCPKG_TARGET_TRIPLET=${FCONFIG_VCPKG_TRIPLET}
 		-D FCONFIG_BUILD_SHARED_LIBS=${FCONFIG_TEST_BUILD_SHARED}
-#		-A x64
 	)
 
 	# append the x64 flag only if the platform is windows
-	if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	if(FCONFIG_VCPKG_TRIPLET MATCHES "x64-windows*")
 		list(APPEND FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND -A x64)
 	endif()
 
@@ -66,9 +67,6 @@ else()
 	message("Installing future-config using: ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND_STR}")
 	execute_process(COMMAND ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND} COMMAND_ERROR_IS_FATAL ANY)
 endif()
-
-message("Deleting previous test build directory")
-file(REMOVE_RECURSE "${CTEST_BINARY_DIRECTORY}")
 
 message("Deleting the generated configuration files from previous tests")
 file(REMOVE_RECURSE "${CTEST_SOURCE_DIRECTORY}/src/config")

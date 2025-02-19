@@ -69,8 +69,13 @@ The following table lists the features of Future-Config and the support of those
 ### C++
 The C++ implementation of Future Config requires C++20 support. The library is available as a CMake package.
 
-1. Install the package:
+1. Install the Future Config package:
 	- vcpkg: `vcpkg install future-config`
+	- cmake:
+		1. Install the dependencies: `yaml-cpp` and `spdlog`
+		1. Clone the repository
+		1. Configure: `cmake <project directory>/cpp`
+		1. Build: `cmake --build . --target install`
 1. Modify your CMakeLists.txt:
 	```cmake
 	set(CMAKE_CXX_STANDARD 20) # or higher

@@ -21,8 +21,6 @@ function RunUsageTest{
 
         $command = "ctest -S $starter_path -C Release -D FCONFIG_TOOLCHAIN='c:/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=$triplet -D FCONFIG_TEST_BUILD_SHARED=$link_shared $common_args"
         Invoke-Expression $command
-#        ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=$platform -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_VCPKG_TRIPLET=$triplet -D FCONFIG_TEST_BUILD_SHARED=$link_shared
-
     } Elseif ($platform -like "WSL*") {
         $wsl_command = "ctest -S `$(wslpath $starter_path) -D FCONFIG_TOOLCHAIN='/opt/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=x64-linux $common_args"
 #        $wsl_command = "$wsl_command" -replace '<PLATFORM_NAME>', $platform
@@ -44,4 +42,4 @@ RunUsageTest -path "usage_test" -platform "WSL"
 
 RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
 RunUsageTest -path "usage_test" -platform "Windows-shared-vcpkg" -fconfig_vcpkg_install
-#RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install
+RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install

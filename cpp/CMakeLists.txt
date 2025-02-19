@@ -50,14 +50,6 @@ if(FCONFIG_USE_FMT)
 	find_package(fmt CONFIG REQUIRED)
 endif()
 
-#message(STATUS "yaml-cpp version: ${yaml-cpp_VERSION}")
-if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
-	set(YAML_CPP_TARGET yaml-cpp)
-else()
-	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
-endif()
-
-
 set(future_config_lib_files
 	src/Builder.cpp
 	src/common.cpp
@@ -135,6 +127,12 @@ target_include_directories(
 # for enabling includes relative to src root (instead of relative to the file dir)
 
 # LINKING
+#message(STATUS "yaml-cpp version: ${yaml-cpp_VERSION}")
+if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
+	set(YAML_CPP_TARGET yaml-cpp)
+else()
+	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
+endif()
 target_link_libraries(future-config PUBLIC ${YAML_CPP_TARGET})
 target_link_libraries(future-config-static PUBLIC ${YAML_CPP_TARGET})
 
@@ -256,7 +254,8 @@ install(
 )
 
 # install the builder tool runtime dependencies if the installation is not handled by vcpkg
-if(FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY)
+	message(STATUS "Copying runtime dependencies. CMAKE_INSTALL_BINDIR: ${CMAKE_INSTALL_BINDIR}")
 	install(FILES $<TARGET_RUNTIME_DLLS:fconfig_builder> DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 
