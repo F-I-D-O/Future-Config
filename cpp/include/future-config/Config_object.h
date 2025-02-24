@@ -146,6 +146,7 @@ public:
 				throw std::runtime_error(format::format("Value is not a boolean", string_value));
 			}
 		}
+		throw std::runtime_error(format::format("Unsupported type"));
 	}
 
 	template<typename T>

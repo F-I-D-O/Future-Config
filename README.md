@@ -95,6 +95,8 @@ The C++ implementation of Future Config requires C++20 support. The library is a
 1. configure your project using cmake
 1. Now, your config classes are generated and ready to use in your project. Basic usage:
 	```cpp
+	#include <future-config/configuration.h>
+
 	// Include the generated config file
 	#include "config/<your_project>_config.h"
 
