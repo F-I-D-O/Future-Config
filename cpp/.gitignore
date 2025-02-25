@@ -1,8 +1,6 @@
 cmake-build*/
 ctest-build*/
 out/
-build/
-build_WSL/
-build_WSL_shared/
+build*/
 
 .vs/

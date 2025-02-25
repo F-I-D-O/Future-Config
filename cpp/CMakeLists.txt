@@ -61,15 +61,23 @@ set(future_config_lib_files
 	src/resources.cpp
 )
 
+if (NOT DEFINED CMAKE_DEBUG_POSTFIX)
+	set(CMAKE_DEBUG_POSTFIX "d")
+endif()
+
 add_library(future-config SHARED ${future_config_lib_files})
 #generate_export_header(future-config)
+set_target_properties(
+	future-config
+	PROPERTIES DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
+)
 
 add_library(future-config-static STATIC ${future_config_lib_files})
 target_compile_definitions(future-config-static PUBLIC FUTURE_CONFIG_STATIC_DEFINE) # static flag for the export header
-#set_target_properties(
-#	future-config-static
-#	PROPERTIES COMPILE_FLAGS -DFUTURE_CONFIG_STATIC_DEFINE
-#)
+set_target_properties(
+	future-config-static
+	PROPERTIES DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
+)
 
 add_executable(fconfig_builder
 	src/Builder.cpp
