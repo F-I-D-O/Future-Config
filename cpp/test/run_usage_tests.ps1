@@ -1,13 +1,15 @@
 
 function RunUsageTest{
-    param([string]$path, [string]$platform, [string]$compiler, [switch]$fconfig_vcpkg_install)
+    param([string]$path, [string]$platform, [string]$compiler, [switch]$fconfig_vcpkg_install, [switch]$debug)
 
     $starter_path = "$PSScriptRoot/$path/ctest_starter.cmake" -replace '\\', '/'
 
     Write-Output "Running usage tests for path: $starter_path, platform: $platform, vcpkg install: $fconfig_vcpkg_install"
     Write-Output "------------------------------------------------------------------------------------------------"
 
-    $common_args = "-D FCONFIG_TEST_PLATFORM_NAME=$platform -D FCONFIG_VCPKG_INSTALL=$fconfig_vcpkg_install"
+    $config = If($debug) {"Debug"} Else {"Release"}
+
+    $common_args = "-C $config -D FCONFIG_CTEST_CONFIGURATION=$config -D FCONFIG_TEST_PLATFORM_NAME=$platform -D FCONFIG_VCPKG_INSTALL=$fconfig_vcpkg_install"
 
     If ($platform -like "Windows*") {
         If ($platform -like "*shared*") {
@@ -19,7 +21,9 @@ function RunUsageTest{
             $link_shared = "OFF"
         }
 
-        $command = "ctest -S $starter_path -C Release -D FCONFIG_TOOLCHAIN='c:/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=$triplet -D FCONFIG_TEST_BUILD_SHARED=$link_shared $common_args"
+        $command = "ctest -S $starter_path -D FCONFIG_TOOLCHAIN='c:/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=$triplet -D FCONFIG_TEST_BUILD_SHARED=$link_shared $common_args"
+
+        Write-Output "Running test command: $command"
         Invoke-Expression $command
     } Elseif ($platform -like "WSL*") {
         $wsl_command = "ctest -S `$(wslpath $starter_path) -D FCONFIG_TOOLCHAIN='/opt/vcpkg/scripts/buildsystems/vcpkg.cmake' -D FCONFIG_VCPKG_TRIPLET=x64-linux $common_args"
@@ -38,6 +42,7 @@ function RunUsageTest{
 
 RunUsageTest -path "usage_test" -platform "Windows"
 RunUsageTest -path "usage_test" -platform "Windows-shared"
+RunUsageTest -path "usage_test" -platform "Windows-shared-debug" -debug
 RunUsageTest -path "usage_test" -platform "WSL"
 
 RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
