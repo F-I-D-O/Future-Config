@@ -1,18 +1,30 @@
 include(GNUInstallDirs) # for standard install directories
 
+function(get_default_master_config_path PATH_VAR_NAME)
+#	cmake_parse_arguments(
+#		PARSE_ARGV
+#		1
+#		GET_DEFAULT_MASTER_CONFIG_PATH
+#		""
+#		"PATH_VAR_NAME"
+#		""
+#	)
+
+	set(${PATH_VAR_NAME} "${CMAKE_SOURCE_DIR}/data/config.yaml" PARENT_SCOPE)
+endfunction()
+
 function(run_fconfig_builder)
 	cmake_parse_arguments(
-		PARSE_ARGV
-		0
+		PARSE_ARGV 0
 		RUN_FCONFIG_BUILDER
 		""
 		"MAIN_CONFIG_PATH;ROOT_CONFIG_CLASS_NAME;SOURCE_DIR"
 		""
 	)
 
-	# by default, we look for the main config file in the CMakeLists.txt directory
+	# by default, we look for the main config file in the root/data directory
 	if(NOT DEFINED RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH)
-		set(RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH "${CMAKE_SOURCE_DIR}/data/config.yaml")
+		get_default_master_config_path(RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH)
 	endif()
 
 	# by default, we set the root config class name to the name of the project
@@ -86,9 +98,44 @@ function(run_fconfig_builder)
 			FATAL_ERROR
 			"fconfig_builder failed with code ${FCONFIG_BUILDER_RESULT}.
 The path to the fconfig_builder executable is: ${FCONFIG_BUILDER_EXECUTABLE}
+The arguments were: ${FCONFIG_BUILDER_ARGS}
 The output was:\n${FCONFIG_BUILDER_OUTPUT}"
 		)
 	else()
 		message(STATUS "Configuration classes generated successfully")
 	endif()
+endfunction()
+
+function(copy_master_config)
+	cmake_parse_arguments(
+		PARSE_ARGV 0
+		COPY_FCONFIG_MASTER_CONFIG
+		""
+		"CONFIG_PATH;CONFIG_BINARY_PATH"
+		"TARGET_NAMES"
+	)
+
+	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_TARGET_NAMES)
+		message(FATAL_ERROR "You must specify the targets that need the master config file")
+	endif()
+
+	# by default, we look for the main config file in the root/data directory
+	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH)
+		get_default_master_config_path(COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH)
+	endif()
+
+	# by default, we copy the config file to the <target output directory>/data/config.yaml
+	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH)
+		set(COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH "data/config.yaml")
+	endif()
+
+	foreach(TARGET_NAME IN LISTS COPY_FCONFIG_MASTER_CONFIG_TARGET_NAMES)
+		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy_if_different
+			${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH}
+			"$<TARGET_FILE_DIR:${TARGET_NAME}>/${COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH}"
+			COMMENT "Copying ${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH} to target output directory"
+		)
+	endforeach()
+
 endfunction()

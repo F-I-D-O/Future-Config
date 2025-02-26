@@ -43,6 +43,7 @@ add_executable(test_run
 	common.cpp
 	merger_test.cpp
 	resolver_tests.cpp
+	config_object_test.cpp
 )
 
 target_compile_definitions(test_run PRIVATE FUTURE_CONFIG_STATIC_DEFINE) # static flag for the export header

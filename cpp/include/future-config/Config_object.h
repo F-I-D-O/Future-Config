@@ -158,6 +158,10 @@ public:
 		throw std::runtime_error(format::format("Property {} is not a scalar", key));
 	}
 
+	// declaration for the Config_object specialization
+	// template<>
+	// Config_object& get<Config_object&>(const std::string& key) const;
+
 	template<typename T>
 	std::vector<T> get_array(const std::string& key) const {
 		if(std::holds_alternative<std::vector<std::string>>(properties.at(key))) {
@@ -179,7 +183,8 @@ public:
 
 };
 
-
+template<>
+Config_object& Config_object::get<Config_object&>(const std::string& key) const;
 
 static_assert(std::ranges::input_range<Config_object>);
 

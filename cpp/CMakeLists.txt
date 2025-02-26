@@ -258,7 +258,6 @@ set(FCONFIG_BUILDER_RUN_SCRIPT_NAME "builderRunner.cmake")
 install(
 	FILES ${CMAKE_CURRENT_SOURCE_DIR}/install/${FCONFIG_BUILDER_RUN_SCRIPT_NAME}
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
-	CONFIGURATIONS Release
 )
 
 # install the builder tool runtime dependencies if the installation is not handled by vcpkg
