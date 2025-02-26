@@ -11,18 +11,15 @@ TEST(Config_object, object_in_object) {
 	YAML::Node yaml_config = YAML::Load(R"(
 		{
 			test: {
-				test2: {
-
-					test3: 3
-				}
+				test2: 3
 			}
 		}
 	)");
 
 	fc::Config_object config(yaml_config);
 
-	auto& test2 = config.get<fc::Config_object&>("test2");
-	auto test3 = test2.get<int>("test3");
+	auto& test = config.get<fc::Config_object&>("test");
+	auto test2 = test.get<int>("test2");
 
-	ASSERT_EQ(test3, 3);
+	ASSERT_EQ(test2, 3);
 }
