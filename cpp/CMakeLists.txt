@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
 option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
 option(FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY "If ON, the library dependencies of the builder tool will be copied manually to the bin directory" ON)
+option(FCONFIG_INSTALL_BUILDER_TOOL_DEBUG "If ON, the builder tool will be installed even in debug mode" ON)
 
 project(future-config)
 
@@ -181,6 +182,10 @@ add_custom_command(
 
 
 # INSTALLATION
+if(NOT FCONFIG_INSTALL_BUILDER_TOOL_DEBUG)
+	set(FCONFIG_BUILDET_TOOL_INSTALL_CONFIGURATIONS CONFIGURATIONS Release)
+endif()
+
 # targets installation
 if(FCONFIG_BUILD_SHARED_LIBS)
 	set_target_properties(future-config-static PROPERTIES EXCLUDE_FROM_ALL TRUE)
@@ -191,10 +196,7 @@ else()
 	install(TARGETS future-config-static EXPORT "${FCONFIG_EXPORT_NAME}")
 endif()
 
-install(
-	TARGETS fconfig_builder
-	CONFIGURATIONS Release
-)
+install(TARGETS fconfig_builder ${FCONFIG_BUILDET_TOOL_INSTALL_CONFIGURATIONS})
 
 # headers installation
 install(
@@ -205,25 +207,14 @@ install(
 		include/future-config/format.h
 		include/future-config/future-config_export.h
 		include/future-config/resources.h
-
-#		src/Merger.h
-#		src/Parser.h
-#		src/Resolver.h
 	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
-	CONFIGURATIONS Release
 )
-## export header installation
-#install(
-#	FILES ${PROJECT_BINARY_DIR}/future-config_export.h
-#	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
-#	CONFIGURATIONS Release
-#)
 
 # builder tool template installation
 install(
 	FILES ${FCONFIG_JINJA_TEMPLATE_BUILD_PATH}
 	DESTINATION ${CMAKE_INSTALL_BINDIR}/data/
-	CONFIGURATIONS Release
+	${FCONFIG_BUILDET_TOOL_INSTALL_CONFIGURATIONS}
 )
 
 # cmake targets installation

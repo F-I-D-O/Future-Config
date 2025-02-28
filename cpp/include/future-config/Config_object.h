@@ -184,7 +184,7 @@ public:
 };
 
 template<>
-Config_object& Config_object::get<Config_object&>(const std::string& key) const;
+FUTURE_CONFIG_EXPORT Config_object& Config_object::get<Config_object&>(const std::string& key) const;
 
 static_assert(std::ranges::input_range<Config_object>);
 

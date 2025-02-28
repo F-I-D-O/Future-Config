@@ -17,6 +17,6 @@ struct String_array_in_object_config {
 	Comparison comparison;
 
 	explicit String_array_in_object_config(const fc::Config_object& config_object):
-		comparison(config_object.get<fc::Config_object>("comparison"))
+		comparison(config_object.get<fc::Config_object&>("comparison"))
 	{};
 };
