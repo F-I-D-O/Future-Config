@@ -31,11 +31,6 @@ set(PORT_TOOL_DATA_DIR "${CURRENT_PACKAGES_DIR}/tools/${PORT}/data")
 file(MAKE_DIRECTORY "${PORT_TOOL_DATA_DIR}")
 file(RENAME "${BIN_DATA_DIR}/config.jinja" "${PORT_TOOL_DATA_DIR}/config.jinja")
 file(REMOVE_RECURSE "${BIN_DATA_DIR}")
-## also delete the bin directory if it is empty
-#file(GLOB dir_to_rm_content "${BIN_DIR}/*")
-#if("${dir_to_rm_content}" STREQUAL "")
-#	file(REMOVE_RECURSE "${BIN_DIR}")
-#endif()
 
 # Copy the builder tool dependencies
 vcpkg_copy_tools(
