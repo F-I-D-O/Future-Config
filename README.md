@@ -92,7 +92,12 @@ The C++ implementation of Future Config requires C++20 support. The library is a
 		```cmake
 		run_fconfig_builder(MAIN_CONFIG_FILE <path_to_config_file>)
 		```
-1. configure your project using cmake
+1. Copy the master config file to the binary directory so that it is available at runtime. Future Config provides a helper function for this:
+	```cmake
+	copy_master_config(TARGET_NAMES <list_of_targets>)
+	```
+	The `<list_of_targets>` sets the targets for which the master config file should be copied in the post-build step.
+1. Configure your project using cmake
 1. Now, your config classes are generated and ready to use in your project. Basic usage:
 	```cpp
 	#include <future-config/configuration.h>
