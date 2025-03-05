@@ -4,19 +4,20 @@ $wsl_command = "ctest -S `$(wslpath $starter_path) -D FCONFIG_TEST_PLATFORM_NAME
 # run Windows tests
 Write-Output "Running Windows tests"
 Write-Output "---------------------"
-ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=Windows -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_VCPKG_INSTALL=ON
+ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=Windows -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
 Write-Output ""
 
 # run Windows shared library tests
 Write-Output "Running Windows shared library tests"
 Write-Output "------------------------------------"
-ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON -D FCONFIG_TEST_VCPKG_INSTALL=ON
+ctest -S $starter_path -C Release -D FCONFIG_TEST_PLATFORM_NAME=Windows-shared -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_TEST_BUILD_SHARED=ON
 Write-Output ""
+
 
 # run WSL tests
 Write-Output "Running WSL tests"
 Write-Output "-----------------"
-$wsl_command_latest = "$wsl_command -D FCONFIG_TEST_VCPKG_INSTALL=ON" -replace '<PLATFORM_NAME>', 'WSL'
+$wsl_command_latest = "$wsl_command" -replace '<PLATFORM_NAME>', 'WSL'
 wsl -u root bash -lc $wsl_command_latest
 Write-Output ""
 
@@ -33,4 +34,10 @@ Write-Output "------------------------"
 $wsl_command = "$wsl_command -D FCONFIG_TEST_CXX_COMPILER=g++-11" -replace '<PLATFORM_NAME>', 'WSL-GCC_11'
 wsl -u root bash -lc $wsl_command
 Write-Output ""
+
+## run Windows tests
+#Write-Output "Running Windows debug tests"
+#Write-Output "---------------------"
+#ctest -S $starter_path -C Debug -D FCONFIG_TEST_PLATFORM_NAME=Windows-debug -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_CTEST_CONFIGURATION=Debug
+#Write-Output ""
 

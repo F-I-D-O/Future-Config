@@ -18,8 +18,11 @@ include(CMakePackageConfigHelpers) # for generating the package configuration fi
 #include(GenerateExportHeader) # for generating the export headers
 include(CTest) # for testing
 
-# set the MSVC runtime library to /MT or MTd if we link to a static library
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND NOT FCONFIG_BUILD_SHARED_LIBS AND NOT VCPKG_TARGET_TRIPLET STREQUAL "x64-windows")
+# set the MSVC runtime library to /MT or MTd if appropriate
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC"
+	AND NOT FCONFIG_BUILD_SHARED_LIBS
+	AND (NOT DEFINED VCPKG_CRT_LINKAGE OR VCPKG_CRT_LINKAGE STREQUAL "static")
+)
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 	message(STATUS "Setting static runtime library")
 endif()

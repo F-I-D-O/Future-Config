@@ -71,23 +71,3 @@ add_custom_command(
 
 # enable automatic discovery of tests
 gtest_discover_tests(test_run)
-
-# SMOKE TESTS
-#set(FCONFIG_TEST_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/test_build-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}")
-#
-#add_test(NAME configurations_test COMMAND {CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/configuration_test.cmake)
-
-if (FCONFIG_TEST_VCPKG_INSTALL)
-	set(FCONFIG_PORT_DIR "${PROJECT_SOURCE_DIR}/port/future-config")
-
-	if(FCONFIG_TEST_PLATFORM_NAME MATCHES "WSL-GCC_11")
-		set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} --overlay-triplets=${FCONFIG_CPP_DIR}/test/vcpkg_gcc11")
-	endif()
-
-	add_test(NAME vcpkg_remove COMMAND vcpkg remove future-config)
-	add_test(NAME vcpkg_install_test COMMAND vcpkg install future-config --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
-
-	# setup the relationship between the test and the fixture
-	set_tests_properties(vcpkg_install_test PROPERTIES FIXTURES_REQUIRED vcpkg)
-	set_tests_properties(vcpkg_remove PROPERTIES FIXTURES_SETUP vcpkg)
-endif ()
