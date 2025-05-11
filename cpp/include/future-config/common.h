@@ -53,16 +53,29 @@ private:
 enum class Config_type {
 	MAIN,
 	DEPENDENCY,
-	LOCAL
+	LOCAL,
+	COMMAND_LINE
 };
 
-struct FUTURE_CONFIG_EXPORT Config_definition {
+struct FUTURE_CONFIG_EXPORT Config_definition_base {
 	const Config_type type;
+
+	explicit Config_definition_base(Config_type type):
+		type(type) {
+	}
+
+	virtual ~Config_definition_base() = default;
+};
+
+struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
+
 	const fs::path yaml_file_path;
 
 
 
-	Config_definition(Config_type type, fs::path yaml_file_path) : type(type), yaml_file_path(std::move(yaml_file_path)) {}
+	Config_definition(Config_type type, fs::path yaml_file_path):
+		Config_definition_base(type), yaml_file_path(std::move(yaml_file_path)) {
+	}
 
 	explicit Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
@@ -70,7 +83,7 @@ struct FUTURE_CONFIG_EXPORT Config_definition {
 
 	Config_definition(): Config_definition(Config_type::MAIN, get_resource_path("config.yaml")) {}
 
-	virtual ~Config_definition() = default;
+	~Config_definition() override = default;
 
 protected:
 	Config_definition(const Config_definition&) = default;
@@ -85,6 +98,24 @@ struct Dependency_config_definition: public Config_definition {
 		Config_definition(Config_type::DEPENDENCY, std::move(yaml_file_path)),
 		key_in_main_config(std::move(key_in_main_config)),
 		include_path(std::move(include_path)) {}
+};
+
+struct FUTURE_CONFIG_EXPORT Command_line_config_definition: public Config_definition_base {
+
+	const int argc;
+	const char** argv;
+
+
+
+	Command_line_config_definition(int argc, const char** argv):
+		Config_definition_base(Config_type::COMMAND_LINE), argc(argc), argv(argv) {}
+
+
+	~Command_line_config_definition() override = default;
+
+protected:
+	Command_line_config_definition(const Command_line_config_definition&) = default;
+	Command_line_config_definition(Command_line_config_definition&&) = default;
 };
 
 
