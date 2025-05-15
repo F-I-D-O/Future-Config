@@ -62,6 +62,7 @@ class FUTURE_CONFIG_EXPORT Config_object {
 	properties_map properties;
 
 public:
+	Config_object() = default; // Define as inline default constructor
 	Config_object(const YAML::Node& yaml_config);
 
 

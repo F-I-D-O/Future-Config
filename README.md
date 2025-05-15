@@ -59,7 +59,7 @@ The following table lists the features of Future-Config and the support of those
 	```
 4. Use the generated config classes:
 	```
-	import yourproject.confi.zourproject_config.config
+	import yourproject.confi.yourproject_config.config
 	```
 
 
@@ -198,12 +198,19 @@ object_hierarchy:
 
 
 # Principles
+
 - Config propagation to config instances of the dependencies is handled automatically by the builder. The data transfer is a part of the generated code.
 - There is only one config instance per project. Dependency config instance in the main/child project is the same as in the dependency project.
 - dependency configs need to be specified in a form of key value pairs, where:
 	- key is the name (key) of the in the master config file of the main project
 	- value is the specification of the dependency config
 
+## Config load order
+The load ordering is designed for maximum flexibility. Any load order is theoretically possible, inluding loading the same config file multiple times, loading the default config after the user config, etc. However, unless there is a very good reason, we recommend to stick to the default load order, which is:
+
+1. Load the master config files, from the root of the dependency chain to the project itself.
+2. Load the user config file
+3. Load the config from command line arguments
 
 # Testing
 

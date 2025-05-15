@@ -73,9 +73,7 @@ struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 
 
 
-	Config_definition(Config_type type, fs::path yaml_file_path):
-		Config_definition_base(type), yaml_file_path(std::move(yaml_file_path)) {
-	}
+	Config_definition(Config_type type, fs::path yaml_file_path);
 
 	explicit Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
@@ -127,7 +125,7 @@ std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definiti
 	const std::vector<std::string>& dependency_config_strings
 );
 
-Config_object FUTURE_CONFIG_EXPORT load_config(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
+Config_object FUTURE_CONFIG_EXPORT load_config(const std::vector<std::unique_ptr<Config_definition_base>>& config_definitions);
 
 std::filesystem::path FUTURE_CONFIG_EXPORT check_path(const std::filesystem::path& path);
         

@@ -56,6 +56,7 @@ endif()
 
 set(future_config_lib_files
 	src/Builder.cpp
+	src/Command_line_parser.cpp
 	src/common.cpp
 	src/Config_object.cpp
 	src/configuration.cpp

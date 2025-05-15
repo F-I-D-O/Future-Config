@@ -27,6 +27,18 @@ const std::unordered_map<Scalar_type::Value, std::string> Scalar_type::cpp_sourc
 	{BOOL, "bool"}
 };
 
+Config_definition::Config_definition(Config_type type, fs::path yaml_file_path):
+	Config_definition_base(type), yaml_file_path(std::move(yaml_file_path))
+{
+	try {
+		check_path(yaml_file_path);
+	} catch(const std::runtime_error& e) {
+		throw std::runtime_error(
+			format::format("Configuration file does not exist: {}", yaml_file_path.string(), e.what())
+		);
+	}
+}
+
 std::string join(const std::vector <std::string>& v, const std::string& delimiter) {
 	std::ostringstream ss;
 	auto begin = v.begin();
@@ -94,7 +106,7 @@ Config_object load_config(const std::vector<std::unique_ptr<Config_definition_ba
 	unsigned counter = 1;
 	Config_object* master_config = nullptr;
 	for(const auto& config_definition: config_definitions) {
-		try{
+
 			// command line config
 			if(config_definition->type == Config_type::COMMAND_LINE) {
 				// first check if master config has been loaded
@@ -115,19 +127,21 @@ Config_object load_config(const std::vector<std::unique_ptr<Config_definition_ba
 			}
 			else {
 				const auto& file_config = dynamic_cast<const Config_definition&>(*config_definition);
-				configs.push_back(Parser().parse(file_config.yaml_file_path));
-				if(config_definition->type == Config_type::MAIN){
-					master_config = &configs.back();
+				try{
+					configs.push_back(Parser().parse(file_config.yaml_file_path));
+					if(config_definition->type == Config_type::MAIN){
+						master_config = &configs.back();
+					}
+				} catch(const std::runtime_error& e) {
+					throw std::runtime_error(format::format(
+						"Failed to parse the {}. configuration ({}): {}",
+						counter,
+						file_config.yaml_file_path.string(),
+						e.what()
+					));
 				}
 			}
-		} catch(const std::runtime_error& e) {
-			throw std::runtime_error(format::format(
-				"Failed to parse the {}. configuration ({}): {}",
-				counter,
-				config_definition->yaml_file_path.string(),
-				e.what()
-			));
-		}
+
 	}
 	auto merged_config = Merger().merge(configs);
 	Resolver(merged_config).resolve();
