@@ -9,6 +9,7 @@
 #include "future-config/format.h"
 #include "future-config/Config_object.h"
 #include "future-config/common.h"
+#include "future-config/loading.h"
     
     
 namespace fc {    

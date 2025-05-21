@@ -5,14 +5,12 @@
 #pragma once
 
 #include <filesystem>
-#include <yaml-cpp/yaml.h>
 #include <unordered_map>
 #include "inja/inja.hpp"
 
 #include "future-config/common.h"
 #include "future-config/Config_object.h"
-#include "future-config/configuration.h"
-    
+
     
 namespace fc {    
 

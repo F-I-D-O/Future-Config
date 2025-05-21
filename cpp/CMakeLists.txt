@@ -46,13 +46,16 @@ set(FCONFIG_PACKAGE_CONFIG_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAM
 set(FCONFIG_VERSION_BUILD_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake")
 set(FCONFIG_JINJA_TEMPLATE_BUILD_PATH $<TARGET_FILE_DIR:fconfig_builder>/data/config.jinja)
 
-# search for dependencies
+# DEPENDENCIES
+# packages
 find_package(yaml-cpp CONFIG REQUIRED)
 find_package(inja CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 if(FCONFIG_USE_FMT)
 	find_package(fmt CONFIG REQUIRED)
 endif()
+# headers for header-only libs
+find_path(TCLAP_INCLUDE_DIRS "tclap/" REQUIRED) # used for command line parsing in the builder tool
 
 set(future_config_lib_files
 	src/Builder.cpp
@@ -91,7 +94,6 @@ add_executable(fconfig_builder
 	src/Parser.cpp
 	src/Resolver.cpp
 	src/Config_object.cpp
-	src/configuration.cpp
 	src/builder_runner.cpp
 	src/resources.cpp
 )
@@ -135,6 +137,9 @@ target_include_directories(
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+
+# header-only libraries include directories
+target_include_directories(fconfig_builder PRIVATE ${TCLAP_INCLUDE_DIRS})
 
 
 # for enabling includes relative to src root (instead of relative to the file dir)
