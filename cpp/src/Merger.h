@@ -5,7 +5,6 @@
 #pragma once
 
 #include <vector>
-#include <yaml-cpp/yaml.h>
 
 #include "future-config/Config_object.h"
     
@@ -18,6 +17,7 @@ namespace fc {
 class Merger {
 public:
 	Config_object merge(std::vector<Config_object>& configs);
+	Config_object merge(Config_object& base_config, Config_object& override_config);
 
 private:
 	void override_level(Config_object& config, Config_object& overriding_config);

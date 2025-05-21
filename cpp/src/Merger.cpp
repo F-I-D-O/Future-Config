@@ -20,6 +20,11 @@ Config_object Merger::merge(std::vector<Config_object>& configs) {
 	return std::move(final_config_data);
 }
 
+Config_object Merger::merge(Config_object& base_config, Config_object& override_config) {
+    std::vector<Config_object> configs = {base_config, override_config};
+    return merge(configs);
+}
+
 void Merger::override_level(Config_object& config, Config_object& overriding_config) {
 	for(auto&[key, value]: overriding_config) {
 		if(std::holds_alternative<config_object_property_value>(value) && config.contains(key)) {

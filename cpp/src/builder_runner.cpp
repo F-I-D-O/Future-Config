@@ -22,7 +22,7 @@ void generate_config(
 	std::vector<std::unique_ptr<fc::Config_definition>>& config_definitions
 ) {
 	// config loading
-	auto config_object = load_config(config_definitions);
+	auto config_object = load_config_for_builder(config_definitions);
 
 	fs::path output_dir = source_dir / fc::default_config_folder;
 

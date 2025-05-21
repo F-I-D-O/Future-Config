@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.22)
 
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
@@ -55,7 +54,7 @@ if(FCONFIG_USE_FMT)
 	find_package(fmt CONFIG REQUIRED)
 endif()
 # headers for header-only libs
-find_path(TCLAP_INCLUDE_DIRS "tclap/" REQUIRED) # used for command line parsing in the builder tool
+find_path(TCLAP_INCLUDE_DIRS PATHS "tclap/" NAMES CmdLine.h REQUIRED) # used for command line parsing in the builder tool
 
 set(future_config_lib_files
 	src/Builder.cpp
@@ -63,10 +62,13 @@ set(future_config_lib_files
 	src/common.cpp
 	src/Config_object.cpp
 	src/configuration.cpp
+	src/loading.cpp
 	src/Merger.cpp
 	src/Parser.cpp
 	src/Resolver.cpp
 	src/resources.cpp
+	src/command_line_loading.cpp
+	src/variable_processing.cpp
 )
 
 if (NOT DEFINED CMAKE_DEBUG_POSTFIX)
@@ -90,9 +92,9 @@ set_target_properties(
 add_executable(fconfig_builder
 	src/Builder.cpp
 	src/common.cpp
+	src/loading.cpp
 	src/Merger.cpp
 	src/Parser.cpp
-	src/Resolver.cpp
 	src/Config_object.cpp
 	src/builder_runner.cpp
 	src/resources.cpp
