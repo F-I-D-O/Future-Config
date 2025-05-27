@@ -22,8 +22,8 @@ const std::unordered_map<Scalar_type::Value, std::string> Scalar_type::cpp_sourc
 	{BOOL, "bool"}
 };
 
-Config_definition::Config_definition(Config_type type, fs::path yaml_file_path):
-	Config_definition_base(type), yaml_file_path(std::move(yaml_file_path))
+Config_definition::Config_definition(Config_type type, fs::path yaml_file_path_par):
+	Config_definition_base(type), yaml_file_path(std::move(yaml_file_path_par))
 {
 	try {
 		check_path(yaml_file_path);

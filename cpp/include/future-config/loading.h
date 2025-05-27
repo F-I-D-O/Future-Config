@@ -93,7 +93,12 @@ Config_object FUTURE_CONFIG_EXPORT load_config_for_builder(const I& config_defin
 			);
 		}
 
-		result_config = merge_configs(result_config.value(), config);
+		if(result_config){
+			result_config = merge_configs(result_config.value(), config);
+		}
+		else{
+			result_config = config;
+		}
 	}
 
 	return result_config.value();

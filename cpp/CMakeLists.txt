@@ -54,7 +54,7 @@ if(FCONFIG_USE_FMT)
 	find_package(fmt CONFIG REQUIRED)
 endif()
 # headers for header-only libs
-find_path(TCLAP_INCLUDE_DIRS PATHS "tclap/" NAMES CmdLine.h REQUIRED) # used for command line parsing in the builder tool
+find_path(TCLAP_INCLUDE_DIRS NAMES CmdLine.h PATH_SUFFIXES "tclap/" REQUIRED) # used for command line parsing in the builder tool
 
 set(future_config_lib_files
 	src/Builder.cpp
