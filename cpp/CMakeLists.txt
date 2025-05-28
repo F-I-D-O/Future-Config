@@ -217,6 +217,7 @@ install(
 		include/future-config/configuration.h
 		include/future-config/format.h
 		include/future-config/future-config_export.h
+		include/future-config/loading.h
 		include/future-config/resources.h
 	DESTINATION ${FCONFIG_INSTALL_INCLUDE_DIR}
 	${FCONFIG_BUILDER_TOOL_AND_HEADERS_INSTALL_CONFIGURATIONS}

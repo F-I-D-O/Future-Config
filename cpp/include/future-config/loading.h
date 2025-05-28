@@ -31,7 +31,7 @@ Config_object FUTURE_CONFIG_EXPORT parse_command_line_config(
 );
 
 template<Input_pointer_range<Config_definition_base> I>
-Config_object FUTURE_CONFIG_EXPORT load_config(const I& config_definitions) {
+Config_object load_config(const I& config_definitions) {
 	unsigned counter = 1;
 	std::optional<Config_object> result_config;
 	for(const auto& config_definition: config_definitions) {
@@ -73,7 +73,7 @@ Config_object FUTURE_CONFIG_EXPORT load_config(const I& config_definitions) {
 }
 
 template<Input_pointer_range<Config_definition> I>
-Config_object FUTURE_CONFIG_EXPORT load_config_for_builder(const I& config_definitions) {
+Config_object load_config_for_builder(const I& config_definitions) {
 	unsigned counter = 1;
 	std::optional<Config_object> result_config;
 	for(const auto& config_definition: config_definitions) {
