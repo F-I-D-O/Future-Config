@@ -61,11 +61,12 @@ private:
 
 	static std::string get_class_name(const std::string& basic_string);
 
-	static std::string sanitize_root_object_name(const std::string& root_object_name);
+	static std::string sanitize_key(const std::string& root_object_name);
 
 	//	static std::string get_type(const std::string& value);
 	static std::unordered_map<std::string, std::tuple<std::string, std::string>>
 		generate_dependency_config_map(const std::vector<std::unique_ptr<Config_definition>>& config_definitions);
+
 };
 
         

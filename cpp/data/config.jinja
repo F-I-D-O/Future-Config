@@ -11,11 +11,11 @@
 struct {{ class.class_name }} {
 	{% for property in class.properties %}
 		{% if property.mode == "scalar" %}
-	{{ property.type }} {{ property.key }};
+	{{ property.type }} {{ property.name }};
 		{% else if property.mode == "object" %}
-	{{ property.class_name }} {{ property.key }};
+	{{ property.class_name }} {{ property.name }};
 		{% else if property.mode == "array" %}
-	std::vector<{{ property.array_type_name }}> {{ property.key }};
+	std::vector<{{ property.array_type_name }}> {{ property.name }};
 		{% endif %}
 	{% endfor %}
 
@@ -26,14 +26,14 @@ struct {{ class.class_name }} {
 			{% else %}
 				{% set divider = "" %}
 			{% endif %}
-		{{ property.key }}(config_object.get<{{ property.type }}>("{{ property.key }}")){{ divider }}
+		{{ property.name }}(config_object.get<{{ property.type }}>("{{ property.key }}")){{ divider }}
 		{% endfor %}
 	{% endif %}
 	{% if class.array_properties_count > 0 %}{
 		{% for property in class.properties %}
 			{% if property.mode == "array" %}
 		for (const auto& item: config_object.get_array<{{ property.item_type }}>("{{ property.key }}")) {
-			{{ property.key }}.emplace_back(item);
+			{{ property.name }}.emplace_back(item);
 		}
 			{% endif %}
 		{% endfor %}

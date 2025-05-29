@@ -97,6 +97,11 @@ TEST(Builder, test_string_array_in_object) {
 	check_generated_config(config, TEST_DATA_DIR / "string_array_in_object.h");
 }
 
+TEST(Builder, test_hyphen_in_key) {
+	YAML::Node config = YAML::Load("{test-var: 123}");
+	check_generated_config(config, TEST_DATA_DIR / "hyphen_in_key.h");
+}
+
 // not supported yet
 // TEST(Builder, test_array_of_objects) {
 // 	YAML::Node config = YAML::Load(
