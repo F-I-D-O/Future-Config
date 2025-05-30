@@ -53,7 +53,7 @@ C load(std::vector<std::unique_ptr<Config_definition_base>>& config_definitions)
  */
 template<Config_class C>
 C load(
-	std::vector<std::unique_ptr<Config_definition_base> >& config_definitions,
+	std::vector<std::unique_ptr<Config_definition_base>>& config_definitions,
 	const fs::path& local_config_path,
 	int argc = 0,
 	const char** argv = nullptr
@@ -100,9 +100,23 @@ C load(
  */
 template<Config_class C>
 C load(const fs::path& local_config_path, int argc = 0, const char** argv = nullptr) {
-	std::vector<std::unique_ptr<fc::Config_definition>> config_definitions;
+	std::vector<std::unique_ptr<fc::Config_definition_base>> config_definitions;
 	config_definitions.emplace_back(std::make_unique<fc::Config_definition>());
 	return load<C>(config_definitions, local_config_path, argc, argv);
+}
+
+/**
+ * load function that uses only the configuration from the default config file. This way of loading is typically used
+ * in tests or some auxiliary programs where the configuration is not provided by the user.
+ *
+ * @tparam C root config class
+ * @return root config object filled with the configuration data
+ */
+template<Config_class C>
+C load() {
+	std::vector<std::unique_ptr<fc::Config_definition_base>> config_definitions;
+	config_definitions.emplace_back(std::make_unique<fc::Config_definition>());
+	return load<C>(config_definitions);
 }
 
 }

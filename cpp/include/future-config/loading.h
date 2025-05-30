@@ -64,7 +64,12 @@ Config_object load_config(const I& config_definitions) {
 				);
 			}
 		}
-		result_config = merge_configs(result_config.value(), config);
+		if(result_config){
+			result_config = merge_configs(result_config.value(), config);
+		}
+		else{
+			result_config = config;
+		}
 	}
 
 	process_variables(result_config.value());
