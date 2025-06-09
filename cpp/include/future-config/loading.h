@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <optional>
+
 #include "future-config/future-config_export.h"
 #include "future-config/Config_object.h"
 #include "future-config/common.h"
