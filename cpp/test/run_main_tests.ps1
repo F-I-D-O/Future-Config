@@ -35,9 +35,3 @@ $wsl_command = "$wsl_command -D FCONFIG_TEST_CXX_COMPILER=g++-11" -replace '<PLA
 wsl -u root bash -lc $wsl_command
 Write-Output ""
 
-## run Windows tests
-#Write-Output "Running Windows debug tests"
-#Write-Output "---------------------"
-#ctest -S $starter_path -C Debug -D FCONFIG_TEST_PLATFORM_NAME=Windows-debug -D FCONFIG_TOOLCHAIN="c:/vcpkg/scripts/buildsystems/vcpkg.cmake" -D FCONFIG_CTEST_CONFIGURATION=Debug
-#Write-Output ""
-
