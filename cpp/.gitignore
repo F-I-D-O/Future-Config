@@ -1,6 +1,6 @@
 cmake-build*/
 ctest-build*/
 out/
-build*/
+build/*
 
 .vs/
