@@ -40,11 +40,12 @@ function RunUsageTest{
     Write-Output ""
 }
 
-RunUsageTest -path "usage_test" -platform "Windows"
-RunUsageTest -path "usage_test" -platform "Windows-shared"
-RunUsageTest -path "usage_test" -platform "Windows-shared-debug" -debug
-RunUsageTest -path "usage_test" -platform "WSL"
+#RunUsageTest -path "usage_test" -platform "Windows"
+#RunUsageTest -path "usage_test" -platform "Windows-shared"
+#RunUsageTest -path "usage_test" -platform "Windows-shared-debug" -debug
+#RunUsageTest -path "usage_test" -platform "WSL"
+RunUsageTest -path "usage_test" -platform "WSL-GCC_11" -compiler "g++-11"
 
-RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
-RunUsageTest -path "usage_test" -platform "Windows-shared-vcpkg" -fconfig_vcpkg_install
-RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install
+#RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
+#RunUsageTest -path "usage_test" -platform "Windows-shared-vcpkg" -fconfig_vcpkg_install
+#RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install

@@ -29,13 +29,6 @@ endif()
 # copy runtime dependencies to the build directory using some vcpkg magic
 set(VCPKG_APPLOCAL_DEPS ON)
 
-# minimum version of GCC (because it incorrectly reports C++20 support)
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13.0.0)
-	set(FCONFIG_USE_FMT ON)
-	add_compile_definitions(FCONFIG_USE_FMT)
-	#	message(FATAL_ERROR "GCC version must be at least 13.0.0 while yours is ${CMAKE_CXX_COMPILER_VERSION}")
-endif()
-
 
 # path configuration
 set(FCONFIG_EXPORT_NAME "${PROJECT_NAME}Targets")
