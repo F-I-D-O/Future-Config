@@ -1,3 +1,10 @@
+# Dependencies
+
+To install all dependencies using vcpkg, run:
+```bash
+vcpkg install yaml-cpp inja spdlog tclap
+```
+
 # Testing
 There are three types of tests in the project:
 
