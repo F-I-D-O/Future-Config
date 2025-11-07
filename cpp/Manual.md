@@ -14,3 +14,5 @@ There are three types of tests in the project:
     - to run them, execute `test/run_tests_on_all_platforms.ps1`
 - Usage Tests: Testing the usage of the future-config in client code
   - to run them, execute `test/run_usage_tests.ps1`
+
+Note that so far, the usage tests do not install the dependencies. Be sure to install them manually if you want to run all the tests without errors.

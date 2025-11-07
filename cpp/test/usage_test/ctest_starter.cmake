@@ -20,14 +20,22 @@ endif()
 
 message("Removing future-config from vcpkg")
 # vcpkg remove future-config
-execute_process(COMMAND vcpkg remove future-config --triplet ${FCONFIG_VCPKG_TRIPLET})
+set(FCONFIG_VCPKG_REMOVE_COMMAND vcpkg remove future-config --triplet ${FCONFIG_VCPKG_TRIPLET})
+if(FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR)
+	list(APPEND FCONFIG_VCPKG_REMOVE_COMMAND --overlay-triplets=${FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR})
+endif()
+execute_process(COMMAND ${FCONFIG_VCPKG_REMOVE_COMMAND})
 
 message("Deleting previous test build directory")
 file(REMOVE_RECURSE "${CTEST_BINARY_DIRECTORY}")
 
 if(FCONFIG_VCPKG_INSTALL)
 	# vcpkg install future-config
-	execute_process(COMMAND vcpkg install future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
+	set(FCONFIG_VCPKG_INSTALL_COMMAND vcpkg install future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
+	if(FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR)
+		list(APPEND FCONFIG_VCPKG_INSTALL_COMMAND --overlay-triplets=${FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR})
+	endif()
+	execute_process(COMMAND ${FCONFIG_VCPKG_INSTALL_COMMAND})
 else()
 	#install future-config using cmake
 	set(FCONFIG_BUILD_DIR_FOR_INSTALL "${CTEST_BINARY_DIRECTORY}/future-config-install")
