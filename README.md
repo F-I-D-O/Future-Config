@@ -60,7 +60,7 @@ The C++ implementation of Future Config requires C++20 support. The library is a
 1. Install the Future Config package:
 	- vcpkg: `vcpkg install future-config`
 	- cmake:
-		1. Install the dependencies: `yaml-cpp` and `spdlog`
+		1. Install the dependencies: `yaml-cpp`, `spdlog`, `inja` and `tclap`
 		1. Clone the repository
 		1. Configure: `cmake <project directory>/cpp`
 		1. Build: `cmake --build . --target install`
@@ -265,20 +265,7 @@ object_hierarchy:
 
 
 
-# Testing
 
-## C++
-There are many types of tests in the C++ implementation of Future Config. All tests are located in the `test` directory.
-
-There are unit tests that can be execuded by running the `test_run` target
-
-Additionally, there are tests that can executed by PowerShell scripts in the `test` directory. Note that these scripts require a preconfigured Windows and WSL environment to run the tests on all platforms.
-
-- Smoke tests (`run_main_tests.ps1`): test the configuration, build and unit tests on various platforms.
-- Usage tests (`run_usage_tests.ps1`): Test the usage of the library in client projects.
-- Vcpkg tests (`run_vcpkg_tests.ps1`): Test the integration of the library with the vcpkg package manager for various triplets.
-
-Both the smoke tests and the usage tests use Vcpkg to get the library dependencies. On each platform, the default triplet is used. In contrast, the Vcpkg tests use various triplets.
 
 
 # Legacy Principles
