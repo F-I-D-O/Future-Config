@@ -1,9 +1,9 @@
 #vcpkg_from_github(
-#	OUT_SOURCE_PATH SOURCE_PATH
-#	REPO F-I-D-O/Future-Config
-#	REF v0.2.0
-#	SHA512 0
-#	HEAD_REF master
+#  OUT_SOURCE_PATH SOURCE_PATH
+#  REPO F-I-D-O/Future-Config
+#  REF "v${VERSION}"
+#  SHA512 0
+#  HEAD_REF master
 #)
 
 # for local testing, the local repository is used instead of the github remote
@@ -12,12 +12,12 @@ cmake_path(SET SOURCE_PATH NORMALIZE "${CMAKE_CURRENT_LIST_DIR}../../../..")
 string(COMPARE EQUAL "${VCPKG_LIBRARY_LINKAGE}" "dynamic" BUILD_SHARED)
 
 vcpkg_cmake_configure(
-	SOURCE_PATH "${SOURCE_PATH}/cpp"
-	OPTIONS
-		-D FCONFIG_BUILD_SHARED_LIBS=${BUILD_SHARED}
-		-D FCONFIG_ENABLE_TESTS=OFF
-		-D FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY=OFF
-		-D FCONFIG_INSTALL_BUILDER_TOOL_AND_HEADERS_DEBUG=OFF
+  SOURCE_PATH "${SOURCE_PATH}/cpp"
+  OPTIONS
+    -DFCONFIG_BUILD_SHARED_LIBS=${BUILD_SHARED}
+    -DFCONFIG_ENABLE_TESTS=OFF
+    -DFCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY=OFF
+    -DFCONFIG_INSTALL_BUILDER_TOOL_AND_HEADERS_DEBUG=OFF
 )
 
 vcpkg_cmake_install()
@@ -34,11 +34,10 @@ file(REMOVE_RECURSE "${BIN_DATA_DIR}")
 
 # Copy the builder tool dependencies
 vcpkg_copy_tools(
-	TOOL_NAMES fconfig_builder
-	AUTO_CLEAN
+  TOOL_NAMES fconfig_builder
+  AUTO_CLEAN
 )
 
 vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE.txt")
 
 file(INSTALL "${CMAKE_CURRENT_LIST_DIR}/usage" DESTINATION "${CURRENT_PACKAGES_DIR}/share/${PORT}")
-
