@@ -10,7 +10,7 @@ function(get_default_master_config_path PATH_VAR_NAME)
 #		""
 #	)
 
-	set(${PATH_VAR_NAME} "${CMAKE_SOURCE_DIR}/data/config.yaml" PARENT_SCOPE)
+	set(${PATH_VAR_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/data/config.yaml" PARENT_SCOPE)
 endfunction()
 
 function(run_fconfig_builder)
@@ -29,12 +29,12 @@ function(run_fconfig_builder)
 
 	# by default, we set the root config class name to the name of the project
 	if(NOT DEFINED RUN_FCONFIG_BUILDER_ROOT_CONFIG_CLASS_NAME)
-		get_filename_component(RUN_FCONFIG_BUILDER_ROOT_CONFIG_CLASS_NAME "${CMAKE_PROJECT_NAME}" NAME)
+		get_filename_component(RUN_FCONFIG_BUILDER_ROOT_CONFIG_CLASS_NAME "${PROJECT_NAME}" NAME)
 	endif()
 
 	# by default, we set the <CmakeLists.txt directory>/src as the source directory
 	if(NOT DEFINED RUN_FCONFIG_BUILDER_SOURCE_DIR)
-		set(RUN_FCONFIG_BUILDER_SOURCE_DIR "${CMAKE_SOURCE_DIR}/src")
+		set(RUN_FCONFIG_BUILDER_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 	endif()
 
 	# BUILDER TOOL EXECUTABLE SEARCH

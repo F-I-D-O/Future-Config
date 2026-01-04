@@ -1,4 +1,11 @@
 
+$myWindowsID=[Security.Principal.WindowsIdentity]::GetCurrent()
+$myWindowsPrincipal=new-object Security.Principal.WindowsPrincipal($myWindowsID)
+if (!$myWindowsPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Usage tests require running this script as Administrator to enable library installation to default system locations."
+    exit
+}
+
 function RunUsageTest{
     param([string]$path, [string]$platform, [string]$compiler, [switch]$fconfig_vcpkg_install, [switch]$debug)
 
@@ -40,12 +47,12 @@ function RunUsageTest{
     Write-Output ""
 }
 
-#RunUsageTest -path "usage_test" -platform "Windows"
-#RunUsageTest -path "usage_test" -platform "Windows-shared"
-#RunUsageTest -path "usage_test" -platform "Windows-shared-debug" -debug
-#RunUsageTest -path "usage_test" -platform "WSL"
+RunUsageTest -path "usage_test" -platform "Windows"
+RunUsageTest -path "usage_test" -platform "Windows-shared"
+RunUsageTest -path "usage_test" -platform "Windows-shared-debug" -debug
+RunUsageTest -path "usage_test" -platform "WSL"
 RunUsageTest -path "usage_test" -platform "WSL-GCC_11" -compiler "g++-11"
 
-#RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
-#RunUsageTest -path "usage_test" -platform "Windows-shared-vcpkg" -fconfig_vcpkg_install
-#RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install
+RunUsageTest -path "usage_test" -platform "Windows-vcpkg" -fconfig_vcpkg_install
+RunUsageTest -path "usage_test" -platform "Windows-shared-vcpkg" -fconfig_vcpkg_install
+RunUsageTest -path "usage_test" -platform "WSL-vcpkg" -fconfig_vcpkg_install

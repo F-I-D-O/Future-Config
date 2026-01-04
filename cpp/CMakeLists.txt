@@ -5,7 +5,7 @@ option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
 option(FCONFIG_BUILDER_COPY_LIBRARY_DEPENDENCIES_MANUALLY "If ON, the library dependencies of the builder tool will be copied manually to the bin directory" ON)
 option(FCONFIG_INSTALL_BUILDER_TOOL_AND_HEADERS_DEBUG "If ON, the builder tool and headers will be installed even in debug mode" ON)
 
-project(future-config)
+project(future-config VERSION 0.2.1)
 
 # requirements
 set(CMAKE_CXX_STANDARD 20)
@@ -237,11 +237,7 @@ configure_package_config_file(
 	INSTALL_DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 )
 
-write_basic_package_version_file(
-	${FCONFIG_VERSION_BUILD_PATH}
-	VERSION "${fconfig_VERSION_MAJOR}.${fconfig_VERSION_MINOR}.${fconfig_VERSION_PATCH}"
-	COMPATIBILITY AnyNewerVersion
-)
+write_basic_package_version_file(${FCONFIG_VERSION_BUILD_PATH} COMPATIBILITY AnyNewerVersion)
 
 # Install the package configuration file
 install(FILES
