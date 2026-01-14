@@ -53,6 +53,52 @@ constexpr unsigned short object_index = 2;
 //constexpr unsigned short bool_array_index = 9;
 
 
+/**
+ * @brief Class template for transforming string values to various types.
+ * Uses template specialization for compile-time type resolution.
+ */
+template<typename T>
+struct value_transformer {
+	static T transform(const std::string& string_value) {
+		throw std::runtime_error(format::format("Unsupported type"));
+	}
+};
+
+template<>
+struct value_transformer<std::string> {
+	static std::string transform(const std::string& string_value) {
+		return string_value;
+	}
+};
+
+template<>
+struct value_transformer<int> {
+	static int transform(const std::string& string_value) {
+		return std::stoi(string_value);
+	}
+};
+
+template<>
+struct value_transformer<double> {
+	static double transform(const std::string& string_value) {
+		return std::stod(string_value);
+	}
+};
+
+template<>
+struct value_transformer<bool> {
+	static bool transform(const std::string& string_value) {
+		if(string_value == "true") {
+			return true;
+		}
+		else if(string_value == "false") {
+			return false;
+		}
+		else {
+			throw std::runtime_error(format::format("Value is not a boolean", string_value));
+		}
+	}
+};
 
 
 class FUTURE_CONFIG_EXPORT Config_object {
@@ -126,35 +172,10 @@ public:
 	}
 
 	template<typename T>
-	T transform_value(const std::string& string_value) const {
-		if constexpr(std::is_same_v<T, std::string>) {
-			return string_value;
-		}
-		else if constexpr(std::is_same_v<T, int>) {
-			return std::stoi(string_value);
-		}
-		else if constexpr(std::is_same_v<T, double>) {
-			return std::stod(string_value);
-		}
-		else if constexpr(std::is_same_v<T, bool>) {
-			if(string_value == "true") {
-				return true;
-			}
-			else if(string_value == "false") {
-				return false;
-			}
-			else {
-				throw std::runtime_error(format::format("Value is not a boolean", string_value));
-			}
-		}
-		throw std::runtime_error(format::format("Unsupported type"));
-	}
-
-	template<typename T>
 	T get(const std::string& key) const {
 		if(std::holds_alternative<std::string>(properties.at(key))) {
 			const auto& string_value = std::get<std::string>(properties.at(key));
-			return transform_value<T>(string_value);
+			return value_transformer<T>::transform(string_value);
 		}
 		throw std::runtime_error(format::format("Property {} is not a scalar", key));
 	}
@@ -170,8 +191,8 @@ public:
 			std::ranges::transform(
 				std::get<std::vector<std::string>>(properties.at(key)),
 				std::back_inserter(result),
-				[this](const std::string& string_value) {
-					return transform_value<T>(string_value);
+				[](const std::string& string_value) {
+					return value_transformer<T>::transform(string_value);
 				}
 			);
 			return result;

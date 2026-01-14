@@ -1,4 +1,4 @@
-set(CMAKE_CXX_COMPILER /usr/bin/g++-11 CACHE STRING "GCC 11 override")
+set(CMAKE_CXX_COMPILER /usr/local/bin/g++-11 CACHE STRING "GCC 11 override")
 
 if(NOT _VCPKG_LINUX_TOOLCHAIN)
     set(_VCPKG_LINUX_TOOLCHAIN 1)

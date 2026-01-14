@@ -1,4 +1,11 @@
 
+$myWindowsID=[Security.Principal.WindowsIdentity]::GetCurrent()
+$myWindowsPrincipal=new-object Security.Principal.WindowsPrincipal($myWindowsID)
+if (!$myWindowsPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+    Write-Host "Usage tests require running this script as Administrator to enable library installation to default system locations."
+    exit
+}
+
 function RunUsageTest{
     param([string]$path, [string]$platform, [string]$compiler, [switch]$fconfig_vcpkg_install, [switch]$debug, [string]$triplet_overlay_dir, [string]$triplet)
 

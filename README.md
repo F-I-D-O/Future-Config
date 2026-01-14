@@ -275,3 +275,8 @@ object_hierarchy:
 - dependency configs need to be specified in a form of key value pairs, where:
 	- key is the name (key) of the in the master config file of the main project
 	- value is the specification of the dependency config
+
+### Configuring the WSL environment
+A working WSL environment is required to run the PowerShell-executed tests (smoke tests, usage tests, vcpkg tests). Additionally, the WSL environment needs GCC 11 as some of the tests use this compiler to test the library on an older compiler.
+
+To install GCC 11 on Fedora, you can use the `install_gcc-11-mamba.sh` script located in the `test` directory. This script uses `mamba` to install GCC 11 into a separate environment, so that it does not interfere with the default system compiler.

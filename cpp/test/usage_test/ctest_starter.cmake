@@ -18,6 +18,10 @@ if(FCONFIG_TEST_CXX_COMPILER)
 	set(CTEST_CONFIGURE_COMMAND "${CTEST_CONFIGURE_COMMAND} -DCMAKE_CXX_COMPILER=${FCONFIG_TEST_CXX_COMPILER}")
 endif()
 
+
+message("Starting CDash test configuration")
+ctest_start(Experimental)
+
 message("Removing future-config from vcpkg")
 # vcpkg remove future-config
 set(FCONFIG_VCPKG_REMOVE_COMMAND vcpkg remove future-config --triplet ${FCONFIG_VCPKG_TRIPLET})
@@ -30,8 +34,8 @@ message("Deleting previous test build directory")
 file(REMOVE_RECURSE "${CTEST_BINARY_DIRECTORY}")
 
 if(FCONFIG_VCPKG_INSTALL)
-	# vcpkg install future-config
-	set(FCONFIG_VCPKG_INSTALL_COMMAND vcpkg install future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
+	# vcpkg install future-config and dependencies
+	set(FCONFIG_VCPKG_INSTALL_COMMAND vcpkg install yaml-cpp inja spdlog tclap future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
 	if(FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR)
 		list(APPEND FCONFIG_VCPKG_INSTALL_COMMAND --overlay-triplets=${FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR})
 	endif()
@@ -60,37 +64,42 @@ else()
 		list(APPEND FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND -A x64)
 	endif()
 
+	# use the specified compiler if for library installation
+	if(FCONFIG_TEST_CXX_COMPILER)
+		list(APPEND FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND -D CMAKE_CXX_COMPILER=${FCONFIG_TEST_CXX_COMPILER})
+	endif()
+
 	string(JOIN " " FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND_STR ${FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND})
 	message("Configuring future-config using: ${FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND_STR}")
-	execute_process(COMMAND ${FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND} COMMAND_ERROR_IS_FATAL ANY)
-#	execute_process(COMMAND "${CMAKE_COMMAND}" "${CTEST_SOURCE_DIRECTORY}../../../" -B "${FCONFIG_BUILD_DIR_FOR_INSTALL}" --toolchain "${FCONFIG_TOOLCHAIN}" -D CMAKE_BUILD_TYPE=Release -D VCPKG_TARGET_TRIPLET=${FCONFIG_VCPKG_TRIPLET} -D FCONFIG_BUILD_SHARED_LIBS=${FCONFIG_TEST_BUILD_SHARED} -A x64)
+	execute_process(COMMAND ${FCONFIG_CMAKE_INSTALL_CONFIGURE_COMMAND} RESULT_VARIABLE FCONFIG_CMAKE_INSTALL_CONFIGURE_RESULT)
 
-	# 3. install
-	set(FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND
-		${CMAKE_COMMAND}
-		--build ${FCONFIG_BUILD_DIR_FOR_INSTALL}
-		--config ${FCONFIG_CTEST_CONFIGURATION}
-		--target install
-	)
-	string(JOIN " " FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND_STR ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND})
-	message("Installing future-config using: ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND_STR}")
-	execute_process(COMMAND ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND} COMMAND_ERROR_IS_FATAL ANY)
+	if(FCONFIG_CMAKE_INSTALL_CONFIGURE_RESULT EQUAL 0)
+		# 3. install
+		set(FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND
+			${CMAKE_COMMAND}
+			--build ${FCONFIG_BUILD_DIR_FOR_INSTALL}
+			--config ${FCONFIG_CTEST_CONFIGURATION}
+			--target install
+		)
+		string(JOIN " " FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND_STR ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND})
+		message("Installing future-config using: ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND_STR}")
+		execute_process(COMMAND ${FCONFIG_CMAKE_INSTALL_INSTALL_COMMAND} RESULT_VARIABLE FCONFIG_INSTALL_RESULT)
+	endif()
 endif()
 
-message("Deleting the generated configuration files from previous tests")
-file(REMOVE_RECURSE "${CTEST_SOURCE_DIRECTORY}/src/config")
+if(FCONFIG_INSTALL_RESULT EQUAL 0)
+	message("Deleting the generated configuration files from previous tests")
+	file(REMOVE_RECURSE "${CTEST_SOURCE_DIRECTORY}/src/config")
 
-message("Starting CDash test configuration")
-ctest_start(Experimental)
+	message("Configuring test build")
+	ctest_configure()
 
-message("Configuring test build")
-ctest_configure()
+	message("Building")
+	ctest_build()
 
-message("Building")
-ctest_build()
-
-message("Running tests")
-ctest_test()
+	message("Running tests")
+	ctest_test()
+endif()
 
 message("Submitting results")
 ctest_submit()
