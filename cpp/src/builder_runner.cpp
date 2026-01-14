@@ -57,12 +57,11 @@ int main(int argc, char* argv[]) {
 		);
 		cmd.add(source_dir_path_arg);
 
-		TCLAP::ValueArg<std::string> main_config_path_arg(
+		TCLAP::MultiArg<std::string> main_config_path_arg(
 			"m",
 			"main",
-			"Path to main configuration file",
+			"Path to main configuration file (can be specified multiple times)",
 			false,
-			"../config.yaml",
 			"string"
 		);
 		cmd.add(main_config_path_arg);
@@ -85,8 +84,15 @@ int main(int argc, char* argv[]) {
 			dependency_config_definitions_arg.getValue()
 		);
 
-		// add main config definition
-		config_definitions.emplace_back(std::make_unique<fc::Config_definition>(main_config_path_arg.getValue()));
+		// add main config definitions (one for each file)
+		std::vector<std::string> main_config_paths = main_config_path_arg.getValue();
+		if(main_config_paths.empty()) {
+			// if no main config files specified, use default
+			main_config_paths.push_back("../config.yaml");
+		}
+		for(const auto& main_config_path: main_config_paths) {
+			config_definitions.emplace_back(std::make_unique<fc::Config_definition>(main_config_path));
+		}
 
 		generate_config(main_config_name, source_dir, config_definitions);
 

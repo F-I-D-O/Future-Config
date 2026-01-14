@@ -15,9 +15,37 @@
 namespace fc {    
 
 template<class C>
-concept Config_class = requires(C c, const Config_object& config) {
+concept Config_class = requires(const Config_object& config) {
 	// requires a constructor that takes a Config_object
 	C(config);
+};
+
+template <std::size_t N>
+struct string_literal {
+	char value[N];
+
+	constexpr string_literal(const char (&str)[N]) {
+		for (std::size_t i = 0; i < N; ++i)
+			value[i] = str[i];
+	}
+
+	constexpr operator const char*() const { return value; }
+};
+
+template <class T>
+concept Config_mapping_contract =
+	// requires
+	// {
+		// { T::key() } -> std::is_same_as<const char*>; // adjust if your `key` type differs
+		std::same_as<decltype(T::key()), const char*>
+	// }
+	&& Config_class<typename T::config_class>;
+
+template<string_literal K, Config_class C>
+struct Config_mapping {
+	static constexpr string_literal key = K;
+
+	using config_class = C;
 };
 
 /**
@@ -35,6 +63,18 @@ C load(std::vector<std::unique_ptr<Config_definition_base>>& config_definitions)
 	auto config_object = load_config(config_definitions);
 
 	return C(config_object);
+}
+
+template<class... M>
+requires(Config_mapping_contract<M> && ...)
+auto load(std::vector<std::unique_ptr<Config_definition_base>>& config_definitions) {
+
+	// config loading
+	auto config_object = load_config(config_definitions);
+
+	return std::tuple<typename M::config_class...>{
+		(M::config_class(config_object[M::key]),...)
+	};
 }
 
 /**

@@ -18,8 +18,8 @@ function(run_fconfig_builder)
 		PARSE_ARGV 0
 		RUN_FCONFIG_BUILDER
 		""
-		"MAIN_CONFIG_PATH;ROOT_CONFIG_CLASS_NAME;SOURCE_DIR"
-		""
+		"ROOT_CONFIG_CLASS_NAME;SOURCE_DIR"
+		"MAIN_CONFIG_PATH"
 	)
 
 	# by default, we look for the main config file in the root/data directory
@@ -78,11 +78,15 @@ function(run_fconfig_builder)
 #	endif()
 #	set(FCONFIG_BUILDER_EXECUTABLE "${FCONFIG_BUILDER_DIR}/fconfig_builder")
 
+	# Build arguments list, adding --main for each config path
 	set(FCONFIG_BUILDER_ARGS
-		--main "${RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH}"
 		--name ${RUN_FCONFIG_BUILDER_ROOT_CONFIG_CLASS_NAME}
 		--source_dir "${RUN_FCONFIG_BUILDER_SOURCE_DIR}"
 	)
+	# Add --main argument for each main config path (supports both single value and list)
+	foreach(MAIN_CONFIG_PATH_ITEM IN LISTS RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH)
+		list(APPEND FCONFIG_BUILDER_ARGS --main "${MAIN_CONFIG_PATH_ITEM}")
+	endforeach()
 	# change directory and run the fconfig_builder
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E
