@@ -111,7 +111,7 @@ function(copy_master_config)
 		PARSE_ARGV 0
 		COPY_FCONFIG_MASTER_CONFIG
 		""
-		"CONFIG_PATH;CONFIG_BINARY_PATH"
+		"CONFIG_PATH;CONFIG_INSTALL_PATH"
 		"TARGET_NAMES"
 	)
 
@@ -124,9 +124,10 @@ function(copy_master_config)
 		get_default_master_config_path(COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH)
 	endif()
 
-	# by default, we copy the config file to the <target output directory>/data/config.yaml
-	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH)
-		set(COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH "data/config.yaml")
+	# by default, we copy the config file to the <target output directory>/data/<source_config_file_name>
+	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_CONFIG_INSTALL_PATH)
+		get_filename_component(SOURCE_CONFIG_FILE_NAME "${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH}" NAME)
+		set(COPY_FCONFIG_MASTER_CONFIG_CONFIG_INSTALL_PATH "data/${SOURCE_CONFIG_FILE_NAME}")
 	endif()
 
 	foreach(TARGET_NAME IN LISTS COPY_FCONFIG_MASTER_CONFIG_TARGET_NAMES)
