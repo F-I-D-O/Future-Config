@@ -87,7 +87,9 @@ function(run_fconfig_builder)
 	foreach(MAIN_CONFIG_PATH_ITEM IN LISTS RUN_FCONFIG_BUILDER_MAIN_CONFIG_PATH)
 		list(APPEND FCONFIG_BUILDER_ARGS --main "${MAIN_CONFIG_PATH_ITEM}")
 	endforeach()
+
 	# change directory and run the fconfig_builder
+	message(STATUS "Running fconfig_builder with arguments: ${FCONFIG_BUILDER_ARGS}")
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E
 		chdir ${FCONFIG_BUILDER_DIR}
@@ -138,8 +140,8 @@ function(copy_master_config)
 		add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy_if_different
 			${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH}
-			"$<TARGET_FILE_DIR:${TARGET_NAME}>/${COPY_FCONFIG_MASTER_CONFIG_CONFIG_BINARY_PATH}"
-			COMMENT "Copying ${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH} to target output directory"
+			"$<TARGET_FILE_DIR:${TARGET_NAME}>/${COPY_FCONFIG_MASTER_CONFIG_CONFIG_INSTALL_PATH}"
+			COMMENT "Copying ${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATH} to $<TARGET_FILE_DIR:${TARGET_NAME}>/${COPY_FCONFIG_MASTER_CONFIG_CONFIG_INSTALL_PATH}"
 		)
 	endforeach()
 

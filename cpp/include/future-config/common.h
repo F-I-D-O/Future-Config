@@ -74,7 +74,7 @@ struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 
 	Config_definition(Config_type type, fs::path yaml_file_path_par);
 
-	explicit Config_definition(fs::path yaml_file_path):
+	Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
 		{}
 
