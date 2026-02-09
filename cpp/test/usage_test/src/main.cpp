@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
   	// first argument is the path to the local configuration file
     fs::path local_config_path = argv[1];
 
-	auto config = fc::load<Future_config_usage_test_config>(local_config_path);
+	auto config = fc::load<Future_config_usage_test_config>({.local_config_path = local_config_path});
 
 	std::cout << config.test_par << std::endl;
 }

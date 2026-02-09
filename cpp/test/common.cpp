@@ -57,4 +57,36 @@ void compare_config_objects(const Config_object& expected, const Config_object& 
 
 }
 
+CommandResult run_command(const std::string& command) {
+#ifdef _WIN32
+	const char* popen_cmd = "_popen";
+	FILE* pipe = _popen((command + " 2>&1").c_str(), "r");
+#else
+	FILE* pipe = popen((command + " 2>&1").c_str(), "r");
+#endif
+
+	if (!pipe) {
+		throw std::runtime_error("popen() failed");
+	}
+
+	std::array<char, 256> buffer{};
+	std::string output;
+
+	while (fgets(buffer.data(), buffer.size(), pipe)) {
+		output += buffer.data();
+	}
+
+#ifdef _WIN32
+	int rc = _pclose(pipe);
+	int exit_code = rc;  // already the exit code
+#else
+	int rc = pclose(pipe);
+	int exit_code = -1;
+	if (WIFEXITED(rc)) {
+		exit_code = WEXITSTATUS(rc);
+	}
+#endif
+
+	return {exit_code, output};
+}
 } // namespace fc

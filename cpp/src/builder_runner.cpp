@@ -32,7 +32,21 @@ void generate_config(
 	fc::Builder(config_object, output_dir, root_config_object_name, config_definitions).build_config();
 }
 
-
+/**
+ * This executable is used to generate the configuration files for the project. It is installed, either with vcpkg
+ * or in system-wide directories.
+ * 
+ * As the builder tool is typically used from some unknown installation directory, no relative paths should be used 
+ * in this executable. Absoulte paths are welcome, as the config generation is a one-time operation executed during
+ * the build configuration phase, so no portability is required.
+ * 
+ * The command line arguments are:
+ * -n, --name: Name of the main configuration source file and class name. It should represent the name of the
+ *     project it configures.
+ * -s, --source_dir: Path to main project source directory, where the config folder should be generated.
+ * -m, --main: Full path to main configuration file. It can be specified multiple times, this can be used in plugins.
+ * -d, --dependency_config_definitions: Specification of configuration files from dependencies. (experimental, untested)
+ **/ 
 int main(int argc, char* argv[]) {
 	try {
 		TCLAP::CmdLine cmd("Future Config configuration system", ' ', "0.1");
@@ -61,7 +75,7 @@ int main(int argc, char* argv[]) {
 			"m",
 			"main",
 			"Path to main configuration file (can be specified multiple times)",
-			false,
+			true,
 			"string"
 		);
 		cmd.add(main_config_path_arg);
@@ -86,10 +100,6 @@ int main(int argc, char* argv[]) {
 
 		// add main config definitions (one for each file)
 		std::vector<std::string> main_config_paths = main_config_path_arg.getValue();
-		if(main_config_paths.empty()) {
-			// if no main config files specified, use default
-			main_config_paths.push_back("../config.yaml");
-		}
 		for(const auto& main_config_path: main_config_paths) {
 			config_definitions.emplace_back(std::make_unique<fc::Config_definition>(main_config_path));
 		}

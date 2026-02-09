@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.31)
 
 project(future-config-usage-test)
 
@@ -31,16 +31,12 @@ if(CMAKE_GENERATOR MATCHES "Visual Studio.*" AND (FCONFIG_TEST_BUILD_SHARED OR V
 	)
 endif()
 
-run_fconfig_builder()
-
-# move the default config file to the build directory
-add_custom_command(
-	TARGET usage_test_executable
-	POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/data/config.yaml $<TARGET_FILE_DIR:usage_test_executable>/data/config.yaml
+setup_fconfig(
+	MAIN_CONFIG_PATHS ${CMAKE_SOURCE_DIR}/data/config.yaml
+	TARGET_NAMES usage_test_executable
 )
 
-# move the "custom" config file to the build directory
+# move the "custom" config file to the build directory (used as argv[1])
 add_custom_command(
 	TARGET usage_test_executable
 	POST_BUILD

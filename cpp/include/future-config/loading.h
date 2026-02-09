@@ -15,11 +15,6 @@ template<typename I, typename E>concept Input_pointer_range =
 	std::ranges::input_range<I> &&
 	std::convertible_to<decltype(*std::declval<std::ranges::range_value_t<I>>()), E&>;
 
-static_assert(Input_pointer_range<std::vector<std::unique_ptr<Config_definition_base>>, Config_definition_base>);
-static_assert(Input_pointer_range<std::vector<std::unique_ptr<Config_definition>>, Config_definition>);
-static_assert(Input_pointer_range<std::vector<std::unique_ptr<Config_definition>>, Config_definition_base>);
-
-
 Config_object FUTURE_CONFIG_EXPORT parse_config(const Config_definition& config_definition);
 
 Config_object FUTURE_CONFIG_EXPORT merge_configs(Config_object& result_config, Config_object& new_config);

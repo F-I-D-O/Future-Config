@@ -17,11 +17,5 @@ namespace fs = std::filesystem;
 
 
 //Config_object parent_config: Tuple[C, str]
-
-
-
-
-
-        
 }
     

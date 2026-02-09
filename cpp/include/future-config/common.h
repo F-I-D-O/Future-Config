@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -64,7 +65,10 @@ struct FUTURE_CONFIG_EXPORT Config_definition_base {
 	}
 
 	virtual ~Config_definition_base() = default;
+
+	virtual std::unique_ptr<Config_definition_base> clone() const = 0 ;
 };
+
 
 struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 
@@ -78,13 +82,11 @@ struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
 		{}
 
-	Config_definition(): Config_definition(Config_type::MAIN, get_resource_path("config.yaml")) {}
-
 	~Config_definition() override = default;
 
-protected:
-	Config_definition(const Config_definition&) = default;
-	Config_definition(Config_definition&&) = default;
+	virtual std::unique_ptr<Config_definition_base> clone() const override {
+		return std::make_unique<Config_definition>(*this);
+	}
 };
 
 struct Dependency_config_definition: public Config_definition {
@@ -95,6 +97,10 @@ struct Dependency_config_definition: public Config_definition {
 		Config_definition(Config_type::DEPENDENCY, std::move(yaml_file_path)),
 		key_in_main_config(std::move(key_in_main_config)),
 		include_path(std::move(include_path)) {}
+
+	std::unique_ptr<Config_definition_base> clone() const override {
+		return std::make_unique<Dependency_config_definition>(*this);
+	}
 };
 
 struct FUTURE_CONFIG_EXPORT Command_line_config_definition: public Config_definition_base {
@@ -103,16 +109,44 @@ struct FUTURE_CONFIG_EXPORT Command_line_config_definition: public Config_defini
 	const char** argv;
 
 
-
 	Command_line_config_definition(int argc, const char** argv):
 		Config_definition_base(Config_type::COMMAND_LINE), argc(argc), argv(argv) {}
 
 
 	~Command_line_config_definition() override = default;
 
-protected:
-	Command_line_config_definition(const Command_line_config_definition&) = default;
-	Command_line_config_definition(Command_line_config_definition&&) = default;
+	std::unique_ptr<Config_definition_base> clone() const override {
+		return std::make_unique<Command_line_config_definition>(*this);
+	}
+};
+
+
+struct Config_definitions {
+	std::vector<std::unique_ptr<Config_definition_base>> config_definitions;
+
+	Config_definitions() = default;
+
+	Config_definitions(const Config_definitions& other) {
+		config_definitions.reserve(other.config_definitions.size());
+		for (const auto& config_definition : other.config_definitions) {
+			config_definitions.emplace_back(config_definition->clone());
+		}
+	}
+
+	Config_definitions& operator=(const Config_definitions& other) {
+		if (this == &other) return *this;
+		Config_definitions tmp(other);      // copy-then-swap for strong safety
+		config_definitions.swap(tmp.config_definitions);
+		return *this;
+	}
+
+
+	void add(std::unique_ptr<Config_definition_base>&& config_definition) {
+		config_definitions.emplace_back(std::move(config_definition));
+	};
+
+	Config_definitions(Config_definitions&&) noexcept = default;
+	Config_definitions& operator=(Config_definitions&&) noexcept = default;
 };
 
 

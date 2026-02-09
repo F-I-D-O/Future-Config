@@ -1,0 +1,4 @@
+#pragma once
+
+constexpr const char* config_paths[] = {"@FCONFIG_MASTER_CONFIG_PATHS_JOINED@"};
+constexpr size_t config_paths_length = sizeof(config_paths)/sizeof(config_paths[0]);

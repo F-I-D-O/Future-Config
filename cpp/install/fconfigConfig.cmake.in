@@ -9,4 +9,4 @@ find_dependency(spdlog)
 include ("${CMAKE_CURRENT_LIST_DIR}/future-configTargets.cmake")
 
 # include future config builder runner cmake function
-include("${CMAKE_CURRENT_LIST_DIR}/builderRunner.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/setupFunctions.cmake")

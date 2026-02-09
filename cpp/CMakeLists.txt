@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.31)
 
 option(FCONFIG_BUILD_SHARED_LIBS "If ON, shared libraries will be used during installation. Otherwise, static libraries are build" OFF)
 option(FCONFIG_ENABLE_TESTS "Enables testing and builds tests" ON)
@@ -54,7 +54,6 @@ set(future_config_lib_files
 	src/Command_line_parser.cpp
 	src/common.cpp
 	src/Config_object.cpp
-	src/configuration.cpp
 	src/loading.cpp
 	src/Merger.cpp
 	src/Parser.cpp
@@ -68,7 +67,8 @@ if (NOT DEFINED CMAKE_DEBUG_POSTFIX)
 	set(CMAKE_DEBUG_POSTFIX "d")
 endif()
 
-add_library(future-config SHARED ${future_config_lib_files})
+add_library(future-config SHARED ${future_config_lib_files}
+	include/future-config/configuration.h)
 #generate_export_header(future-config)
 set_target_properties(
 	future-config
@@ -246,10 +246,12 @@ install(FILES
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 )
 
-# Install the fcconfig_builder run script
-set(FCONFIG_BUILDER_RUN_SCRIPT_NAME "builderRunner.cmake")
+# Install the fcconfig_builder run script and config paths template
+set(FCONFIG_BUILDER_RUN_SCRIPT_NAME "setupFunctions.cmake")
 install(
-	FILES ${CMAKE_CURRENT_SOURCE_DIR}/install/${FCONFIG_BUILDER_RUN_SCRIPT_NAME}
+	FILES
+		${CMAKE_CURRENT_SOURCE_DIR}/install/${FCONFIG_BUILDER_RUN_SCRIPT_NAME}
+		${CMAKE_CURRENT_SOURCE_DIR}/install/config_paths_template.h.in
 	DESTINATION ${FCONFIG_CMAKE_FILES_INSTALL_DIR}
 	${FCONFIG_BUILDER_TOOL_AND_HEADERS_INSTALL_CONFIGURATIONS}
 )
@@ -261,5 +263,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC" AND FCONFIG_BUILDER_COPY_LIBRARY_DEPEND
 endif()
 
 if(FCONFIG_ENABLE_TESTS)
+	enable_testing()
 	add_subdirectory(test)
 endif()
