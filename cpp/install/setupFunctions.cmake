@@ -160,6 +160,45 @@ function(generate_master_config_headers)
 	)
 endfunction()
 
+#[===============================================================================================================[.rst:
+setup_fconfig
+-------------
+Main setup function. For most use cases, this is the only function you need to call in your CMakeLists.txt
+
+Synopsis
+^^^^^^^^
+
+.. code-block:: cmake
+
+	setup_fconfig(
+		TARGET_NAMES <target1> [<target2> ...]
+		[SOURCE_DIR <path>]
+		[ROOT_CONFIG_CLASS_NAME <name>]
+		[MAIN_CONFIG_PATHS <path1> [<path2> ...]]
+		[FCONFIG_BUILDER_EXECUTABLE <path>]
+	)
+
+Arguments
+^^^^^^^^^
+
+``TARGET_NAMES <target1> [<target2> ...]``
+  The list of targets for which the master config file should be applied
+
+``SOURCE_DIR <path>`` 
+  Root source directory. By default, it is set to ``<CMakeLists.txt directory>/src``. The generated config classes will
+  be placed in `SOURCE_DIR/config`. This directory must be in include directories of the targets using future-config.
+
+``ROOT_CONFIG_CLASS_NAME <name>``
+  The name of the root config class. By default, it is set to `<project name>_config`.
+
+``MAIN_CONFIG_PATHS <path1>[ <path2> ...]``
+  The paths to the main config files. If omitted, a single main config file is considered:
+  ``<CMakeLists.txt directory>/data/config.yaml``.
+
+``FCONFIG_BUILDER_EXECUTABLE <path>``
+  The path to the fconfig_builder executable. By default, a search is performed to find the executable.
+
+#]===============================================================================================================]
 function(setup_fconfig)
 	cmake_parse_arguments(
 		PARSE_ARGV 0
