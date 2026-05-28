@@ -1,10 +1,10 @@
-For using the Future Config in C++, you need to install the fconfig package first. Note that the package has dependencies, namely:
+For using the Future Config in C++, you need to install the future-config package first. Note that the package has dependencies, namely:
 - [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 - [inja](https://github.com/pantor/inja)
 - [spdlog](https://github.com/gabime/spdlog)
 
-You can install the fconfig package:
-- from vcpkg: `vcpkg install fconfig`, or
+You can install the future-config package:
+- from vcpkg: `vcpkg install future-config`, or
 - manually: 
     1. install the dependencies
     1. Clone the repository
@@ -14,17 +14,18 @@ You can install the fconfig package:
 
 To use the Future Config in your CMake project, you need to add the following lines to your `CMakeLists.txt`:
 ```cmake
-find_package(fconfig REQUIRED) # Find the fconfig package
+find_package(future-config CONFIG REQUIRED) # Find the future-config package
 
-target_link_libraries(<your target> PRIVATE future-config) # Link the library
+target_link_libraries(<your target> PRIVATE future-config::future-config) # Link the library
 
-run_fconfig_builder( # Run the fconfig builder tool that generates the config classes
-	<optional arguments here>
+setup_fconfig( # Generate config classes and copy master config files for the target
+	TARGET_NAMES <your target>
 )
 
 ```
-The `run_fconfig_builder` function has the following arguments:
-- `MAIN_CONFIG_FILE`: the path to the main config file for the project. By default, it is `<CMakelists.txt directory>/config.yaml`.
+The `setup_fconfig` function has the following arguments:
+- `TARGET_NAMES`: the targets that need the generated configuration and copied master config files.
+- `MAIN_CONFIG_PATHS`: the paths to the main config files for the project. By default, it is `<CMakelists.txt directory>/data/config.yaml`.
 - `ROOT_CONFIG_CLASS_NAME`: the name of the root config class. By default, it is the name of the CMake project.
 - `SOURCE_DIR`: the directory where the generated config classes will be placed. By default, it is `<CMakeLists.txt directory>/src`.
 

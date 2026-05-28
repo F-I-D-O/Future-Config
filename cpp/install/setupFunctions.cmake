@@ -233,11 +233,11 @@ function(setup_fconfig)
 		TARGET_NAMES ${SETUP_FCONFIG_TARGET_NAMES}
 	)
 
-	# Compute MASTER_CONFIG_PATHS for the header (same logic as copy_master_config: data/<filename>)
+	# Compute MASTER_CONFIG_PATHS for the header relative to the runtime data resource root.
 	set(_MASTER_CONFIG_PATHS_FOR_HEADER "")
 	foreach(_CONFIG_PATH IN LISTS SETUP_FCONFIG_MAIN_CONFIG_PATHS)
 		get_filename_component(_CONFIG_FILE_NAME "${_CONFIG_PATH}" NAME)
-		list(APPEND _MASTER_CONFIG_PATHS_FOR_HEADER "data/${_CONFIG_FILE_NAME}")
+		list(APPEND _MASTER_CONFIG_PATHS_FOR_HEADER "${_CONFIG_FILE_NAME}")
 	endforeach()
 	generate_master_config_headers(
 		SOURCE_DIR "${SETUP_FCONFIG_SOURCE_DIR}"

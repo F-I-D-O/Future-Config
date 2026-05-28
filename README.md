@@ -74,9 +74,9 @@ The C++ implementation of Future Config requires C++20 support. The library is a
 	target_link_libraries(your_target PRIVATE future-config::future-config)
 
 	# Run the builder tool that generates the config classes
-	setup_fconfig(<target_names>)
+	setup_fconfig(TARGET_NAMES <target_names>)
 	```
-	- pass `MAIN_CONFIG_PATHS <paths_to_config_file` to `setup_fconfig` if your master config file is not in the default location
+	- pass `MAIN_CONFIG_PATHS <paths_to_config_file>` to `setup_fconfig` if your master config file is not in the default location
 1. Configure your project using cmake
 1. Now, your config classes are generated and ready to use in your project. Basic usage:
 	```cpp

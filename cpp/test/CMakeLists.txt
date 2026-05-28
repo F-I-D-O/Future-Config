@@ -44,7 +44,6 @@ add_executable(test_run
 	${FCONFIG_SRC_DIR}/Resolver.cpp
 	${FCONFIG_SRC_DIR}/resources.cpp
 	${FCONFIG_SRC_DIR}/variable_processing.cpp
-	builder_runner_tests.cpp
 	bulider_tests.cpp
 	common.cpp
 	merger_test.cpp
@@ -55,6 +54,9 @@ add_executable(test_run
 	load_options_copy_test.cpp
 	configuration_tests.cpp
 )
+
+# disable module scanning for the test target to avoid translation unit name conflict with MSBuild.
+set_property(TARGET test_run PROPERTY CXX_SCAN_FOR_MODULES OFF)
 
 add_dependencies(test_run fconfig_builder)
 
@@ -118,7 +120,7 @@ add_test(
 		-D SETUP_FUNCTIONS_PATH=${PROJECT_SOURCE_DIR}/install/setupFunctions.cmake
 		-D TEST_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/GenerateMasterConfigHeadersTest_one
 		-D EXPECTED_CONFIG_PATHS_PATH=${CMAKE_CURRENT_SOURCE_DIR}/cmake/expected_config_paths.h
-		-D MASTER_CONFIG_PATHS=data/config.yaml
+		-D MASTER_CONFIG_PATHS=config.yaml
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunGenerateMasterConfigHeadersTest.cmake
 )
 
@@ -130,9 +132,30 @@ add_test(
 		-D SETUP_FUNCTIONS_PATH=${PROJECT_SOURCE_DIR}/install/setupFunctions.cmake
 		-D TEST_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/GenerateMasterConfigHeadersTest_two
 		-D EXPECTED_CONFIG_PATHS_PATH=${CMAKE_CURRENT_SOURCE_DIR}/cmake/expected_config_paths_two.h
-		-D "MASTER_CONFIG_PATHS=data/config.yaml;data/other.yaml"
+		-D "MASTER_CONFIG_PATHS=config.yaml;other.yaml"
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunGenerateMasterConfigHeadersTest.cmake
 )
+
+# Test setup_fconfig from setupFunctions.cmake using a small CMake project
+add_test(
+	NAME setup_fconfig_success
+	COMMAND
+		${CMAKE_COMMAND}
+		-D SETUP_FCONFIG_TEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/cmake/setup_fconfig_project
+		-D SETUP_FCONFIG_TEST_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/SetupFconfigTest
+		-D SETUP_FUNCTIONS_PATH=${PROJECT_SOURCE_DIR}/install/setupFunctions.cmake
+		-D FCONFIG_BUILDER_EXECUTABLE=$<TARGET_FILE:fconfig_builder>
+		-D EXPECTED_CONFIG_PATH=${CMAKE_CURRENT_SOURCE_DIR}/cmake/expected_usage_test_config.h
+		-D EXPECTED_CONFIG_PATHS_ONE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/cmake/expected_config_paths.h
+		-D EXPECTED_CONFIG_PATHS_TWO_PATH=${CMAKE_CURRENT_SOURCE_DIR}/cmake/expected_config_paths_two.h
+		-D "TEST_GENERATOR=${CMAKE_GENERATOR}"
+		-D "TEST_GENERATOR_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+		-D "TEST_GENERATOR_TOOLSET=${CMAKE_GENERATOR_TOOLSET}"
+		-D "TEST_CXX_COMPILER=${CMAKE_CXX_COMPILER}"
+		-D TEST_CONFIGURATION=$<CONFIG>
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunSetupFconfigTest.cmake
+)
+set_tests_properties(setup_fconfig_success PROPERTIES REQUIRED_FILES $<TARGET_FILE:fconfig_builder>)
 
 #add_test(
 #	NAME fconfig_builder_missing_config_file

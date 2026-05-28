@@ -10,6 +10,7 @@
 #include "future-config/Config_object.h"
 #include "future-config/common.h"
 #include "future-config/loading.h"
+#include "future-config/resources.h"
 
 // generated config paths header
 #include "config/config_paths.h"
@@ -54,7 +55,7 @@ struct Config_mapping {
 inline auto get_default_config_definitions() {
 	Config_definitions config_definitions;
 	for(const auto& config_path: config_paths) {
-		config_definitions.add(std::make_unique<Config_definition>(config_path));
+		config_definitions.add(std::make_unique<Config_definition>(get_resource_path(config_path)));
 	}
 	return config_definitions;
 };
