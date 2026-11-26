@@ -31,3 +31,4 @@ temp/
 /gradle-plugin/.nb-gradle/
 .gradle
 python/dist/
+CMakeUserPresets.json

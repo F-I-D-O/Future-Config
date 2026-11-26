@@ -2,7 +2,10 @@
 # Testing
 There are many types of tests in the C++ implementation of Future Config. All tests are located in the `test` directory.
 
-There are unit tests that can be execuded by running the `test_run` target
+All **unit tests** can be executed by running ctest. The unit tests include:
+
+- C++ tests: these can be also executed by running the `test_run` target
+- CMake tests
 
 Additionally, there are tests that can executed by PowerShell scripts in the `test` directory. Note that these scripts require a preconfigured Windows and WSL environment to run the tests on all platforms.
 
