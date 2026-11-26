@@ -63,7 +63,9 @@ add_dependencies(test_run fconfig_builder)
 
 target_compile_definitions(test_run PRIVATE FUTURE_CONFIG_STATIC_DEFINE) # static flag for the export header
 
-target_include_directories(test_run PRIVATE ${FCONFIG_SRC_DIR} ${PROJECT_SOURCE_DIR}/include)
+# the test directory itself has to be in the include directories, so that the config/config_paths.h included from
+# configuration.h is found by all compilers (only MSVC searches the directories of the including files).
+target_include_directories(test_run PRIVATE ${FCONFIG_SRC_DIR} ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(test_run PRIVATE ${YAML_CPP_TARGET})
 target_link_libraries(test_run PRIVATE pantor::inja)
