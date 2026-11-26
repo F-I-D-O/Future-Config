@@ -113,6 +113,7 @@ Config_object load_config(const I& config_definitions) {
 		else{
 			result_config = config;
 		}
+		++counter;
 	}
 
 	process_variables(result_config.value());
