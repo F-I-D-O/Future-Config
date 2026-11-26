@@ -82,7 +82,11 @@ int main(int argc, char* argv[]) {
 
 		TCLAP::UnlabeledMultiArg<std::string> dependency_config_definitions_arg(
 			"dependency_config_definitions",
-			"Dependency config definitions specified as tuples: <config path>,<key in main config>,<include path>",
+			"Dependency config definitions specified as tuples: <config path>,<key in main config>,<include path>. "
+			"The dependency config is placed into the object determined by the key in main config. For nested objects, "
+			"separate the keys by dots. The include path is the path to the generated config header of the dependency, "
+			"as used in the include directive. The name of the dependency config class is determined from the name of "
+			"this header.",
 			false,
 			"string"
 		);

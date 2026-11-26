@@ -8,6 +8,7 @@
 
 #include "Builder.h"
 #include "future-config/format.h"
+#include "future-config/loading.h"
 #include "future-config/resources.h"
 
 namespace fc {
@@ -130,6 +131,66 @@ TEST(Builder, test_parent_config) {
 		dependency_config_map{{"parent_config", {"dependency.h", "Parent_config"}}};
 
 	check_generated_config(config, TEST_DATA_DIR / "dependency_test.h", dependency_config_map);
+}
+
+TEST(Builder, test_nested_parent_config) {
+	Config_object config = YAML::Load(
+		R"({libraries:
+					{
+						parent_config: {var: test_var}
+					}
+				}
+		)"
+	);
+
+	// the dependency is bound to the nested object
+	std::unordered_map<std::string, std::tuple<std::string, std::string>>
+		dependency_config_map{{"libraries.parent_config", {"dependency.h", "Parent_config"}}};
+
+	check_generated_config(config, TEST_DATA_DIR / "dependency_nested_test.h", dependency_config_map);
+}
+
+TEST(Builder, test_parent_config_key_outside_bind_path) {
+	Config_object config = YAML::Load(
+		R"({parent_config:
+					{
+						var: test_var
+					}
+				}
+		)"
+	);
+
+	// the dependency is bound to a different object than the root parent_config, which is therefore a regular object
+	std::unordered_map<std::string, std::tuple<std::string, std::string>>
+		dependency_config_map{{"libraries.parent_config", {"dependency.h", "Parent_config"}}};
+
+	check_generated_config(config, TEST_DATA_DIR / "dependency_outside_bind_path_test.h", dependency_config_map);
+}
+
+TEST(Builder, test_parent_config_from_definitions) {
+	// dependency config definition in the format used by the builder tool
+	auto config_definitions = parse_dependency_config_definitions({format::format(
+		"{},libraries.parent_config,parent-lib/config/parent-lib_config.h",
+		get_resource_path("test/binding/dependency.yaml").string()
+	)});
+	const auto config = load_config_for_builder(config_definitions);
+
+	fs::path output_dir = fs::temp_directory_path() / "test_output";
+	std::string root_object_name = "dependency_from_definitions_test_config";
+	Builder builder(config, output_dir, root_object_name, config_definitions);
+	builder.build_config();
+
+	fs::path actual_file = output_dir / format::format("{}.h", root_object_name);
+	ASSERT_TRUE(fs::exists(actual_file));
+
+	// the dependency class name is determined from the name of the dependency config header
+	std::ifstream expected_file_stream(TEST_DATA_DIR / "dependency_from_definitions_test.h");
+	std::ifstream actual_file_stream(actual_file);
+
+	std::string expected_content(std::istreambuf_iterator<char>{expected_file_stream}, {});
+	std::string actual_content(std::istreambuf_iterator<char>{actual_file_stream}, {});
+
+	compare_generated_config_content(expected_content, actual_content);
 }
 
 TEST(Builder, test_root_object_name_sanitize) {

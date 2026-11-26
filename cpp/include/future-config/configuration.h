@@ -66,17 +66,25 @@ inline auto get_default_config_definitions() {
  *		config definitions will be used.
  * - local_config_path: path to the local configuration file. If provided, a local config definition will be added to the
  *		config definitions vector right after the provided config definitions.
+ * - local_config_bind_path: path to the object in the configuration hierarchy the local configuration file is bound to,
+ *		with keys separated by dots (e.g., `server.network`). The content of the file is placed into that object, so the
+ *		file does not have to mirror the whole hierarchy. By default, the file is bound to the root object.
  * - command_line_arguments: number of command line arguments and their values. If provided, a command line config
  *		definition will be added to the config definitions vector right after the local config definition
  * - allowed_command_line_arguments: names (without the leading `--`) of the command line arguments that are not
  *		configuration keys, typically the arguments processed by the application itself. Any other `--argument` that is
  *		not a configuration key raises an exception. The `help` and `version` arguments are always allowed.
+ * - command_line_bind_path: path to the object in the configuration hierarchy the command line arguments are bound to,
+ *		with keys separated by dots. The keys passed as command line arguments are only searched in that object. By
+ *		default, the command line arguments are bound to the root object.
  **/
 struct Load_options {
 	std::optional<Config_definitions> config_definitions{get_default_config_definitions()};
 	std::optional<fs::path> local_config_path;
+	std::string local_config_bind_path;
 	std::optional<std::pair<int, const char**>> command_line_arguments;
 	std::vector<std::string> allowed_command_line_arguments;
+	std::string command_line_bind_path;
 };
 
 
@@ -106,7 +114,11 @@ C load(Load_options options = {}) {
 		}
 
 		// add local config definition
-		config_definitions.add(std::make_unique<Config_definition>(Config_type::LOCAL, local_config_path));
+		config_definitions.add(std::make_unique<Config_definition>(
+			Config_type::LOCAL,
+			local_config_path,
+			options.local_config_bind_path
+		));
 	}
 
 	if(options.command_line_arguments) {
@@ -116,7 +128,8 @@ C load(Load_options options = {}) {
 			config_definitions.add(std::make_unique<Command_line_config_definition>(
 				argc,
 				argv,
-				options.allowed_command_line_arguments
+				options.allowed_command_line_arguments,
+				options.command_line_bind_path
 			));
 		}
 	}

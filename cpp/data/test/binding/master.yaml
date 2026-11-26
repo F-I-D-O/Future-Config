@@ -1,0 +1,9 @@
+name: app
+port: 1
+server:
+  port: 8080
+  network:
+    port: 80
+    timeout: 10
+    secure: false
+    label: default

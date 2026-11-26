@@ -22,9 +22,17 @@ const std::unordered_map<Scalar_type::Value, std::string> Scalar_type::cpp_sourc
 	{BOOL, "bool"}
 };
 
-Config_definition::Config_definition(Config_type type, fs::path yaml_file_path_par):
-	Config_definition_base(type), yaml_file_path(std::move(yaml_file_path_par))
+Config_definition::Config_definition(Config_type type, fs::path yaml_file_path_par, std::string bind_path):
+	Config_definition_base(type, std::move(bind_path)), yaml_file_path(std::move(yaml_file_path_par))
 {
+	if(type == Config_type::MAIN && !this->bind_path.empty()) {
+		throw std::runtime_error(format::format(
+			"Main config files can only be bound to the root object. Config file: {}, bind path: {}",
+			yaml_file_path.string(),
+			this->bind_path
+		));
+	}
+
 	try {
 		check_path(yaml_file_path);
 	} catch(const std::runtime_error& e) {

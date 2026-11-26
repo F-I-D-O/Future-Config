@@ -1,0 +1,3 @@
+# flat local config, meant to be bound to server.network
+timeout: 30
+label: "${name}-local"

@@ -70,9 +70,11 @@ std::string Builder::get_template_data_for_class(
 				std::string child_class_name;
 				bool dependency = false;
 
-				if(dependency_config_map.contains(child_key)) {
+				// dependency configs are identified by the full path of the object they are bound to
+				const auto child_path_string = join(child_path, ".");
+				if(dependency_config_map.contains(child_path_string)) {
 					std::string include_string;
-					std::tie(include_string, child_class_name) = dependency_config_map.at(child_key);
+					std::tie(include_string, child_class_name) = dependency_config_map.at(child_path_string);
 					dependency = true;
 					template_data["includes"].push_back(include_string);
 				}
@@ -190,9 +192,14 @@ std::unordered_map<std::string, std::tuple<std::string, std::string>> Builder::g
 	for(const auto& config_definition: config_definitions) {
 		if(config_definition->type == Config_type::DEPENDENCY) {
 			const auto& dependency_config_definition = dynamic_cast<const Dependency_config_definition&>(*config_definition);
-			dependency_config_map[dependency_config_definition.key_in_main_config] = {
-				dependency_config_definition.include_path.string(),
-				dependency_config_definition.key_in_main_config
+			// The name of the dependency root config class is determined from the name of the dependency config
+			// header, using the same rules as when generating the header: <name>.h contains the class <Name>.
+			const auto dependency_class_name = get_class_name(
+				sanitize_key(dependency_config_definition.include_path.stem().string())
+			);
+			dependency_config_map[dependency_config_definition.bind_path] = {
+				dependency_config_definition.include_path.generic_string(),
+				dependency_class_name
 			};
 		}
 	}

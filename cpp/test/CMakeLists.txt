@@ -33,6 +33,7 @@ message(STATUS "CMAKE_CURRENT_BINARY_DIR : ${CMAKE_CURRENT_BINARY_DIR}")
 
 add_executable(test_run
 	#	EXCLUDE_FROM_ALL
+	${FCONFIG_SRC_DIR}/binding.cpp
 	${FCONFIG_SRC_DIR}/Builder.cpp
 	${FCONFIG_SRC_DIR}/command_line_loading.cpp
 	${FCONFIG_SRC_DIR}/Command_line_parser.cpp
@@ -44,6 +45,7 @@ add_executable(test_run
 	${FCONFIG_SRC_DIR}/Resolver.cpp
 	${FCONFIG_SRC_DIR}/resources.cpp
 	${FCONFIG_SRC_DIR}/variable_processing.cpp
+	binding_test.cpp
 	bulider_tests.cpp
 	command_line_parser_test.cpp
 	common.cpp

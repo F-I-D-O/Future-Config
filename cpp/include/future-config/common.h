@@ -60,8 +60,15 @@ enum class Config_type {
 struct FUTURE_CONFIG_EXPORT Config_definition_base {
 	const Config_type type;
 
-	explicit Config_definition_base(Config_type type):
-		type(type) {
+	/**
+	 * Path to the object in the configuration hierarchy this config source is bound to, with keys separated by dots,
+	 * e.g., `server.network`. The content of the source is placed into that object. An empty path (default) binds the
+	 * source to the root object.
+	 */
+	const std::string bind_path;
+
+	explicit Config_definition_base(Config_type type, std::string bind_path = ""):
+		type(type), bind_path(std::move(bind_path)) {
 	}
 
 	virtual ~Config_definition_base() = default;
@@ -76,7 +83,13 @@ struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 
 
 
-	Config_definition(Config_type type, fs::path yaml_file_path_par);
+	/**
+	 * @param type type of the config
+	 * @param yaml_file_path_par path to the config file
+	 * @param bind_path path to the object in the configuration hierarchy the config file is bound to (root by default).
+	 * Main config files can only be bound to the root.
+	 */
+	Config_definition(Config_type type, fs::path yaml_file_path_par, std::string bind_path = "");
 
 	Config_definition(fs::path yaml_file_path):
 		Config_definition(Config_type::MAIN, std::move(yaml_file_path))
@@ -89,13 +102,18 @@ struct FUTURE_CONFIG_EXPORT Config_definition: public Config_definition_base {
 	}
 };
 
+/**
+ * Definition of a config of a dependency project. The dependency config is bound to the object in the main config
+ * determined by the `key_in_main_config` (available as `bind_path`).
+ *
+ * The `include_path` is the path to the generated config header of the dependency, as used in the include directive.
+ * The name of the dependency root config class is determined from the name of this header.
+ */
 struct Dependency_config_definition: public Config_definition {
-	const std::string key_in_main_config;
 	const fs::path include_path;
 
 	Dependency_config_definition(fs::path yaml_file_path, std::string key_in_main_config, fs::path include_path):
-		Config_definition(Config_type::DEPENDENCY, std::move(yaml_file_path)),
-		key_in_main_config(std::move(key_in_main_config)),
+		Config_definition(Config_type::DEPENDENCY, std::move(yaml_file_path), std::move(key_in_main_config)),
 		include_path(std::move(include_path)) {}
 
 	std::unique_ptr<Config_definition_base> clone() const override {
@@ -116,8 +134,20 @@ struct FUTURE_CONFIG_EXPORT Command_line_config_definition: public Config_defini
 	const std::vector<std::string> allowed_arguments;
 
 
-	Command_line_config_definition(int argc, const char** argv, std::vector<std::string> allowed_arguments = {}):
-		Config_definition_base(Config_type::COMMAND_LINE),
+	/**
+	 * @param argc number of command line arguments
+	 * @param argv command line arguments
+	 * @param allowed_arguments see the `allowed_arguments` member
+	 * @param bind_path path to the object in the configuration hierarchy the command line arguments are bound to (root
+	 * by default). The keys passed as command line arguments are only searched in that object.
+	 */
+	Command_line_config_definition(
+		int argc,
+		const char** argv,
+		std::vector<std::string> allowed_arguments = {},
+		std::string bind_path = ""
+	):
+		Config_definition_base(Config_type::COMMAND_LINE, std::move(bind_path)),
 		argc(argc),
 		argv(argv),
 		allowed_arguments(std::move(allowed_arguments)) {}

@@ -1,0 +1,3 @@
+main_var: 1
+parent_config:
+  extra: main_value

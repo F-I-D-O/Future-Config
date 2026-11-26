@@ -50,6 +50,7 @@ endif()
 find_path(TCLAP_INCLUDE_DIRS NAMES CmdLine.h PATH_SUFFIXES "tclap/" REQUIRED) # used for command line parsing in the builder tool
 
 set(future_config_lib_files
+	src/binding.cpp
 	src/Builder.cpp
 	src/Command_line_parser.cpp
 	src/common.cpp
@@ -83,6 +84,7 @@ set_target_properties(
 )
 
 add_executable(fconfig_builder
+	src/binding.cpp
 	src/Builder.cpp
 	src/common.cpp
 	src/loading.cpp
