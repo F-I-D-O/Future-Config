@@ -77,6 +77,8 @@ inline auto get_default_config_definitions() {
  * - command_line_bind_path: path to the object in the configuration hierarchy the command line arguments are bound to,
  *		with keys separated by dots. The keys passed as command line arguments are only searched in that object. By
  *		default, the command line arguments are bound to the root object.
+ * - config_log_level: level of the config logging (nothing is logged by default). If the level is set in the command
+ *		line arguments (`--fconfig_log <none|sources|values|chain>`), the level from the command line is used instead.
  **/
 struct Load_options {
 	std::optional<Config_definitions> config_definitions{get_default_config_definitions()};
@@ -85,6 +87,7 @@ struct Load_options {
 	std::optional<std::pair<int, const char**>> command_line_arguments;
 	std::vector<std::string> allowed_command_line_arguments;
 	std::string command_line_bind_path;
+	Config_log_level config_log_level = Config_log_level::NONE;
 };
 
 
@@ -135,7 +138,7 @@ C load(Load_options options = {}) {
 	}
 
 	// config loading
-	auto config_object = load_config(config_definitions.config_definitions);
+	auto config_object = load_config(config_definitions.config_definitions, options.config_log_level);
 
 	return C(config_object);
 }

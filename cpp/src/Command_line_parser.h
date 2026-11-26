@@ -19,8 +19,8 @@ public:
 	 * @param argv command line arguments
 	 * @param master_config config object in which the keys are looked up
 	 * @param allowed_arguments names (without the leading `--`) of the arguments that do not have to be present in the
-	 * master config. These arguments are skipped by the parser. The default allowed arguments (`help` and `version`) are
-	 * always skipped.
+	 * master config. These arguments are skipped by the parser. The default allowed arguments (`help`, `version`, and
+	 * `fconfig_log`) are always skipped.
 	 * @throws std::runtime_error if some `--key` argument is neither in the master config nor allowed, if the key is
 	 * present in the master config more than once, or if a switch is used for a non-boolean property.
 	 */

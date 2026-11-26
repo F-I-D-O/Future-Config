@@ -7,3 +7,4 @@ server:
     timeout: 10
     secure: false
     label: default
+tags: [a, b]

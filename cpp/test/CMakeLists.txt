@@ -38,6 +38,7 @@ add_executable(test_run
 	${FCONFIG_SRC_DIR}/command_line_loading.cpp
 	${FCONFIG_SRC_DIR}/Command_line_parser.cpp
 	${FCONFIG_SRC_DIR}/common.cpp
+	${FCONFIG_SRC_DIR}/config_logging.cpp
 	${FCONFIG_SRC_DIR}/Config_object.cpp
 	${FCONFIG_SRC_DIR}/loading.cpp
 	${FCONFIG_SRC_DIR}/Merger.cpp
@@ -49,6 +50,7 @@ add_executable(test_run
 	bulider_tests.cpp
 	command_line_parser_test.cpp
 	common.cpp
+	config_logging_test.cpp
 	merger_test.cpp
 	resolver_tests.cpp
 	config_object_test.cpp

@@ -54,6 +54,7 @@ set(future_config_lib_files
 	src/Builder.cpp
 	src/Command_line_parser.cpp
 	src/common.cpp
+	src/config_logging.cpp
 	src/Config_object.cpp
 	src/loading.cpp
 	src/Merger.cpp

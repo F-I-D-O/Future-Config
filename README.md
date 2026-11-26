@@ -199,6 +199,59 @@ config_definitions.emplace_back(std::make_unique<fc::Config_definition>(
 ```
 
 
+## Config logging
+To find out where the configuration values come from, you can turn on the config logging with the `--fconfig_log <level>` command line argument. The levels are:
+
+- `none`: nothing is logged (default)
+- `sources`: the config sources are logged, in the load order
+- `values`: the config sources, and all config values with the source they come from
+- `chain`: the config sources, and all config values. For each value that was set by more than one source, all these sources are listed, together with the values they provided (overwrite chain).
+
+The sources are numbered in the load order. A source with a higher number has a higher priority, i.e., it overrides the values from the sources with lower numbers. An example of the `chain` level output:
+
+```
+Future Config sources (in load order; a source with a higher number has higher priority and overrides the lower ones):
+[1] main          /app/data/config.yaml
+[2] local         /home/user/network.yaml  -> server.network
+[3] command line                           -> server.network
+Future Config values ([n] = source the value comes from; in the overwrite chains, the highest number wins):
+Configuration
+├── name: app                  [1]
+└── server
+    ├── network
+    │   ├── label: app-local   [2]
+    │   │   ┆╌╌ [1] default
+    │   │   ┆╌╌ [2] ${name}-local
+    │   ├── port: 5            [3]
+    │   │   ┆╌╌ [1] 80
+    │   │   ┆╌╌ [3] 5
+    │   └── timeout: 30        [2]
+    │       ┆╌╌ [1] 10
+    │       ┆╌╌ [2] 30
+    └── port: 8080             [1]
+```
+
+The solid lines show the configuration hierarchy, the dashed lines show the overwrite chain of a value. For the values that contain variables, the value from the source is shown next to the resolved value.
+
+Notes:
+
+- The `--fconfig_log` argument is processed only if the command line arguments are passed to Future Config. It is never reported as an unknown argument.
+- The log is written using the default logger of the [spdlog](https://github.com/gabime/spdlog) library, with the `info` level. Therefore, it is not visible if your application sets a higher log level.
+- The `values` and `chain` levels log **all** configuration values, including passwords and other secrets.
+
+### C++
+The level can be also set in the code. If the `--fconfig_log` argument is present, it has a priority.
+
+```cpp
+auto config = fc::load<Your_config_class>({
+	.command_line_arguments = std::make_pair(argc, argv),
+	.config_log_level = fc::Config_log_level::SOURCES
+});
+```
+
+When loading the config from manually created config definitions, pass the level as the second argument of the `fc::load_config` function.
+
+
 ## Customizing the config loading order
 
 ### C++

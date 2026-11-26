@@ -13,8 +13,9 @@
 // Anonymous namespace for helper functions
 namespace {
 
-// Arguments that are always allowed, even if they are not present in the master config
-const std::vector<std::string> default_allowed_arguments{"help", "version"};
+// Arguments that are always allowed, even if they are not present in the master config.
+// The fconfig_log argument (config log level) is processed by the config loading.
+const std::vector<std::string> default_allowed_arguments{"help", "version", "fconfig_log"};
 
 // Recursive helper to find all paths to a key
 void find_key_recursive(

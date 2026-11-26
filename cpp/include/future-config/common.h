@@ -57,6 +57,21 @@ enum class Config_type {
 	COMMAND_LINE
 };
 
+/**
+ * Level of the config logging:
+ * - NONE: nothing is logged
+ * - SOURCES: the config sources are logged
+ * - VALUES: the config sources and the config values with their origin (source) are logged
+ * - CHAIN: the config sources and the config values are logged. For each value that was set by multiple sources, all
+ *		these sources are listed (overwrite chain).
+ */
+enum class Config_log_level {
+	NONE,
+	SOURCES,
+	VALUES,
+	CHAIN
+};
+
 struct FUTURE_CONFIG_EXPORT Config_definition_base {
 	const Config_type type;
 

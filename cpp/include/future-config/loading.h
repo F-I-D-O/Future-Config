@@ -4,7 +4,9 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
+#include <string>
 
 #include "future-config/future-config_export.h"
 #include "future-config/Config_object.h"
@@ -49,8 +51,91 @@ Config_object FUTURE_CONFIG_EXPORT parse_command_line_config(
 	const std::optional<Config_object>::value_type& result_config
 );
 
+/**
+ * Name of the command line argument that sets the config log level: `--fconfig_log <none|sources|values|chain>`.
+ */
+inline const std::string config_log_argument_name = "fconfig_log";
+
+/**
+ * Reads the config log level from the command line arguments.
+ * @param command_line_config command line config definition
+ * @return the config log level, or an empty optional if the config log argument is not present
+ * @throws std::runtime_error if the config log argument has no value or if the value is not a name of a log level
+ */
+FUTURE_CONFIG_EXPORT std::optional<Config_log_level> get_command_line_log_level(
+	const Command_line_config_definition& command_line_config
+);
+
+/**
+ * Collects the information about the config loading and logs it according to the config log level. The default logger
+ * of the spdlog library is used for logging, with the info level.
+ */
+class FUTURE_CONFIG_EXPORT Config_load_log {
+	struct Data;
+
+	std::unique_ptr<Data> data;
+
+public:
+	explicit Config_load_log(Config_log_level level);
+
+	~Config_load_log();
+
+	Config_load_log(const Config_load_log&) = delete;
+
+	Config_load_log& operator=(const Config_load_log&) = delete;
+
+	/**
+	 * Registers a config source. The sources have to be registered in the load order.
+	 */
+	void add_source(const Config_definition_base& config_definition);
+
+	/**
+	 * Logs the registered config sources.
+	 */
+	void log_sources() const;
+
+	/**
+	 * Registers the values provided by a config source.
+	 * @param source_number number of the source in the load order, starting from 1
+	 * @param config content of the source, placed in the object the source is bound to
+	 */
+	void add_values(unsigned source_number, const Config_object& config);
+
+	/**
+	 * Logs the configuration values together with the sources they come from.
+	 * @param final_config resulting configuration with all sources merged and all variables resolved
+	 */
+	void log_values(const Config_object& final_config) const;
+};
+
+/**
+ * Loads the configuration from the config definitions, in the order of the definitions.
+ * @param config_definitions config definitions
+ * @param log_level config log level. If the config log level is set in the command line arguments
+ * (`--fconfig_log <level>`), the level from the command line is used instead.
+ * @return the resulting configuration
+ */
 template<Input_pointer_range<Config_definition_base> I>
-Config_object load_config(const I& config_definitions) {
+Config_object load_config(const I& config_definitions, Config_log_level log_level = Config_log_level::NONE) {
+	// the log level from the command line has a priority
+	for(const auto& config_definition: config_definitions) {
+		if(config_definition->type == Config_type::COMMAND_LINE) {
+			const auto command_line_log_level = get_command_line_log_level(
+				dynamic_cast<const Command_line_config_definition&>(*config_definition)
+			);
+			if(command_line_log_level) {
+				log_level = *command_line_log_level;
+			}
+		}
+	}
+
+	// the sources are logged before the loading, so that they are available even if the loading fails
+	Config_load_log load_log(log_level);
+	for(const auto& config_definition: config_definitions) {
+		load_log.add_source(*config_definition);
+	}
+	load_log.log_sources();
+
 	unsigned counter = 1;
 	std::optional<Config_object> result_config;
 	for(const auto& config_definition: config_definitions) {
@@ -107,6 +192,8 @@ Config_object load_config(const I& config_definitions) {
 			}
 			config = bind_config(std::move(config), file_config.bind_path);
 		}
+		load_log.add_values(counter, config);
+
 		if(result_config){
 			result_config = merge_configs(result_config.value(), config);
 		}
@@ -117,6 +204,8 @@ Config_object load_config(const I& config_definitions) {
 	}
 
 	process_variables(result_config.value());
+
+	load_log.log_values(result_config.value());
 
 	return result_config.value();
 }
