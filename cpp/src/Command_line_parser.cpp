@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <memory> // For std::unique_ptr and std::make_unique
+#include <stdexcept>
 #include <yaml-cpp/yaml.h> // For YAML::Node
 
 // Anonymous namespace for helper functions
@@ -46,6 +47,32 @@ std::vector<std::string> find_path_to_key(const fc::Config_object& master_config
     return {}; // Return empty path if key is not found
 }
 
+// Checks if the argument is a key like --mykey
+bool is_key_argument(const std::string& argument) {
+    return argument.starts_with("--") && argument.length() > 2;
+}
+
+// Returns the property located at the given path in the config
+const fc::config_property_value& get_property_at_path(
+    const fc::Config_object& config,
+    const std::vector<std::string>& path
+) {
+    const fc::Config_object* current_object = &config;
+    for (size_t i = 0; i < path.size() - 1; ++i) {
+        current_object = std::get<fc::config_object_property_value>((*current_object)[path[i]]).get();
+    }
+    return (*current_object)[path.back()];
+}
+
+// Checks if the property is a boolean, i.e., if it can be set by a command line switch
+bool is_boolean_property(const fc::config_property_value& property) {
+    if (!std::holds_alternative<std::string>(property)) {
+        return false;
+    }
+    const auto& value = std::get<std::string>(property);
+    return value == "true" || value == "false";
+}
+
 } // end anonymous namespace
 
 fc::Config_object Command_line_parser::parse(int argc, const char* argv[], const fc::Config_object& master_config) {
@@ -54,64 +81,74 @@ fc::Config_object Command_line_parser::parse(int argc, const char* argv[], const
     for (int i = 1; i < argc; ++i) { // Start from 1 to skip program name
         std::string arg_key_str = argv[i];
 
-        if (arg_key_str.rfind("--", 0) == 0 && arg_key_str.length() > 2) { // Check if it's a key like --mykey
+        if (is_key_argument(arg_key_str)) {
             std::string key_name = arg_key_str.substr(2);
 
-            if (i + 1 < argc) { // Check if there is a value for this key
-                const char* value_cstr = argv[i + 1];
-                std::string value_str(value_cstr);
-                i++; // Consume the value argument, so the next iteration skips it
+            // 1) Find the corresponding key in the master config.
+            std::vector<std::string> path_in_master = find_path_to_key(master_config, key_name);
 
-                // 1) Find the corresponding key in the master config.
-                std::vector<std::string> path_in_master = find_path_to_key(master_config, key_name);
+            // A key that is not followed by a value (it is the last argument, or another key follows) is a switch.
+            const bool is_switch = i + 1 >= argc || is_key_argument(argv[i + 1]);
 
-                if (!path_in_master.empty()) {
-                    // Key found in master_config, proceed to create hierarchy and insert value.
-                    fc::Config_object* current_target_obj_ptr = &result_config;
-
-                    // 2) Create the necessary hierarchy in result_config to mimic master_config.
-                    // Loop through path segments, excluding the final key itself.
-                    for (size_t j = 0; j < path_in_master.size() - 1; ++j) {
-                        const std::string& segment_name = path_in_master[j];
-                        
-                        bool segment_navigated_or_created = false;
-                        if (current_target_obj_ptr->contains(segment_name)) {
-                            auto& existing_prop_variant = current_target_obj_ptr->operator[](segment_name);
-                            if (std::holds_alternative<fc::config_object_property_value>(existing_prop_variant)) {
-                                // Segment exists and is an object, navigate into it.
-                                auto& uptr_val = std::get<fc::config_object_property_value>(existing_prop_variant);
-                                current_target_obj_ptr = uptr_val.get();
-                                // Basic check, unique_ptr's get() should not be null if it was properly constructed.
-                                if (!current_target_obj_ptr) {
-                                     // This indicates an issue, e.g. a null unique_ptr was stored.
-                                     // For robustness, one might throw or break. For now, assume valid objects.
-                                    break; 
-                                }
-                                segment_navigated_or_created = true;
-                            }
-                            // If segment exists but is not an object, it will be overwritten by the logic below.
-                        }
-
-                        if (!segment_navigated_or_created) {
-                            // Segment does not exist, or exists but is not an object: create a new Config_object for it.
-                            auto new_nested_obj_uptr = std::make_unique<fc::Config_object>(); // Use default constructor
-                            fc::Config_object* new_nested_obj_raw_ptr = new_nested_obj_uptr.get(); // Get raw ptr before move
-                            current_target_obj_ptr->emplace(segment_name, std::move(new_nested_obj_uptr));
-                            current_target_obj_ptr = new_nested_obj_raw_ptr; // Navigate into the newly created object
-                        }
-                         if (!current_target_obj_ptr) break; // Safety break if navigation/creation failed
-                    }
-                     if (!current_target_obj_ptr) continue; // Skip this cmd arg if hierarchy creation failed
-
-                    // 3) Insert the parameter value into the new config at the determined location.
-                    const std::string& final_key_name = path_in_master.back();
-                    current_target_obj_ptr->emplace(final_key_name, value_str); // Values are stored as std::string
+            std::string value_str;
+            if (is_switch) {
+                // Switches are only supported for boolean properties: passing the switch sets the property to true.
+                if (!path_in_master.empty() && !is_boolean_property(get_property_at_path(master_config, path_in_master))) {
+                    throw std::runtime_error(format::format(
+                        "Command line argument --{} was passed without a value, but it is not a boolean property.",
+                        key_name
+                    ));
                 }
-                // If key_name is not found in master_config (path_in_master is empty), it's ignored.
-            } else {
-                // Key like --option was specified without a subsequent value.
-                // Currently ignored. One could add a warning here.
+                value_str = "true";
             }
+            else {
+                value_str = argv[i + 1];
+                i++; // Consume the value argument, so the next iteration skips it
+            }
+
+            if (!path_in_master.empty()) {
+                // Key found in master_config, proceed to create hierarchy and insert value.
+                fc::Config_object* current_target_obj_ptr = &result_config;
+
+                // 2) Create the necessary hierarchy in result_config to mimic master_config.
+                // Loop through path segments, excluding the final key itself.
+                for (size_t j = 0; j < path_in_master.size() - 1; ++j) {
+                    const std::string& segment_name = path_in_master[j];
+                    
+                    bool segment_navigated_or_created = false;
+                    if (current_target_obj_ptr->contains(segment_name)) {
+                        auto& existing_prop_variant = current_target_obj_ptr->operator[](segment_name);
+                        if (std::holds_alternative<fc::config_object_property_value>(existing_prop_variant)) {
+                            // Segment exists and is an object, navigate into it.
+                            auto& uptr_val = std::get<fc::config_object_property_value>(existing_prop_variant);
+                            current_target_obj_ptr = uptr_val.get();
+                            // Basic check, unique_ptr's get() should not be null if it was properly constructed.
+                            if (!current_target_obj_ptr) {
+                                 // This indicates an issue, e.g. a null unique_ptr was stored.
+                                 // For robustness, one might throw or break. For now, assume valid objects.
+                                break; 
+                            }
+                            segment_navigated_or_created = true;
+                        }
+                        // If segment exists but is not an object, it will be overwritten by the logic below.
+                    }
+
+                    if (!segment_navigated_or_created) {
+                        // Segment does not exist, or exists but is not an object: create a new Config_object for it.
+                        auto new_nested_obj_uptr = std::make_unique<fc::Config_object>(); // Use default constructor
+                        fc::Config_object* new_nested_obj_raw_ptr = new_nested_obj_uptr.get(); // Get raw ptr before move
+                        current_target_obj_ptr->emplace(segment_name, std::move(new_nested_obj_uptr));
+                        current_target_obj_ptr = new_nested_obj_raw_ptr; // Navigate into the newly created object
+                    }
+                     if (!current_target_obj_ptr) break; // Safety break if navigation/creation failed
+                }
+                 if (!current_target_obj_ptr) continue; // Skip this cmd arg if hierarchy creation failed
+
+                // 3) Insert the parameter value into the new config at the determined location.
+                const std::string& final_key_name = path_in_master.back();
+                current_target_obj_ptr->emplace(final_key_name, value_str); // Values are stored as std::string
+            }
+            // If key_name is not found in master_config (path_in_master is empty), it's ignored.
         }
         // Else: argument is not of the form --key, so ignore it (it might be a value already consumed or an unrelated arg).
     }

@@ -124,6 +124,22 @@ The load ordering is designed for maximum flexibility. Any load order is theoret
 # Advanced Usage
 Here, the alternative ways of using Future Config are discussed to provide maximum flexibility.
 
+## Command Line
+In addition to use a config file, you may also provide configuration via command line arguments. Because these are not hierarchical, you can only use command line arguments for unique keys, otherwise, an exception will be raised.
+
+The translation is as follows:
+
+```yaml
+key: value
+```
+
+```bash
+--key value
+```
+
+For boolean values, you may just pass the key without a value (only works for boolean properties with a default value of `false`).
+
+
 ## Customizing the config loading order
 
 ### C++

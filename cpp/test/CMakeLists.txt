@@ -45,6 +45,7 @@ add_executable(test_run
 	${FCONFIG_SRC_DIR}/resources.cpp
 	${FCONFIG_SRC_DIR}/variable_processing.cpp
 	bulider_tests.cpp
+	command_line_parser_test.cpp
 	common.cpp
 	merger_test.cpp
 	resolver_tests.cpp
