@@ -68,11 +68,15 @@ inline auto get_default_config_definitions() {
  *		config definitions vector right after the provided config definitions.
  * - command_line_arguments: number of command line arguments and their values. If provided, a command line config
  *		definition will be added to the config definitions vector right after the local config definition
+ * - allowed_command_line_arguments: names (without the leading `--`) of the command line arguments that are not
+ *		configuration keys, typically the arguments processed by the application itself. Any other `--argument` that is
+ *		not a configuration key raises an exception. The `help` and `version` arguments are always allowed.
  **/
 struct Load_options {
 	std::optional<Config_definitions> config_definitions{get_default_config_definitions()};
 	std::optional<fs::path> local_config_path;
 	std::optional<std::pair<int, const char**>> command_line_arguments;
+	std::vector<std::string> allowed_command_line_arguments;
 };
 
 
@@ -109,7 +113,11 @@ C load(Load_options options = {}) {
 		const auto& [argc, argv] = *options.command_line_arguments;
 		// add command line config definition
 		if(argc > 0 && argv != nullptr) {
-			config_definitions.add(std::make_unique<Command_line_config_definition>(argc, argv));
+			config_definitions.add(std::make_unique<Command_line_config_definition>(
+				argc,
+				argv,
+				options.allowed_command_line_arguments
+			));
 		}
 	}
 

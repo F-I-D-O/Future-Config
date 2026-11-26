@@ -33,4 +33,24 @@ TEST(configuration_test, load_with_args) {
 	delete[] argv;
 }
 
+TEST(configuration_test, load_with_command_line_value) {
+	const char* argv[] = {"program_name", "--test_par", "3"};
+	auto config = load<Test_config>({.command_line_arguments = std::make_pair(3, argv)});
+	EXPECT_EQ(config.test_par, 3);
+}
+
+TEST(configuration_test, load_with_unknown_command_line_argument) {
+	const char* argv[] = {"program_name", "--unknown", "3"};
+	EXPECT_THROW(load<Test_config>({.command_line_arguments = std::make_pair(3, argv)}), std::runtime_error);
+}
+
+TEST(configuration_test, load_with_allowed_command_line_argument) {
+	const char* argv[] = {"program_name", "--local_config", "config.yaml", "--test_par", "3"};
+	auto config = load<Test_config>({
+		.command_line_arguments = std::make_pair(5, argv),
+		.allowed_command_line_arguments = {"local_config"}
+	});
+	EXPECT_EQ(config.test_par, 3);
+}
+
 } // namespace fc

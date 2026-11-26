@@ -9,11 +9,15 @@ namespace fc {
 
 namespace {
 
-Config_object parse_arguments(const std::vector<const char*>& arguments, const Config_object& master_config) {
+Config_object parse_arguments(
+	const std::vector<const char*>& arguments,
+	const Config_object& master_config,
+	const std::vector<std::string>& allowed_arguments = {}
+) {
 	// the first argument is the program name
 	std::vector<const char*> argv{"program_name"};
 	argv.insert(argv.end(), arguments.begin(), arguments.end());
-	return Command_line_parser().parse(static_cast<int>(argv.size()), argv.data(), master_config);
+	return Command_line_parser().parse(static_cast<int>(argv.size()), argv.data(), master_config, allowed_arguments);
 }
 
 const Config_object master_config(YAML::Load(
@@ -79,10 +83,57 @@ TEST(Command_line_parser, switch_for_non_boolean_property_throws) {
 	EXPECT_THROW(parse_arguments({"--object"}, master_config), std::runtime_error);
 }
 
-TEST(Command_line_parser, unknown_switch_is_ignored) {
-	const auto config = parse_arguments({"--unknown", "--flag"}, master_config);
+TEST(Command_line_parser, unknown_argument_throws) {
+	EXPECT_THROW(parse_arguments({"--unknown", "--flag"}, master_config), std::runtime_error);
+	EXPECT_THROW(parse_arguments({"--flag", "--unknown", "value"}, master_config), std::runtime_error);
+	// allowing one argument does not allow the others
+	EXPECT_THROW(parse_arguments({"--unknown"}, master_config, {"local_config"}), std::runtime_error);
+}
+
+TEST(Command_line_parser, default_allowed_arguments_are_skipped) {
+	const auto config = parse_arguments({"--help", "--flag", "--version"}, master_config);
 
 	const Config_object expected(YAML::Load("{flag: true}"));
+	compare_config_objects(expected, config);
+}
+
+TEST(Command_line_parser, allowed_arguments_are_skipped) {
+	// allowed arguments are skipped together with their values, the default allowed arguments are still allowed
+	const auto config = parse_arguments(
+		{"--local_config", "path/to/config.yaml", "--number", "5", "--dry_run", "--help"},
+		master_config,
+		{"local_config", "dry_run"}
+	);
+
+	const Config_object expected(YAML::Load("{number: 5}"));
+	compare_config_objects(expected, config);
+}
+
+TEST(Command_line_parser, positional_arguments_are_ignored) {
+	const auto config = parse_arguments({"positional", "--number", "5", "-s", "another"}, master_config);
+
+	const Config_object expected(YAML::Load("{number: 5}"));
+	compare_config_objects(expected, config);
+}
+
+TEST(Command_line_parser, ambiguous_key_throws) {
+	const Config_object ambiguous_config(YAML::Load(
+		R"({
+		key: 1,
+		unique: 2,
+		object: {key: 3, other_object: {deep: 4}},
+		another_object: {deep: 5}
+	})"
+	));
+
+	EXPECT_THROW(parse_arguments({"--key", "5"}, ambiguous_config), std::runtime_error);
+	EXPECT_THROW(parse_arguments({"--deep", "5"}, ambiguous_config), std::runtime_error);
+	// ambiguous keys cannot be allowed
+	EXPECT_THROW(parse_arguments({"--key", "5"}, ambiguous_config, {"key"}), std::runtime_error);
+
+	// unique keys in the same config still work
+	const auto config = parse_arguments({"--unique", "7"}, ambiguous_config);
+	const Config_object expected(YAML::Load("{unique: 7}"));
 	compare_config_objects(expected, config);
 }
 

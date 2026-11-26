@@ -137,7 +137,20 @@ key: value
 --key value
 ```
 
-For boolean values, you may just pass the key without a value (only works for boolean properties with a default value of `false`).
+For boolean values, you may just pass the key without a value, which will be interpreted as `true`.
+
+There is one difference between command line arguments and config files: unknown keys are not allowed. The reason for allowing unknown keys in config files is to enable sharing a single config file across different projects. Command line arguments, on the other hand, are principally bound to the specific project and therefore, allowing unknown keys would not make sense.
+
+Only the long arguments (`--key`) are checked. Positional arguments and short options are ignored. If your application processes some long arguments on its own, you can exclude them from the check by listing them as allowed arguments. The `--help` and `--version` arguments are always allowed. In C++:
+
+```cpp
+auto config = fc::load<Your_config_class>({
+	.command_line_arguments = std::make_pair(argc, argv),
+	.allowed_command_line_arguments = {"local_config", "dry_run"} // --local_config and --dry_run are not config keys
+});
+```
+
+When creating the config definitions manually, pass the allowed arguments as the third argument of the `fc::Command_line_config_definition` constructor.
 
 
 ## Customizing the config loading order

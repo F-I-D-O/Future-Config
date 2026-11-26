@@ -14,7 +14,12 @@ Config_object parse_command_line_config(
     const Command_line_config_definition& command_line_config, // Parameter name and type match declaration
     const Config_object& result_config                        // Type matches declaration (std::optional::value_type -> const ref)
 ) {
-    return Command_line_parser().parse(command_line_config.argc, command_line_config.argv, result_config);
+    return Command_line_parser().parse(
+        command_line_config.argc,
+        command_line_config.argv,
+        result_config,
+        command_line_config.allowed_arguments
+    );
 }
 
 } // namespace fc 

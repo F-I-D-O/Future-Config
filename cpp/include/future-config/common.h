@@ -108,9 +108,19 @@ struct FUTURE_CONFIG_EXPORT Command_line_config_definition: public Config_defini
 	const int argc;
 	const char** argv;
 
+	/**
+	 * Names (without the leading `--`) of the command line arguments that are not configuration keys, typically the
+	 * arguments processed by the application itself. Unlike other unknown arguments, these do not raise an exception.
+	 * The `help` and `version` arguments are always allowed.
+	 */
+	const std::vector<std::string> allowed_arguments;
 
-	Command_line_config_definition(int argc, const char** argv):
-		Config_definition_base(Config_type::COMMAND_LINE), argc(argc), argv(argv) {}
+
+	Command_line_config_definition(int argc, const char** argv, std::vector<std::string> allowed_arguments = {}):
+		Config_definition_base(Config_type::COMMAND_LINE),
+		argc(argc),
+		argv(argv),
+		allowed_arguments(std::move(allowed_arguments)) {}
 
 
 	~Command_line_config_definition() override = default;
