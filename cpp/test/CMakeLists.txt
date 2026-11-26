@@ -136,6 +136,17 @@ add_test(
 		-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunGenerateMasterConfigHeadersTest.cmake
 )
 
+# Test that copy_master_config from setupFunctions.cmake fails if CONFIG_PATHS is empty (plain CMake, no project)
+add_test(
+	NAME copy_master_config_empty_config_paths
+	COMMAND
+		${CMAKE_COMMAND}
+		-D TEST_EXECUTABLE=${CMAKE_COMMAND}
+		-D TEST_ARGS=-D\;SETUP_FUNCTIONS_PATH=${PROJECT_SOURCE_DIR}/install/setupFunctions.cmake\;-P\;${CMAKE_CURRENT_SOURCE_DIR}/cmake/CopyMasterConfigEmptyConfigPaths.cmake
+		-D "EXPECTED_OUTPUT=.*CONFIG_PATHS is empty: no master config file would be copied.*"
+		-P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/RunFailingTest.cmake
+)
+
 # Test setup_fconfig from setupFunctions.cmake using a small CMake project
 add_test(
 	NAME setup_fconfig_success

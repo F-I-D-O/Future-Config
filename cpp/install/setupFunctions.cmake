@@ -108,6 +108,10 @@ function(copy_master_config)
 	if(NOT DEFINED COPY_FCONFIG_MASTER_CONFIG_TARGET_NAMES)
 		message(FATAL_ERROR "You must specify the targets that need the master config file")
 	endif()
+	# without config paths, no copy command would be created, which would silently do nothing
+	if("${COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATHS}" STREQUAL "")
+		message(FATAL_ERROR "CONFIG_PATHS is empty: no master config file would be copied")
+	endif()
 
 	foreach(CONFIG_PATH IN LISTS COPY_FCONFIG_MASTER_CONFIG_CONFIG_PATHS)
 		get_filename_component(CONFIG_FILE_NAME "${CONFIG_PATH}" NAME)
