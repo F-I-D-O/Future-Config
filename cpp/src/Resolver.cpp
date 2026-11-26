@@ -30,7 +30,7 @@ void Resolver::add_all_variables_to_queue(Config_object& config_object) {
 //				add_all_variables_to_queue(object);
 //			}
 //		}
-		else {
+		else if(std::holds_alternative<std::string>(value)) {
 			auto scalar = std::get<std::string>(value);
 			std::smatch matches;
 			const auto found = std::regex_search(scalar, matches, variable_regex);

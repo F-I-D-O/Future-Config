@@ -42,4 +42,21 @@ TEST(Resolver, test_multiple_variables) {
 	ASSERT_EQ("another String composed", std::get<std::string>(config["string6"]));
 }
 
+TEST(Resolver, test_array_in_config) {
+	// arrays are not searched for variables, but they must not prevent resolving the other values
+	Config_object config = YAML::Load(
+		R"({
+			var: value,
+			array: [1, 2, "${var}"],
+			object: {inner_array: [a, b]},
+			var_2: "${var}_2"
+		})"
+	);
+	Resolver resolver(config);
+	resolver.resolve();
+
+	EXPECT_EQ(std::get<std::string>(config["var_2"]), "value_2");
+	EXPECT_EQ(config.get_array<std::string>("array"), (std::vector<std::string>{"1", "2", "${var}"}));
+}
+
 } // namespace fc
