@@ -122,6 +122,64 @@ The load ordering is designed for maximum flexibility. Any load order is theoret
 3. Load the config from command line arguments
 
 
+# Data Types
+Each configuration value has a type. The members of the generated config classes have the corresponding types, so no conversion is needed in your program.
+
+| Type | Examples | Not this type |
+|------|----------|---------------|
+| integer | `42`, `-3`, `0x1F`, `0o17` | `010` (string), `1_000` (string) |
+| float | `1.5`, `.5`, `1e5`, `.inf`, `.nan` | |
+| boolean | `true`, `True`, `TRUE`, `false`, `False`, `FALSE` | `yes`, `on` (strings) |
+| path | `/opt/app`, `./results`, `../data/in.csv`, `~/data`, `C:\data`, `C:/data`, `\\server\share` | `logs/app.log`, `text/plain` (strings) |
+| string | anything else, and any quoted value: `"8080"`, `'true'` | |
+| array | `[1, 2, 3]` - all items have to be of the same type | |
+| object | a map of properties | |
+
+The types of integers, floats, and booleans follow the [YAML 1.2 Core schema](https://yaml.org/spec/1.2.2/#103-core-schema). Null values (`~`, `null`, or a key without a value) and empty arrays are not supported, because they do not determine a type.
+
+A specific type can be forced by a YAML tag:
+
+```yaml
+version: !!str 1.5          # string instead of float
+log_file: !path logs/app.log  # path instead of string
+pattern: !!str ./*.txt      # string instead of path
+```
+
+## The master config determines the types
+The type of each property is determined by its default value in the master config. The values from the other sources (user config files, command line arguments) are converted to the type of the property:
+
+| Type of the property | Accepted values |
+|----------------------|-----------------|
+| string | any scalar value, it is used as a text |
+| integer | integer |
+| float | float, integer |
+| boolean | boolean |
+| path | path, string |
+| array | array, each item is converted to the type of the array items |
+| object | object |
+
+Any other value is an error, reported when the configuration is loaded. The error message contains the property, the config source, and both types. Properties that are not present in the master config have the types determined from their values.
+
+For the command line arguments, this means that the value for a string property is always used as it is (`--name 123` is the string `123`), and that the value for a path property does not need the form of a path (`--out_dir results`).
+
+Variables are replaced by the text of the referenced values. The value with resolved variables is then converted to the type of the property. If the default value in the master config contains a variable, the type of the property is determined from the resolved value.
+
+## Paths
+Only the values that are unambiguously paths are recognized as paths: the values starting with `/`, `./`, `../`, `~/`, a drive letter (`C:\`, `C:/`), or `\\`. Other values, like `logs/app.log`, are strings unless they are marked with the `!path` tag, or unless they are given for a property that is a path in the master config. Note that the quotes do not prevent the recognition, use the `!!str` tag for a string that looks like a path.
+
+**Relative paths are converted to absolute paths** when the configuration is loaded, so your program does not have to know where the configuration came from:
+
+- a relative path in a config file is relative to the directory of that config file,
+- a relative path in a command line argument is relative to the current working directory.
+
+The exceptions are:
+
+- Paths relative to the home directory (`~/...`) are not changed, the `~` is not expanded.
+- A path starting with a variable (`${data_dir}/results`) is left to the variable: the variable has to hold an absolute path (a relative path in the variable itself is converted where the variable is defined). If the path is still relative after the variable is resolved, an error is raised.
+
+In the generated C++ config classes, the paths are `std::filesystem::path` members.
+
+
 # Advanced Usage
 Here, the alternative ways of using Future Config are discussed to provide maximum flexibility.
 
@@ -139,6 +197,8 @@ key: value
 ```
 
 For boolean values, you may just pass the key without a value, which will be interpreted as `true`.
+
+The values are converted to the types of the properties, see [Data Types](#data-types).
 
 There is one difference between command line arguments and config files: unknown keys are not allowed. The reason for allowing unknown keys in config files is to enable sharing a single config file across different projects. Command line arguments, on the other hand, are principally bound to the specific project and therefore, allowing unknown keys would not make sense.
 
