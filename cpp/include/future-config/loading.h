@@ -20,6 +20,12 @@ template<typename I, typename E>concept Input_pointer_range =
 
 Config_object FUTURE_CONFIG_EXPORT parse_config(const Config_definition& config_definition);
 
+/**
+ * Checks that a master config (main or dependency) contains at least one property.
+ * @throws std::runtime_error if the config is empty
+ */
+void FUTURE_CONFIG_EXPORT check_master_config_not_empty(const Config_object& config);
+
 Config_object FUTURE_CONFIG_EXPORT merge_configs(Config_object& result_config, Config_object& new_config);
 
 void FUTURE_CONFIG_EXPORT process_variables(Config_object& config);
@@ -238,6 +244,9 @@ Config_object load_config(const I& config_definitions, Config_log_level log_leve
 			const auto& file_config = dynamic_cast<const Config_definition&>(*config_definition);
 			try {
 				config = parse_config(file_config);
+				if(file_config.type != Config_type::LOCAL) {
+					check_master_config_not_empty(config);
+				}
 			} catch(const std::runtime_error& e) {
 				throw std::runtime_error(
 					format::format(
@@ -312,6 +321,7 @@ Config_object load_config_for_builder(const I& config_definitions) {
 		const auto& file_config = dynamic_cast<const Config_definition&>(*config_definition);
 		try {
 			config = parse_config(file_config);
+			check_master_config_not_empty(config);
 		} catch(const std::runtime_error& e) {
 			throw std::runtime_error(
 				format::format(

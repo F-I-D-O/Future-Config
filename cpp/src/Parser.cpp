@@ -143,6 +143,11 @@ Config_object create_config_object(const fkyaml::node& yaml_config, const std::s
 }
 
 Config_object create_config_object_from_document(const fkyaml::node& yaml_content) {
+	// an empty file or a file with comments only
+	if(yaml_content.is_null()) {
+		throw std::runtime_error("The configuration file is empty.");
+	}
+
 	// check that the root object is of the correct type
 	if(!yaml_content.is_mapping()) {
 		throw std::runtime_error(format::format(

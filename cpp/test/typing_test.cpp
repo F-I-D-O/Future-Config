@@ -617,6 +617,29 @@ TEST(Typing, variables_are_replaced_by_text_of_typed_values) {
 
 // whole config loading
 
+TEST_F(Typing_loading, empty_master_config_throws) {
+	// an empty file, a file with comments only, and an empty map
+	for(const std::string content: {"", "# only a comment\n", "{}"}) {
+		Config_definitions config_definitions;
+		config_definitions.add(std::make_unique<Config_definition>(write_config("empty.yaml", content)));
+		EXPECT_THROW(load_config(config_definitions.config_definitions), std::runtime_error) << content;
+
+		std::vector<std::unique_ptr<Config_definition>> builder_config_definitions;
+		builder_config_definitions.emplace_back(std::make_unique<Config_definition>(directory / "empty.yaml"));
+		EXPECT_THROW(load_config_for_builder(builder_config_definitions), std::runtime_error) << content;
+	}
+
+	// an empty dependency config
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(write_config("master.yaml", "{key: 1}")));
+	config_definitions.add(std::make_unique<Config_definition>(
+		Config_type::DEPENDENCY,
+		write_config("dependency.yaml", "{}"),
+		"dependency"
+	));
+	EXPECT_THROW(load_config(config_definitions.config_definitions), std::runtime_error);
+}
+
 TEST_F(Typing_loading, master_only) {
 	const auto config = load("");
 

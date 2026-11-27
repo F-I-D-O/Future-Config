@@ -20,6 +20,15 @@ Config_object parse_config(const Config_definition& config_definition) {
 	return Parser().parse(config_definition.yaml_file_path);
 }
 
+void check_master_config_not_empty(const Config_object& config) {
+	if(config.size() == 0) {
+		throw std::runtime_error(
+			"The master config is empty. A master config has to define at least one property, because it "
+			"determines the keys and types of the whole configuration."
+		);
+	}
+}
+
 Config_object merge_configs(Config_object& result_config, Config_object& new_config) {
 	return Merger().merge(result_config, new_config);
 }
