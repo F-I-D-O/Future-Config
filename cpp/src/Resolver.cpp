@@ -15,6 +15,14 @@ namespace fc {
 
     
 
+namespace {
+
+bool is_text(const Config_scalar& scalar) {
+	return std::holds_alternative<std::string>(scalar) || std::holds_alternative<std::filesystem::path>(scalar);
+}
+
+} // namespace
+
 bool Resolver::contains_variable(const std::string& text) {
 	static const std::regex regex(R"regex(\$\{([^\}]+)\})regex");
 	return std::regex_search(text, regex);
@@ -35,12 +43,9 @@ void Resolver::add_all_variables_to_queue(Config_object& config_object) {
 //				add_all_variables_to_queue(object);
 //			}
 //		}
-		else if(
-			std::holds_alternative<Config_scalar>(value)
-			&& std::holds_alternative<std::string>(std::get<Config_scalar>(value))
-		) {
-			// only strings can contain variables
-			auto scalar = std::get<std::string>(std::get<Config_scalar>(value));
+		else if(std::holds_alternative<Config_scalar>(value) && is_text(std::get<Config_scalar>(value))) {
+			// only strings and paths can contain variables
+			auto scalar = to_string(std::get<Config_scalar>(value));
 			std::smatch matches;
 			const auto found = std::regex_search(scalar, matches, variable_regex);
 			if(found) {
@@ -64,7 +69,13 @@ void Resolver::process_queue() {
 		const auto& config_property = parent[key];
 		auto [status, variable_value] = resolve_value(config_property);
 		if(status != Resolve_status::FAILED) {
-			parent[key] = Config_scalar(variable_value);
+			// the value with the resolved variable stays a string or a path
+			if(std::holds_alternative<std::filesystem::path>(std::get<Config_scalar>(config_property))) {
+				parent[key] = Config_scalar(std::filesystem::path(variable_value));
+			}
+			else {
+				parent[key] = Config_scalar(variable_value);
+			}
 		}
 		if(status != Resolve_status::COMPLETE) {
 			unresolved_variables.emplace(parent, key);
@@ -96,7 +107,7 @@ void Resolver::process_queue() {
 }
 
 std::tuple<Resolve_status,std::string> Resolver::resolve_value(const config_property_value& config_property_val) const {
-	auto string_value = std::get<std::string>(std::get<Config_scalar>(config_property_val));
+	auto string_value = to_string(std::get<Config_scalar>(config_property_val));
 	std::smatch matches;
 	unsigned short variable_counter = 1;
 	while(std::regex_search(string_value, matches, variable_regex)){

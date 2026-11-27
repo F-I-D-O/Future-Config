@@ -78,6 +78,11 @@ Config_scalar convert_scalar(
 		return to_string(value);
 	}
 
+	// strings are accepted as paths
+	if(std::holds_alternative<std::filesystem::path>(reference) && std::holds_alternative<std::string>(value)) {
+		return std::filesystem::path(std::get<std::string>(value));
+	}
+
 	// integers are accepted as floating point numbers
 	if(std::holds_alternative<double>(reference) && std::holds_alternative<std::int64_t>(value)) {
 		return static_cast<double>(std::get<std::int64_t>(value));

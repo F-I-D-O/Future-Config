@@ -99,6 +99,16 @@ TEST(Builder, test_string_array_in_object) {
 	check_generated_config(config, TEST_DATA_DIR / "string_array_in_object.h");
 }
 
+TEST(Builder, test_path) {
+	Config_object config = parse_yaml("{out_dir: ./results}");
+	check_generated_config(config, TEST_DATA_DIR / "path.h");
+}
+
+TEST(Builder, test_path_array) {
+	Config_object config = parse_yaml("{files: [./a.txt, ../b.txt]}");
+	check_generated_config(config, TEST_DATA_DIR / "path_array.h");
+}
+
 TEST(Builder, test_hyphen_in_key) {
 	Config_object config = parse_yaml("{test-var: 123}");
 	check_generated_config(config, TEST_DATA_DIR / "hyphen_in_key.h");

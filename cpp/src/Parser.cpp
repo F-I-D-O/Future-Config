@@ -5,6 +5,7 @@
 #include <fstream>
 #include <limits>
 #include <memory>
+#include <regex>
 #include <sstream>
 #include <vector>
 
@@ -49,10 +50,36 @@ std::string get_key_string(const fkyaml::node& node) {
 	throw std::runtime_error(format::format("Unsupported type of a key: {}", get_type_name(node)));
 }
 
+const std::string path_tag = "!path";
+const std::string string_tag = "!!str";
+
+const std::regex absolute_path_regex(R"regex(^(/|[A-Za-z]:[/\\]|\\\\).*)regex");
+const std::regex relative_path_regex(R"regex(^\.{1,2}([/\\].*)?$)regex");
+const std::regex home_path_regex(R"regex(^~([/\\].*)?$)regex");
+
+// Creates a string or path value from a text
+Config_scalar create_text_scalar(const std::string& text) {
+	if(Parser::is_path(text)) {
+		return std::filesystem::path(text);
+	}
+	return text;
+}
+
 // Creates a scalar value of the type determined by the YAML library
 Config_scalar create_scalar(const fkyaml::node& node, const std::string& key_path) {
 	if(node.is_string()) {
-		return node.get_value<std::string>();
+		const auto text = node.get_value<std::string>();
+
+		// the tags have a priority over the path detection
+		if(node.has_tag_name()) {
+			if(node.get_tag_name() == path_tag) {
+				return std::filesystem::path(text);
+			}
+			if(node.get_tag_name() == string_tag) {
+				return text;
+			}
+		}
+		return create_text_scalar(text);
 	}
 	if(node.is_integer()) {
 		try {
@@ -133,11 +160,23 @@ Config_object Parser::parse(const std::string& yaml_content) {
 	return create_config_object_from_document(fkyaml::node::deserialize(yaml_content));
 }
 
+bool Parser::is_absolute_path(const std::string& text) {
+	return std::regex_match(text, absolute_path_regex);
+}
+
+bool Parser::is_home_path(const std::string& text) {
+	return std::regex_match(text, home_path_regex);
+}
+
+bool Parser::is_path(const std::string& text) {
+	return is_absolute_path(text) || is_home_path(text) || std::regex_match(text, relative_path_regex);
+}
+
 Config_scalar Parser::parse_scalar(const std::string& text) {
 	// Integers, floating point numbers, and booleans never contain a white space. Other texts are not passed to the
 	// YAML library, as they could be interpreted as something else than a scalar (e.g., a comment).
 	if(text.empty() || text.find_first_of(" \t\r\n") != std::string::npos) {
-		return text;
+		return create_text_scalar(text);
 	}
 
 	fkyaml::node node;
@@ -145,13 +184,13 @@ Config_scalar Parser::parse_scalar(const std::string& text) {
 		node = fkyaml::node::deserialize(text);
 	} catch(const fkyaml::exception&) {
 		// not a valid YAML document, so it is not a number or a boolean
-		return text;
+		return create_text_scalar(text);
 	}
 
 	if(node.is_integer() || node.is_float_number() || node.is_boolean()) {
 		return create_scalar(node, text);
 	}
-	return text;
+	return create_text_scalar(text);
 }
 
 Config_object Parser::parse(const fs::path& yaml_file_path) {

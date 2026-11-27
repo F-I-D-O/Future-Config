@@ -23,6 +23,12 @@ std::string get_typed_value(const std::string& yaml_value) {
 	return get_type_name(scalar) + " " + to_string(scalar);
 }
 
+// type name and text representation of the scalar property
+std::string get_typed_value_of(const Config_object& config, const std::string& key) {
+	const auto& scalar = std::get<Config_scalar>(config[key]);
+	return get_type_name(scalar) + " " + to_string(scalar);
+}
+
 std::string get_typed_scalar(const std::string& text) {
 	const auto scalar = Parser().parse_scalar(text);
 	return get_type_name(scalar) + " " + to_string(scalar);
@@ -131,6 +137,119 @@ TEST(Typing, error_contains_property_path) {
 }
 
 
+// paths
+
+TEST(Typing, paths) {
+	// absolute paths
+	EXPECT_EQ(get_typed_value("/opt/app"), "path /opt/app");
+	EXPECT_EQ(get_typed_value("/"), "path /");
+	EXPECT_EQ(get_typed_value("C:/data/in.csv"), "path C:/data/in.csv");
+	EXPECT_EQ(get_typed_value("C:\\data\\in.csv"), "path C:\\data\\in.csv");
+	EXPECT_EQ(get_typed_value("\\\\server\\share"), "path \\\\server\\share");
+
+	// paths relative to the current or parent directory
+	EXPECT_EQ(get_typed_value("./results"), "path ./results");
+	EXPECT_EQ(get_typed_value("../shared/data.csv"), "path ../shared/data.csv");
+	EXPECT_EQ(get_typed_value(".\\results"), "path .\\results");
+	EXPECT_EQ(get_typed_value("."), "path .");
+	EXPECT_EQ(get_typed_value(".."), "path ..");
+
+	// paths relative to the home directory
+	EXPECT_EQ(get_typed_value("~/data"), "path ~/data");
+
+	// paths with spaces
+	EXPECT_EQ(get_typed_value("./my results/out.csv"), "path ./my results/out.csv");
+}
+
+TEST(Typing, values_that_are_not_paths) {
+	EXPECT_EQ(get_typed_value("logs/app.log"), "string logs/app.log");
+	EXPECT_EQ(get_typed_value("text/plain"), "string text/plain");
+	EXPECT_EQ(get_typed_value("1/2"), "string 1/2");
+	EXPECT_EQ(get_typed_value("11/27/2026"), "string 11/27/2026");
+	EXPECT_EQ(get_typed_value("http://example.com/a"), "string http://example.com/a");
+	EXPECT_EQ(get_typed_value("config.yaml"), "string config.yaml");
+	EXPECT_EQ(get_typed_value("example.com"), "string example.com");
+	EXPECT_EQ(get_typed_value(".hidden"), "string .hidden");
+	EXPECT_EQ(get_typed_value("..."), "string ...");
+	EXPECT_EQ(get_typed_value("a:b"), "string a:b");
+	EXPECT_EQ(get_typed_value("\"C:\""), "string C:");
+	EXPECT_EQ(get_typed_value("~user"), "string ~user");
+}
+
+TEST(Typing, path_tags) {
+	// the !path tag makes a path from any string
+	EXPECT_EQ(get_typed_value("!path logs/app.log"), "path logs/app.log");
+	EXPECT_EQ(get_typed_value("!path results"), "path results");
+
+	// the !!str tag keeps a string even if it has a form of a path
+	EXPECT_EQ(get_typed_value("!!str ./results"), "string ./results");
+	EXPECT_EQ(get_typed_value("!!str /opt/app"), "string /opt/app");
+}
+
+TEST(Typing, quoted_paths) {
+	// the quoted and plain strings cannot be distinguished, only the !!str tag keeps a string
+	EXPECT_EQ(get_typed_value("\"./results\""), "path ./results");
+}
+
+TEST(Typing, path_arrays) {
+	const auto config = parse_yaml("{files: [./a.txt, /opt/b.txt]}");
+
+	EXPECT_EQ(
+		config.get_array<std::filesystem::path>("files"),
+		(std::vector<std::filesystem::path>{"./a.txt", "/opt/b.txt"})
+	);
+}
+
+TEST(Typing, get_path) {
+	const auto config = parse_yaml("{out_dir: ./results, name: text}");
+
+	EXPECT_EQ(config.get<std::filesystem::path>("out_dir"), std::filesystem::path("./results"));
+	EXPECT_THROW(config.get<std::string>("out_dir"), std::runtime_error);
+	EXPECT_THROW(config.get<std::filesystem::path>("name"), std::runtime_error);
+}
+
+TEST(Typing, convert_string_to_path) {
+	const auto type_reference = parse_yaml("{out_dir: /opt/out, files: [/opt/a], name: text}");
+	auto config = parse_yaml("{out_dir: results, files: [a.txt, sub/b.txt], name: ./relative}");
+
+	convert_types(config, type_reference, "test source");
+
+	// strings given for the path properties are paths, even without a form of a path
+	EXPECT_EQ(get_typed_value_of(config, "out_dir"), "path results");
+	EXPECT_EQ(
+		config.get_array<std::filesystem::path>("files"),
+		(std::vector<std::filesystem::path>{"a.txt", "sub/b.txt"})
+	);
+	// paths given for the string properties are strings
+	EXPECT_EQ(get_typed_value_of(config, "name"), "string ./relative");
+}
+
+TEST(Typing, convert_other_types_to_path_throws) {
+	const auto type_reference = parse_yaml("{out_dir: /opt/out}");
+
+	for(const std::string value: {"5", "1.5", "true"}) {
+		auto config = parse_yaml("{out_dir: " + value + "}");
+		EXPECT_THROW(convert_types(config, type_reference, "test source"), std::runtime_error) << value;
+	}
+}
+
+TEST(Typing, variables_in_paths) {
+	auto config = parse_yaml(
+		"{name: app, data_dir: /opt/data, in_path: \"./in/${name}\", from_variable: \"${data_dir}/out\", "
+		"tagged: !path \"${name}/out\", text: \"${name}/out\"}"
+	);
+
+	process_variables(config, nullptr);
+
+	// a path with a variable stays a path
+	EXPECT_EQ(get_typed_value_of(config, "in_path"), "path ./in/app");
+	EXPECT_EQ(get_typed_value_of(config, "tagged"), "path app/out");
+	// the type of a string with a variable is determined from the resolved value
+	EXPECT_EQ(get_typed_value_of(config, "from_variable"), "path /opt/data/out");
+	EXPECT_EQ(get_typed_value_of(config, "text"), "string app/out");
+}
+
+
 // types of the values given as text
 
 TEST(Typing, parse_scalar) {
@@ -140,6 +259,9 @@ TEST(Typing, parse_scalar) {
 	EXPECT_EQ(get_typed_scalar("true"), "bool true");
 	EXPECT_EQ(get_typed_scalar("hello"), "string hello");
 	EXPECT_EQ(get_typed_scalar(""), "string ");
+	EXPECT_EQ(get_typed_scalar("./results"), "path ./results");
+	EXPECT_EQ(get_typed_scalar("/opt/my app"), "path /opt/my app");
+	EXPECT_EQ(get_typed_scalar("logs/app.log"), "string logs/app.log");
 }
 
 TEST(Typing, parse_scalar_text_with_yaml_syntax) {
@@ -151,7 +273,8 @@ TEST(Typing, parse_scalar_text_with_yaml_syntax) {
 	EXPECT_EQ(get_typed_scalar("[1,2]"), "string [1,2]");
 	EXPECT_EQ(get_typed_scalar("{a}"), "string {a}");
 	EXPECT_EQ(get_typed_scalar("[1"), "string [1");
-	EXPECT_EQ(get_typed_scalar("~"), "string ~");
+	// a path relative to the home directory
+	EXPECT_EQ(get_typed_scalar("~"), "path ~");
 	EXPECT_EQ(get_typed_scalar("null"), "string null");
 	EXPECT_EQ(get_typed_scalar("*alias"), "string *alias");
 	EXPECT_EQ(get_typed_scalar("&anchor"), "string &anchor");
@@ -530,6 +653,26 @@ TEST_F(Typing_loading, command_line_value_for_property_with_variable) {
 	EXPECT_EQ(get_typed_property(load("", {"--port_copy", "7"}), "port_copy"), "int 7");
 	EXPECT_EQ(get_typed_property(load("", {"--url", "7"}), "url"), "string 7");
 	EXPECT_NE(get_load_error("", {"--port_copy", "abc"}), "");
+}
+
+TEST_F(Typing_loading, path_values_from_other_sources) {
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(
+		write_config("master.yaml", "out_dir: /opt/out\nin_dir: /opt/in\nname: app\n")
+	));
+	config_definitions.add(std::make_unique<Config_definition>(
+		Config_type::LOCAL,
+		write_config("local.yaml", "out_dir: /srv/results\n")
+	));
+	const char* argv[] = {"program_name", "--in_dir", "/srv/my input", "--name", "./x"};
+	config_definitions.add(std::make_unique<Command_line_config_definition>(5, argv));
+
+	const auto config = load_config(config_definitions.config_definitions);
+
+	EXPECT_EQ(get_typed_property(config, "out_dir"), "path /srv/results");
+	EXPECT_EQ(get_typed_property(config, "in_dir"), "path /srv/my input");
+	// a path given for a string property is a string
+	EXPECT_EQ(get_typed_property(config, "name"), "string ./x");
 }
 
 TEST_F(Typing_loading, later_master_config_is_converted) {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <future-config/Config_object.h>
+{% if uses_path %}
+#include <filesystem>
+{% endif %}
 #include <string>
 
 {% for include in includes %}

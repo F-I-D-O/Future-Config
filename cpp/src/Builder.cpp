@@ -82,6 +82,9 @@ std::string Builder::get_template_data_for_class(
 			{
 				property_data["mode"] = "scalar";
 				const auto& scalar = std::get<Config_scalar>(child_object);
+				if(std::holds_alternative<std::filesystem::path>(scalar)) {
+					template_data["uses_path"] = true;
+				}
 				property_data["type"] = get_scalar_type(scalar).cpp_source_string();
 				property_data["value"] = to_string(scalar);
 				non_array_properties_count++;
@@ -138,7 +141,11 @@ std::string Builder::get_template_data_for_class(
 //					);
 //				}
 //				else {
-					item_type = get_scalar_type(std::get<std::vector<Config_scalar>>(child_object)[0]).cpp_source_string();
+					const auto& first_item = std::get<std::vector<Config_scalar>>(child_object)[0];
+					if(std::holds_alternative<std::filesystem::path>(first_item)) {
+						template_data["uses_path"] = true;
+					}
+					item_type = get_scalar_type(first_item).cpp_source_string();
 					property_data["array_type_name"] = item_type;
 //				}
 				property_data["mode"] = "array";
@@ -193,6 +200,7 @@ void Builder::generate_config() {
 		template_data["includes"] = inja::json::array();
 		template_data["class_data"] = inja::json::array();
 		template_data["empty_body"] = "{}";
+		template_data["uses_path"] = false;
 
 		get_template_data_for_class(config, sanitize_key(root_object_name), {}, template_data);
 		auto out_path = output_dir / format::format("{}.h", root_object_name);
