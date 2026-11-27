@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
@@ -32,6 +33,20 @@ void FUTURE_CONFIG_EXPORT process_variables(Config_object& config);
  * @throws std::runtime_error if a resolved value cannot be converted to the type of the property
  */
 void FUTURE_CONFIG_EXPORT process_variables(Config_object& config, const Config_object* type_reference);
+
+/**
+ * Makes all relative paths in the config absolute. The paths that are already absolute, the paths relative to the home
+ * directory (`~/...`), and the paths starting with a variable are not changed.
+ * @param config content of a config source
+ * @param base_directory directory the relative paths are relative to
+ */
+void FUTURE_CONFIG_EXPORT make_paths_absolute(Config_object& config, const std::filesystem::path& base_directory);
+
+/**
+ * @return the directory the relative paths from the config source are relative to: the directory of the config file,
+ * or the current working directory for the command line arguments
+ */
+FUTURE_CONFIG_EXPORT std::filesystem::path get_base_directory(const Config_definition_base& config_definition);
 
 /**
  * @return description of the config source for error messages
@@ -254,6 +269,10 @@ Config_object load_config(const I& config_definitions, Config_log_level log_leve
 		if(const auto* current_type_reference = get_current_type_reference()) {
 			convert_types(config, *current_type_reference, source_description);
 		}
+
+		// the relative paths are relative to the location of the config source
+		make_paths_absolute(config, get_base_directory(*config_definition));
+
 		if(config_definition->type == Config_type::MAIN || config_definition->type == Config_type::DEPENDENCY) {
 			check_master_types(config, source_description);
 			if(master_config) {
@@ -312,6 +331,10 @@ Config_object load_config_for_builder(const I& config_definitions) {
 		check_master_types(config, source_description);
 		if(result_config){
 			convert_types(config, get_type_reference(result_config.value()), source_description);
+		}
+		make_paths_absolute(config, get_base_directory(*config_definition));
+
+		if(result_config){
 			result_config = merge_configs(result_config.value(), config);
 		}
 		else{

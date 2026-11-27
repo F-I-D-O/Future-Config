@@ -169,21 +169,53 @@ void check_master_types(const Config_object& config, const std::string& source_d
 	}
 }
 
-// Finds the paths to all values with variables
+const std::string variable_start = "${";
+
+struct Value_with_variable {
+	// keys from the root object to the value
+	std::vector<std::string> path;
+
+	// true if the value starts with a variable
+	bool starts_with_variable;
+};
+
+// Finds all string and path values with variables
 void find_values_with_variables(
 	const Config_object& config,
 	std::vector<std::string>& current_path,
-	std::vector<std::vector<std::string>>& paths
+	std::vector<Value_with_variable>& values
 ) {
 	for(const auto& [key, property]: config) {
 		current_path.push_back(key);
 		if(is_object(property)) {
-			find_values_with_variables(*std::get<config_object_property_value>(property), current_path, paths);
+			find_values_with_variables(*std::get<config_object_property_value>(property), current_path, values);
 		}
-		else if(is_scalar(property) && has_variable(std::get<Config_scalar>(property))) {
-			paths.push_back(current_path);
+		else if(is_scalar(property)) {
+			const auto& scalar = std::get<Config_scalar>(property);
+			const bool is_text = std::holds_alternative<std::string>(scalar)
+				|| std::holds_alternative<std::filesystem::path>(scalar);
+			if(is_text && Resolver::contains_variable(to_string(scalar))) {
+				values.push_back({current_path, to_string(scalar).starts_with(variable_start)});
+			}
 		}
 		current_path.pop_back();
+	}
+}
+
+// Checks if the path should be made absolute: it is not absolute, it is not relative to the home directory, and
+// it does not start with a variable (then, the variable determines if the path is absolute)
+bool is_relative_path(const std::filesystem::path& path) {
+	const auto text = path.string();
+	return !Parser::is_absolute_path(text) && !Parser::is_home_path(text) && !text.starts_with(variable_start);
+}
+
+void make_path_absolute(Config_scalar& scalar, const std::filesystem::path& base_directory) {
+	if(!std::holds_alternative<std::filesystem::path>(scalar)) {
+		return;
+	}
+	auto& path = std::get<std::filesystem::path>(scalar);
+	if(is_relative_path(path)) {
+		path = (base_directory / path).lexically_normal();
 	}
 }
 
@@ -241,35 +273,78 @@ void convert_types(Config_object& config, const Config_object& type_reference, c
 	convert_types(config, type_reference, source_description, "");
 }
 
+void make_paths_absolute(Config_object& config, const std::filesystem::path& base_directory) {
+	for(auto& [key, property]: config) {
+		if(is_object(property)) {
+			make_paths_absolute(*std::get<config_object_property_value>(property), base_directory);
+		}
+		else if(is_array(property)) {
+			for(auto& item: std::get<std::vector<Config_scalar>>(property)) {
+				make_path_absolute(item, base_directory);
+			}
+		}
+		else {
+			make_path_absolute(std::get<Config_scalar>(property), base_directory);
+		}
+	}
+}
+
+std::filesystem::path get_base_directory(const Config_definition_base& config_definition) {
+	if(config_definition.type == Config_type::COMMAND_LINE) {
+		return std::filesystem::current_path();
+	}
+	const auto& file_path = dynamic_cast<const Config_definition&>(config_definition).yaml_file_path;
+	return std::filesystem::canonical(file_path).parent_path();
+}
+
 void process_variables(Config_object& config, const Config_object* type_reference) {
 	std::vector<std::string> current_path;
-	std::vector<std::vector<std::string>> paths;
-	find_values_with_variables(config, current_path, paths);
+	std::vector<Value_with_variable> values;
+	find_values_with_variables(config, current_path, values);
 
 	Resolver(config).resolve();
 
-	// the values with resolved variables are strings, their types have to be determined
-	for(const auto& path: paths) {
-		auto& scalar = get_scalar(config, path);
-		const auto& text = std::get<std::string>(scalar);
+	for(const auto& value: values) {
+		auto& scalar = get_scalar(config, value.path);
 
 		std::string path_string;
-		for(const auto& key: path) {
+		for(const auto& key: value.path) {
 			path_string = get_path_string(path_string, key);
 		}
 
-		const Config_scalar* reference = type_reference == nullptr ? nullptr : find_scalar(*type_reference, path);
-		if(reference == nullptr) {
-			// unknown property: the type is determined from the resolved value
-			scalar = Parser().parse_scalar(text);
+		// the strings with resolved variables can be values of other types, their types have to be determined
+		if(std::holds_alternative<std::string>(scalar)) {
+			const auto text = std::get<std::string>(scalar);
+			const Config_scalar* reference
+				= type_reference == nullptr ? nullptr : find_scalar(*type_reference, value.path);
+			if(reference == nullptr) {
+				// unknown property: the type is determined from the resolved value
+				scalar = Parser().parse_scalar(text);
+			}
+			else if(!std::holds_alternative<std::string>(*reference)) {
+				scalar = convert_scalar(
+					Parser().parse_scalar(text),
+					*reference,
+					path_string,
+					"the variable substitution"
+				);
+			}
 		}
-		else if(!std::holds_alternative<std::string>(*reference)) {
-			scalar = convert_scalar(
-				Parser().parse_scalar(text),
-				*reference,
+
+		// A path that started with a variable was not made absolute when its source was loaded. If the variable did not
+		// provide an absolute path, it is too late now, as the directory of the source is not known anymore.
+		if(
+			value.starts_with_variable
+			&& std::holds_alternative<std::filesystem::path>(scalar)
+			&& is_relative_path(std::get<std::filesystem::path>(scalar))
+		) {
+			throw std::runtime_error(format::format(
+				"Property '{}' is a relative path after the variable substitution: '{}'. A path that starts with "
+				"a variable has to be absolute after the substitution. Use a variable with an absolute path, or start "
+				"the path with './'.",
 				path_string,
-				"the variable substitution"
-			);
+				to_string(scalar)
+			));
 		}
 	}
 }

@@ -236,17 +236,65 @@ TEST(Typing, convert_other_types_to_path_throws) {
 TEST(Typing, variables_in_paths) {
 	auto config = parse_yaml(
 		"{name: app, data_dir: /opt/data, in_path: \"./in/${name}\", from_variable: \"${data_dir}/out\", "
-		"tagged: !path \"${name}/out\", text: \"${name}/out\"}"
+		"tagged: !path \"${data_dir}/out\", text: \"${name}/out\"}"
 	);
 
 	process_variables(config, nullptr);
 
 	// a path with a variable stays a path
 	EXPECT_EQ(get_typed_value_of(config, "in_path"), "path ./in/app");
-	EXPECT_EQ(get_typed_value_of(config, "tagged"), "path app/out");
+	EXPECT_EQ(get_typed_value_of(config, "tagged"), "path /opt/data/out");
 	// the type of a string with a variable is determined from the resolved value
 	EXPECT_EQ(get_typed_value_of(config, "from_variable"), "path /opt/data/out");
 	EXPECT_EQ(get_typed_value_of(config, "text"), "string app/out");
+}
+
+TEST(Typing, path_starting_with_variable_has_to_be_absolute) {
+	// the variable does not provide an absolute path
+	auto config = parse_yaml("{name: app, tagged: !path \"${name}/out\"}");
+	EXPECT_THROW(process_variables(config, nullptr), std::runtime_error);
+
+	config = parse_yaml("{relative_dir: !path data, out: \"${relative_dir}/out\"}");
+	const auto type_reference = parse_yaml("{relative_dir: /opt/data, out: /opt/out}");
+	EXPECT_THROW(process_variables(config, &type_reference), std::runtime_error);
+
+	// paths relative to the home directory are accepted
+	config = parse_yaml("{home_dir: ~/data, out: \"${home_dir}/out\"}");
+	process_variables(config, nullptr);
+	EXPECT_EQ(get_typed_value_of(config, "out"), "path ~/data/out");
+}
+
+TEST(Typing, make_paths_absolute) {
+	auto config = parse_yaml(
+		"{current: ./results, parent: ../shared/data.csv, bare: !path logs/app.log, dot: ., "
+		"absolute: /opt/app, windows: C:/data, home: ~/data, variable: !path \"${dir}/out\", "
+		"inner_variable: \"./out/${name}\", array: [./a.txt, /opt/b.txt], object: {nested: ./nested}, "
+		"text: !!str ./text, number: 5}"
+	);
+
+	make_paths_absolute(config, "/base/dir");
+
+	// relative paths
+	EXPECT_EQ(get_typed_value_of(config, "current"), "path /base/dir/results");
+	EXPECT_EQ(get_typed_value_of(config, "parent"), "path /base/shared/data.csv");
+	EXPECT_EQ(get_typed_value_of(config, "bare"), "path /base/dir/logs/app.log");
+	EXPECT_EQ(get_typed_value_of(config, "dot"), "path /base/dir/");
+	EXPECT_EQ(get_typed_value_of(config, "inner_variable"), "path /base/dir/out/${name}");
+	EXPECT_EQ(get_typed_value_of(config.get<Config_object&>("object"), "nested"), "path /base/dir/nested");
+	EXPECT_EQ(
+		config.get_array<std::filesystem::path>("array"),
+		(std::vector<std::filesystem::path>{"/base/dir/a.txt", "/opt/b.txt"})
+	);
+
+	// paths that are not changed
+	EXPECT_EQ(get_typed_value_of(config, "absolute"), "path /opt/app");
+	EXPECT_EQ(get_typed_value_of(config, "windows"), "path C:/data");
+	EXPECT_EQ(get_typed_value_of(config, "home"), "path ~/data");
+	EXPECT_EQ(get_typed_value_of(config, "variable"), "path ${dir}/out");
+
+	// other values
+	EXPECT_EQ(get_typed_value_of(config, "text"), "string ./text");
+	EXPECT_EQ(get_typed_value_of(config, "number"), "int 5");
 }
 
 
@@ -673,6 +721,57 @@ TEST_F(Typing_loading, path_values_from_other_sources) {
 	EXPECT_EQ(get_typed_property(config, "in_dir"), "path /srv/my input");
 	// a path given for a string property is a string
 	EXPECT_EQ(get_typed_property(config, "name"), "string ./x");
+}
+
+TEST_F(Typing_loading, relative_paths_are_relative_to_their_source) {
+	const auto master_directory = fs::canonical(directory);
+	fs::create_directories(directory / "local");
+	const auto local_directory = fs::canonical(directory / "local");
+
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(write_config(
+		"master.yaml",
+		"master_dir: ./master\nlocal_dir: ./master\ncli_dir: ./master\nabsolute: /opt/app\nfiles: [./a.txt]\n"
+		"data_dir: ./data\nfrom_variable: ${data_dir}/out\nlocal_from_variable: ./x\n"
+	)));
+	config_definitions.add(std::make_unique<Config_definition>(
+		Config_type::LOCAL,
+		// a bare path, and a path with a variable from the master config
+		write_config("local/local.yaml", "local_dir: results\nfiles: [b.txt, ../c.txt]\nlocal_from_variable: ${data_dir}/y\n")
+	));
+	const char* argv[] = {"program_name", "--cli_dir", "cli_results", "--absolute", "/srv/app"};
+	config_definitions.add(std::make_unique<Command_line_config_definition>(5, argv));
+
+	const auto config = load_config(config_definitions.config_definitions);
+
+	EXPECT_EQ(config.get<fs::path>("master_dir"), master_directory / "master");
+	EXPECT_EQ(config.get<fs::path>("local_dir"), local_directory / "results");
+	EXPECT_EQ(config.get<fs::path>("cli_dir"), fs::current_path() / "cli_results");
+	EXPECT_EQ(config.get<fs::path>("absolute"), fs::path("/srv/app"));
+	EXPECT_EQ(
+		config.get_array<fs::path>("files"),
+		(std::vector<fs::path>{local_directory / "b.txt", master_directory / "c.txt"})
+	);
+
+	// the variable holds a path that was made absolute in the master config
+	EXPECT_EQ(config.get<fs::path>("from_variable"), master_directory / "data" / "out");
+	EXPECT_EQ(config.get<fs::path>("local_from_variable"), master_directory / "data" / "y");
+}
+
+TEST_F(Typing_loading, relative_path_after_variable_substitution_throws) {
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(
+		write_config("master.yaml", "name: app\nout_dir: !path ${name}/out\n")
+	));
+
+	try {
+		load_config(config_definitions.config_definitions);
+		FAIL() << "exception expected";
+	} catch(const std::runtime_error& e) {
+		const std::string message = e.what();
+		EXPECT_NE(message.find("'out_dir'"), std::string::npos) << message;
+		EXPECT_NE(message.find("app/out"), std::string::npos) << message;
+	}
 }
 
 TEST_F(Typing_loading, later_master_config_is_converted) {
