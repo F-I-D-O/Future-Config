@@ -18,7 +18,7 @@ TEST(Resolver, test_single_variable) {
 	);
 	Resolver resolver(config);
 	resolver.resolve();
-	EXPECT_EQ(std::get<std::string>(config["var_2"]), "value_2");
+	EXPECT_EQ(config.get<std::string>("var_2"), "value_2");
 }
 
 TEST(Resolver, test_multiple_variables) {
@@ -35,12 +35,12 @@ TEST(Resolver, test_multiple_variables) {
 	Resolver resolver(config);
 	resolver.resolve();
 
-	ASSERT_EQ("String", std::get<std::string>(config["string"]));
-	ASSERT_EQ("String composed", std::get<std::string>(config["string2"]));
-	ASSERT_EQ("composed String", std::get<std::string>(config["string3"]));
-	ASSERT_EQ("Stringcomposed String", std::get<std::string>(config["string4"]));
-	ASSERT_EQ("String String", std::get<std::string>(config["string5"]));
-	ASSERT_EQ("another String composed", std::get<std::string>(config["string6"]));
+	ASSERT_EQ("String", config.get<std::string>("string"));
+	ASSERT_EQ("String composed", config.get<std::string>("string2"));
+	ASSERT_EQ("composed String", config.get<std::string>("string3"));
+	ASSERT_EQ("Stringcomposed String", config.get<std::string>("string4"));
+	ASSERT_EQ("String String", config.get<std::string>("string5"));
+	ASSERT_EQ("another String composed", config.get<std::string>("string6"));
 }
 
 TEST(Resolver, test_array_in_config) {
@@ -48,7 +48,7 @@ TEST(Resolver, test_array_in_config) {
 	Config_object config = parse_yaml(
 		R"({
 			var: value,
-			array: [1, 2, "${var}"],
+			array: [a, b, "${var}"],
 			object: {inner_array: [a, b]},
 			var_2: "${var}_2"
 		})"
@@ -56,8 +56,8 @@ TEST(Resolver, test_array_in_config) {
 	Resolver resolver(config);
 	resolver.resolve();
 
-	EXPECT_EQ(std::get<std::string>(config["var_2"]), "value_2");
-	EXPECT_EQ(config.get_array<std::string>("array"), (std::vector<std::string>{"1", "2", "${var}"}));
+	EXPECT_EQ(config.get<std::string>("var_2"), "value_2");
+	EXPECT_EQ(config.get_array<std::string>("array"), (std::vector<std::string>{"a", "b", "${var}"}));
 }
 
 } // namespace fc

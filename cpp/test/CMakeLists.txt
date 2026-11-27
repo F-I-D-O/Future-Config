@@ -53,6 +53,7 @@ add_executable(test_run
 	config_logging_test.cpp
 	merger_test.cpp
 	resolver_tests.cpp
+	typing_test.cpp
 	config_object_test.cpp
 	compile_time_tests.cpp
 	compile_time_tests.h

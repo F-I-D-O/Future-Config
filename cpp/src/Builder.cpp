@@ -15,6 +15,27 @@ namespace fc {
     
 
 
+namespace {
+
+// Type of the member of the generated config class for the scalar value
+Scalar_type get_scalar_type(const Config_scalar& scalar) {
+	if(std::holds_alternative<std::string>(scalar)) {
+		return Scalar_type::STRING;
+	}
+	if(std::holds_alternative<std::int64_t>(scalar)) {
+		return Scalar_type::INT;
+	}
+	if(std::holds_alternative<double>(scalar)) {
+		return Scalar_type::FLOAT;
+	}
+	if(std::holds_alternative<bool>(scalar)) {
+		return Scalar_type::BOOL;
+	}
+	return Scalar_type::PATH;
+}
+
+} // namespace
+
 Builder::Builder(
 	const Config_object& config,
 	const fs::path& output_dir,
@@ -54,15 +75,15 @@ std::string Builder::get_template_data_for_class(
 		property_data["name"] = sanitize_key(child_key);
 
 		switch(child_object.index()) {
-			case string_index:
+			case scalar_index:
 //			case int_index:
 //			case double_index:
 //			case bool_index:
 			{
 				property_data["mode"] = "scalar";
-				auto string_value = std::get<std::string>(child_object);
-				property_data["type"] = get_scalar_type_from_string(string_value).cpp_source_string();
-				property_data["value"] = string_value;
+				const auto& scalar = std::get<Config_scalar>(child_object);
+				property_data["type"] = get_scalar_type(scalar).cpp_source_string();
+				property_data["value"] = to_string(scalar);
 				non_array_properties_count++;
 				break;
 			}
@@ -93,7 +114,7 @@ std::string Builder::get_template_data_for_class(
 				break;
 			}
 			// case object_array_index:
-			case string_array_index:
+			case array_index:
 //			case int_array_index:
 //			case double_array_index:
 //			case bool_array_index:
@@ -117,7 +138,7 @@ std::string Builder::get_template_data_for_class(
 //					);
 //				}
 //				else {
-					item_type = get_scalar_type_from_string(std::get<std::vector<std::string>>(child_object)[0]).cpp_source_string();
+					item_type = get_scalar_type(std::get<std::vector<Config_scalar>>(child_object)[0]).cpp_source_string();
 					property_data["array_type_name"] = item_type;
 //				}
 				property_data["mode"] = "array";

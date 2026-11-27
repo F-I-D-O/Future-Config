@@ -4,102 +4,134 @@
 
 #pragma once
 
+#include <algorithm>
+#include <concepts>
+#include <cstdint>
+#include <filesystem>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <stdexcept>
 #include <variant>
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <algorithm>
-#include <iterator>
-#include <memory>
-#include <stdexcept>
+#include <utility>
 
 #include "future-config/format.h"
 #include "future-config/future-config_export.h"
-    
-    
-namespace fc {    
 
-    
+
+namespace fc {
 
 
 class Config_object;
+
+/**
+ * Scalar config value. The type of the value is determined when the config is loaded.
+ */
+using Config_scalar = std::variant<
+	std::string,
+	std::int64_t,
+	double,
+	bool,
+	std::filesystem::path
+>;
 
 using config_object_property_value = std::unique_ptr<Config_object>;
 
 
 using config_property_value = std::variant<
-	// scalar and scalar array types
-	std::string,
-	std::vector<std::string>,
-//	int,
-//	std::vector<int>,
-//	double,
-//	std::vector<double>,
-//	bool,
-//	std::vector<bool>
-	// object and object array types
+	Config_scalar,
+	std::vector<Config_scalar>,
 	config_object_property_value
-//	std::vector<Config_object>,
-
-
 >;
 
-constexpr unsigned short string_index = 0;
-constexpr unsigned short string_array_index = 1;
+constexpr unsigned short scalar_index = 0;
+constexpr unsigned short array_index = 1;
 constexpr unsigned short object_index = 2;
-// constexpr unsigned short object_array_index = 1;
-//constexpr unsigned short int_index = 4;
-//constexpr unsigned short int_array_index = 5;
-//constexpr unsigned short double_index = 6;
-//constexpr unsigned short double_array_index = 7;
-//constexpr unsigned short bool_index = 8;
-//constexpr unsigned short bool_array_index = 9;
+
+/**
+ * @return name of the type of the scalar value: string, int, float, bool, or path
+ */
+FUTURE_CONFIG_EXPORT std::string get_type_name(const Config_scalar& scalar);
+
+/**
+ * @return text representation of the scalar value, as it would be written in a YAML file
+ */
+FUTURE_CONFIG_EXPORT std::string to_string(const Config_scalar& scalar);
 
 
 /**
- * @brief Class template for transforming string values to various types.
- * Uses template specialization for compile-time type resolution.
+ * @brief Class template for getting the scalar values as various C++ types. The values are not converted from text,
+ * the requested type has to match the type of the value.
  */
 template<typename T>
-struct value_transformer {
-	static T transform(const std::string& string_value) {
-		throw std::runtime_error(format::format("Unsupported type"));
+struct scalar_converter {
+	static T convert(const Config_scalar& scalar, const std::string& key) = delete;
+};
+
+namespace detail {
+
+template<typename T>
+const T& get_scalar_alternative(const Config_scalar& scalar, const std::string& key, const std::string& requested_type) {
+	if(!std::holds_alternative<T>(scalar)) {
+		throw std::runtime_error(format::format(
+			"Property {} is of type {}, it cannot be read as {}",
+			key,
+			get_type_name(scalar),
+			requested_type
+		));
+	}
+	return std::get<T>(scalar);
+}
+
+}
+
+template<>
+struct scalar_converter<std::string> {
+	static std::string convert(const Config_scalar& scalar, const std::string& key) {
+		return detail::get_scalar_alternative<std::string>(scalar, key, "string");
 	}
 };
 
 template<>
-struct value_transformer<std::string> {
-	static std::string transform(const std::string& string_value) {
-		return string_value;
+struct scalar_converter<bool> {
+	static bool convert(const Config_scalar& scalar, const std::string& key) {
+		return detail::get_scalar_alternative<bool>(scalar, key, "bool");
 	}
 };
 
 template<>
-struct value_transformer<int> {
-	static int transform(const std::string& string_value) {
-		return std::stoi(string_value);
+struct scalar_converter<std::filesystem::path> {
+	static std::filesystem::path convert(const Config_scalar& scalar, const std::string& key) {
+		return detail::get_scalar_alternative<std::filesystem::path>(scalar, key, "path");
 	}
 };
 
-template<>
-struct value_transformer<double> {
-	static double transform(const std::string& string_value) {
-		return std::stod(string_value);
-	}
-};
-
-template<>
-struct value_transformer<bool> {
-	static bool transform(const std::string& string_value) {
-		if(string_value == "true") {
-			return true;
+template<std::floating_point T>
+struct scalar_converter<T> {
+	static T convert(const Config_scalar& scalar, const std::string& key) {
+		// integer values can be read as floating point numbers
+		if(std::holds_alternative<std::int64_t>(scalar)) {
+			return static_cast<T>(std::get<std::int64_t>(scalar));
 		}
-		else if(string_value == "false") {
-			return false;
+		return static_cast<T>(detail::get_scalar_alternative<double>(scalar, key, "float"));
+	}
+};
+
+template<std::integral T>
+struct scalar_converter<T> {
+	static T convert(const Config_scalar& scalar, const std::string& key) {
+		const auto value = detail::get_scalar_alternative<std::int64_t>(scalar, key, "int");
+		if(!std::in_range<T>(value)) {
+			throw std::runtime_error(format::format(
+				"Value {} of property {} is out of range of the requested integer type",
+				value,
+				key
+			));
 		}
-		else {
-			throw std::runtime_error(format::format("Value is not a boolean", string_value));
-		}
+		return static_cast<T>(value);
 	}
 };
 
@@ -143,14 +175,6 @@ public:
 		return properties.contains(key);
 	}
 
-//	void insert(const std::string& key, const config_property_value& value) {
-//		properties.insert({key, value});
-//	}
-//
-//	void force_insert(const std::string& key, const config_property_value& value) {
-//		properties[key] = value;
-//	}
-//
 	config_property_value& operator[](const std::string& key) {
 		return properties.at(key);
 	}
@@ -173,28 +197,39 @@ public:
 		return static_cast<unsigned short>(properties.size());
 	}
 
+	/**
+	 * Gets a scalar property. The requested type has to match the type of the value: std::string for strings, bool for
+	 * booleans, std::filesystem::path for paths, any integer type for integers (the value has to be in the range of the
+	 * type), and any floating point type for floating point numbers and integers.
+	 * @tparam T requested type
+	 * @param key key of the property
+	 * @throws std::runtime_error if the property is not a scalar or if it is of a different type
+	 */
 	template<typename T>
 	T get(const std::string& key) const {
-		if(std::holds_alternative<std::string>(properties.at(key))) {
-			const auto& string_value = std::get<std::string>(properties.at(key));
-			return value_transformer<T>::transform(string_value);
+		const auto& property = properties.at(key);
+		if(std::holds_alternative<Config_scalar>(property)) {
+			return scalar_converter<T>::convert(std::get<Config_scalar>(property), key);
 		}
 		throw std::runtime_error(format::format("Property {} is not a scalar", key));
 	}
 
-	// declaration for the Config_object specialization
-	// template<>
-	// Config_object& get<Config_object&>(const std::string& key) const;
-
+	/**
+	 * Gets an array property. The same rules as for the scalar properties apply for each item of the array.
+	 * @tparam T requested type of the array items
+	 * @param key key of the property
+	 * @throws std::runtime_error if the property is not an array of scalars or if some item is of a different type
+	 */
 	template<typename T>
 	std::vector<T> get_array(const std::string& key) const {
-		if(std::holds_alternative<std::vector<std::string>>(properties.at(key))) {
+		const auto& property = properties.at(key);
+		if(std::holds_alternative<std::vector<Config_scalar>>(property)) {
 			std::vector<T> result;
 			std::ranges::transform(
-				std::get<std::vector<std::string>>(properties.at(key)),
+				std::get<std::vector<Config_scalar>>(property),
 				std::back_inserter(result),
-				[](const std::string& string_value) {
-					return value_transformer<T>::transform(string_value);
+				[&key](const Config_scalar& scalar) {
+					return scalar_converter<T>::convert(scalar, key);
 				}
 			);
 			return result;
@@ -212,8 +247,5 @@ FUTURE_CONFIG_EXPORT Config_object& Config_object::get<Config_object&>(const std
 
 static_assert(std::ranges::input_range<Config_object>);
 
-//static_assert(std::__is_complete_or_unbounded<std::__type_identity<fc::Config_object> >((std::__type_identity<fc::Config_object>{}, std::__type_identity<fc::Config_object>())));
 
-        
 }
-    

@@ -3,6 +3,7 @@
 //
 
 #include "Command_line_parser.h"
+#include "Parser.h"
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -109,11 +110,8 @@ const fc::config_property_value& get_property_at_path(
 
 // Checks if the property is a boolean, i.e., if it can be set by a command line switch
 bool is_boolean_property(const fc::config_property_value& property) {
-    if (!std::holds_alternative<std::string>(property)) {
-        return false;
-    }
-    const auto& value = std::get<std::string>(property);
-    return value == "true" || value == "false";
+    return std::holds_alternative<fc::Config_scalar>(property)
+        && std::holds_alternative<bool>(std::get<fc::Config_scalar>(property));
 }
 
 } // end anonymous namespace
@@ -152,7 +150,7 @@ fc::Config_object Command_line_parser::parse(
                 continue;
             }
 
-            std::string value_str;
+            fc::Config_scalar value;
             if (is_switch) {
                 // Switches are only supported for boolean properties: passing the switch sets the property to true.
                 if (!is_boolean_property(get_property_at_path(master_config, path_in_master))) {
@@ -161,10 +159,11 @@ fc::Config_object Command_line_parser::parse(
                         key_name
                     ));
                 }
-                value_str = "true";
+                value = true;
             }
             else {
-                value_str = argv[i + 1];
+                // the type of the value is determined in the same way as for the values in the config files
+                value = fc::Parser().parse_scalar(argv[i + 1]);
                 i++; // Consume the value argument, so the next iteration skips it
             }
 
@@ -207,7 +206,7 @@ fc::Config_object Command_line_parser::parse(
 
             // 3) Insert the parameter value into the new config at the determined location.
             const std::string& final_key_name = path_in_master.back();
-            current_target_obj_ptr->emplace(final_key_name, value_str); // Values are stored as std::string
+            current_target_obj_ptr->emplace(final_key_name, std::move(value));
         }
         // Else: argument is not of the form --key (e.g., a positional argument), so it is ignored.
     }

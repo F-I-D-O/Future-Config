@@ -19,39 +19,19 @@ void compare_config_objects(const Config_object& expected, const Config_object& 
 		ASSERT_TRUE(actual.contains(key));
 		const auto& actual_value = actual[key];
 
-		// scalar or array values: we can compare directly
-		if(std::holds_alternative<std::string>(value)) {
-			ASSERT_TRUE(std::holds_alternative<std::string>(actual_value));
-			ASSERT_EQ(std::get<std::string>(value), std::get<std::string>(actual_value));
+		// scalar or array values: we can compare directly, both the types and the values have to match
+		if(std::holds_alternative<Config_scalar>(value)) {
+			ASSERT_TRUE(std::holds_alternative<Config_scalar>(actual_value)) << key;
+			const auto& expected_scalar = std::get<Config_scalar>(value);
+			const auto& actual_scalar = std::get<Config_scalar>(actual_value);
+			ASSERT_EQ(get_type_name(expected_scalar), get_type_name(actual_scalar)) << key;
+			ASSERT_EQ(to_string(expected_scalar), to_string(actual_scalar)) << key;
 		}
-//		else if(std::holds_alternative<int>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<int>(actual_value));
-//			ASSERT_EQ(std::get<std::string>(value), std::get<std::string>(actual_value));
-//		}
-//		else if(std::holds_alternative<double>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<double>(actual_value));
-//			ASSERT_EQ(std::get<std::string>(value), std::get<std::string>(actual_value));
-//		}
-//		else if(std::holds_alternative<bool>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<bool>(actual_value));
-//			ASSERT_EQ(std::get<bool>(value), std::get<bool>(actual_value));
-//		}
-		else if(std::holds_alternative<std::vector<std::string>>(value)) {
-			ASSERT_TRUE(std::holds_alternative<std::vector<std::string>>(actual_value));
-			ASSERT_EQ(std::get<std::vector<std::string>>(value), std::get<std::vector<std::string>>(actual_value));
+		else if(std::holds_alternative<std::vector<Config_scalar>>(value)) {
+			ASSERT_TRUE(std::holds_alternative<std::vector<Config_scalar>>(actual_value)) << key;
+			ASSERT_EQ(std::get<std::vector<Config_scalar>>(value), std::get<std::vector<Config_scalar>>(actual_value))
+				<< key;
 		}
-//		else if(std::holds_alternative<std::vector<int>>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<std::vector<int>>(actual_value));
-//			ASSERT_EQ(std::get<std::vector<int>>(value), std::get<std::vector<int>>(actual_value));
-//		}
-//		else if(std::holds_alternative<std::vector<double>>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<std::vector<double>>(actual_value));
-//			ASSERT_EQ(std::get<std::vector<double>>(value), std::get<std::vector<double>>(actual_value));
-//		}
-//		else if(std::holds_alternative<std::vector<bool>>(value)) {
-//			ASSERT_TRUE(std::holds_alternative<std::vector<bool>>(actual_value));
-//			ASSERT_EQ(std::get<std::vector<bool>>(value), std::get<std::vector<bool>>(actual_value));
-//		}
 
 		// object values: we need to compare recursively
 		if(std::holds_alternative<config_object_property_value>(value)) {

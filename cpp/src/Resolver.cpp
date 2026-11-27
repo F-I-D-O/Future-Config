@@ -30,8 +30,12 @@ void Resolver::add_all_variables_to_queue(Config_object& config_object) {
 //				add_all_variables_to_queue(object);
 //			}
 //		}
-		else if(std::holds_alternative<std::string>(value)) {
-			auto scalar = std::get<std::string>(value);
+		else if(
+			std::holds_alternative<Config_scalar>(value)
+			&& std::holds_alternative<std::string>(std::get<Config_scalar>(value))
+		) {
+			// only strings can contain variables
+			auto scalar = std::get<std::string>(std::get<Config_scalar>(value));
 			std::smatch matches;
 			const auto found = std::regex_search(scalar, matches, variable_regex);
 			if(found) {
@@ -55,7 +59,7 @@ void Resolver::process_queue() {
 		const auto& config_property = parent[key];
 		auto [status, variable_value] = resolve_value(config_property);
 		if(status != Resolve_status::FAILED) {
-			parent[key] = variable_value;
+			parent[key] = Config_scalar(variable_value);
 		}
 		if(status != Resolve_status::COMPLETE) {
 			unresolved_variables.emplace(parent, key);
@@ -68,7 +72,7 @@ void Resolver::process_queue() {
 				while(!unresolved_variables.empty()) {
 					auto [unresolved_parent, unresolved_key] = unresolved_variables.front();
 					unresolved_variables.pop();
-					auto value = std::get<std::string>(unresolved_parent[unresolved_key]);
+					auto value = to_string(std::get<Config_scalar>(unresolved_parent[unresolved_key]));
 					unresolved_variables_str += format::format("{}: {}\n", unresolved_key, value);
 				}
 				spdlog::error(
@@ -87,7 +91,7 @@ void Resolver::process_queue() {
 }
 
 std::tuple<Resolve_status,std::string> Resolver::resolve_value(const config_property_value& config_property_val) const {
-	auto string_value = std::get<std::string>(config_property_val);
+	auto string_value = std::get<std::string>(std::get<Config_scalar>(config_property_val));
 	std::smatch matches;
 	unsigned short variable_counter = 1;
 	while(std::regex_search(string_value, matches, variable_regex)){
@@ -132,7 +136,8 @@ std::string Resolver::get_value(const std::string& var_name) const {
 				current_object = std::get<config_object_property_value>(current_object->operator[](key)).get();
 			}
 			else {
-				return std::get<std::string>(current_object->operator[](key));
+				// the variables are replaced by the text representation of the value
+				return to_string(std::get<Config_scalar>(current_object->operator[](key)));
 			}
 		}
 		else{

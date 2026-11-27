@@ -1,6 +1,5 @@
 #include <sstream>
 #include <ranges>
-#include <regex>
 
 #include "future-config/common.h"
 #include "future-config/format.h"
@@ -11,15 +10,12 @@ namespace fc {
     
 
 
-const std::regex float_regex(R"regex([-+]?[0-9]+\.[0-9]+?)regex");
-const std::regex int_regex(R"regex([-+]?[0-9]+)regex");
-
-
 const std::unordered_map<Scalar_type::Value, std::string> Scalar_type::cpp_source_type_string_map = {
 	{STRING, "std::string"},
 	{INT, "int"},
 	{FLOAT, "double"},
-	{BOOL, "bool"}
+	{BOOL, "bool"},
+	{PATH, "std::filesystem::path"}
 };
 
 Config_definition::Config_definition(Config_type type, fs::path yaml_file_path_par, std::string bind_path):
@@ -59,23 +55,6 @@ std::string join(const std::vector <std::string>& v, const std::string& delimite
 	}
 
 	return ss.str();
-}
-
-Scalar_type get_scalar_type_from_string(const std::string& string) {
-	if(string == "true" || string == "false") {
-		return Scalar_type::BOOL;
-	}
-
-	auto float_found = std::regex_match(string, float_regex);
-	if(float_found) {
-		return Scalar_type::FLOAT;
-	}
-
-	auto int_found = std::regex_match(string, int_regex);
-	if(int_found) {
-		return Scalar_type::INT;
-	}
-	return Scalar_type::STRING;
 }
 
 std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definitions(

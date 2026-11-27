@@ -83,16 +83,16 @@ bool is_object(const config_property_value& property) {
 
 // string representation of a scalar or array value
 std::string get_value_string(const config_property_value& property) {
-	if(std::holds_alternative<std::string>(property)) {
-		return std::get<std::string>(property);
+	if(std::holds_alternative<Config_scalar>(property)) {
+		return to_string(std::get<Config_scalar>(property));
 	}
 
 	std::string array_string = "[";
-	for(const auto& item: std::get<std::vector<std::string>>(property)) {
+	for(const auto& item: std::get<std::vector<Config_scalar>>(property)) {
 		if(array_string.size() > 1) {
 			array_string += ", ";
 		}
-		array_string += item;
+		array_string += to_string(item);
 	}
 	return array_string + "]";
 }

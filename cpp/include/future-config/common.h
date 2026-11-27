@@ -28,7 +28,7 @@ const std::string default_config_folder = "config";
 
 struct Scalar_type {
 	enum Value {
-		STRING, INT, FLOAT, BOOL
+		STRING, INT, FLOAT, BOOL, PATH
 	};
 
 	Scalar_type(Value value) : value(value) {}
@@ -206,8 +206,6 @@ struct Config_definitions {
 
 
 std::string join(const std::vector<std::string>& v, const std::string& delimiter);
-
-Scalar_type get_scalar_type_from_string(const std::string& string);
 
 std::vector<std::unique_ptr<Config_definition>> parse_dependency_config_definitions(
 	const std::vector<std::string>& dependency_config_strings
