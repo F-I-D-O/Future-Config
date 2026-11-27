@@ -109,6 +109,36 @@ TEST(Builder, test_path_array) {
 	check_generated_config(config, TEST_DATA_DIR / "path_array.h");
 }
 
+TEST(Builder, test_scalar_and_array_in_one_object) {
+	Config_object config = parse_yaml("{name: app, tags: [a, b]}");
+
+	fs::path output_dir = fs::temp_directory_path() / "test_output";
+	std::string root_object_name = "mixed_config";
+	std::unordered_map<std::string, std::tuple<std::string, std::string>> dependency_config_map;
+	Builder builder(config, output_dir, root_object_name, dependency_config_map);
+	builder.build_config();
+
+	std::ifstream actual_file_stream(output_dir / "mixed_config.h");
+	std::string content(std::istreambuf_iterator<char>{actual_file_stream}, {});
+
+	// The order of the members is not defined, so only the parts of the generated class are checked. The scalar is
+	// the only property in the member initializer list, the array is filled in the constructor body.
+	const auto contains = [&content](const std::string& part) {
+		return content.find(part) != std::string::npos;
+	};
+	EXPECT_TRUE(contains("\tstd::string name;\n")) << content;
+	EXPECT_TRUE(contains("\tstd::vector<std::string> tags;\n")) << content;
+	EXPECT_TRUE(contains(
+		"explicit Mixed_config(const fc::Config_object& config_object):\n"
+		"\t\tname(config_object.get<std::string>(\"name\"))\n"
+		"{\n"
+		"\t\tfor (const auto& item: config_object.get_array<std::string>(\"tags\")) {\n"
+		"\t\t\ttags.emplace_back(item);\n"
+		"\t\t}\n"
+		"\t};"
+	)) << content;
+}
+
 TEST(Builder, test_hyphen_in_key) {
 	Config_object config = parse_yaml("{test-var: 123}");
 	check_generated_config(config, TEST_DATA_DIR / "hyphen_in_key.h");

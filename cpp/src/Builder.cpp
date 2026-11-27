@@ -65,6 +65,9 @@ std::string Builder::get_template_data_for_class(
 	inja::json class_data;
 	class_data["properties"] = inja::json::array();
 
+	// properties initialized in the member initializer list of the constructor (all but the arrays)
+	class_data["initializer_properties"] = inja::json::array();
+
 	unsigned short non_array_properties_count = 0;
 	unsigned short array_properties_count = 0;
 	for(const auto& [child_key, child_object]: config_object) {
@@ -159,6 +162,9 @@ std::string Builder::get_template_data_for_class(
 			}
 		}
 		class_data["properties"].push_back(property_data);
+		if(property_data["mode"] != "array") {
+			class_data["initializer_properties"].push_back(property_data);
+		}
 		class_data["non_array_properties_count"] = non_array_properties_count;
 		class_data["array_properties_count"] = array_properties_count;
 	}
