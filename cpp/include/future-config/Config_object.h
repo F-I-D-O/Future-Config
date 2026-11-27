@@ -8,7 +8,10 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <yaml-cpp/yaml.h>
+#include <algorithm>
+#include <iterator>
+#include <memory>
+#include <stdexcept>
 
 #include "future-config/format.h"
 #include "future-config/future-config_export.h"
@@ -109,7 +112,6 @@ class FUTURE_CONFIG_EXPORT Config_object {
 
 public:
 	Config_object() = default; // Define as inline default constructor
-	Config_object(const YAML::Node& yaml_config);
 
 
 	Config_object(const Config_object& other);

@@ -8,7 +8,6 @@
 #include <queue>
 #include <regex>
 #include <optional>
-#include "yaml-cpp/yaml.h"
 
 #include "future-config/Config_object.h"
     

@@ -5,11 +5,12 @@
 #include <gtest/gtest.h>
 
 #include "Resolver.h"
+#include "./common.h"
 
 namespace fc {
 
 TEST(Resolver, test_single_variable) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({
 			var: value,
 			var_2: "${var}_2"
@@ -21,7 +22,7 @@ TEST(Resolver, test_single_variable) {
 }
 
 TEST(Resolver, test_multiple_variables) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({
 			string: String,
 			string2: "${string} composed",
@@ -44,7 +45,7 @@ TEST(Resolver, test_multiple_variables) {
 
 TEST(Resolver, test_array_in_config) {
 	// arrays are not searched for variables, but they must not prevent resolving the other values
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({
 			var: value,
 			array: [1, 2, "${var}"],

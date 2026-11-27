@@ -27,36 +27,6 @@ namespace fc {
 
     
 
-Config_object::Config_object(const YAML::Node& yaml_config) {
-	for(YAML::const_iterator it = yaml_config.begin(); it != yaml_config.end(); ++it) {
-		auto key = it->first.as<std::string>();
-		auto value = it->second;
-
-		if(value.IsScalar()) {
-			properties.emplace(key, value.as<std::string>());
-		}
-		else if(value.IsSequence()) {
-			if(value[0].IsScalar()) {
-				properties.emplace(key, value.as<std::vector<std::string>>());
-			}
-//			else if(value[0].IsMap()) {
-//				std::vector<Config_object> objects;
-//				for(const auto& yaml_object: value) {
-//					objects.emplace_back(yaml_object);
-//				}
-//				properties.emplace(key, objects);
-//			}
-			else {
-				throw std::runtime_error(format::format("Unsupported as array member type"));
-			}
-		}
-		else if(value.IsMap()) {
-			properties.emplace(key, std::make_unique<Config_object>(value));
-		}
-	}
-}
-
-
 Config_object::Config_object(const Config_object& other) {
 	for(const auto&[key, value]: other.properties) {
 		if(std::holds_alternative<std::string>(value)) {

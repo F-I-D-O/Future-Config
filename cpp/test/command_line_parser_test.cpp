@@ -20,7 +20,7 @@ Config_object parse_arguments(
 	return Command_line_parser().parse(static_cast<int>(argv.size()), argv.data(), master_config, allowed_arguments);
 }
 
-const Config_object master_config(YAML::Load(
+const Config_object master_config(parse_yaml(
 	R"({
 	flag: false,
 	enabled_flag: true,
@@ -36,14 +36,14 @@ const Config_object master_config(YAML::Load(
 TEST(Command_line_parser, key_with_value) {
 	const auto config = parse_arguments({"--number", "5"}, master_config);
 
-	const Config_object expected(YAML::Load("{number: 5}"));
+	const Config_object expected(parse_yaml("{number: 5}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, switch_as_last_argument) {
 	const auto config = parse_arguments({"--number", "5", "--flag"}, master_config);
 
-	const Config_object expected(YAML::Load("{number: 5, flag: true}"));
+	const Config_object expected(parse_yaml("{number: 5, flag: true}"));
 	compare_config_objects(expected, config);
 	EXPECT_TRUE(config.get<bool>("flag"));
 }
@@ -51,28 +51,28 @@ TEST(Command_line_parser, switch_as_last_argument) {
 TEST(Command_line_parser, switch_followed_by_another_key) {
 	const auto config = parse_arguments({"--flag", "--number", "5"}, master_config);
 
-	const Config_object expected(YAML::Load("{flag: true, number: 5}"));
+	const Config_object expected(parse_yaml("{flag: true, number: 5}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, multiple_switches) {
 	const auto config = parse_arguments({"--flag", "--enabled_flag"}, master_config);
 
-	const Config_object expected(YAML::Load("{flag: true, enabled_flag: true}"));
+	const Config_object expected(parse_yaml("{flag: true, enabled_flag: true}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, nested_switch) {
 	const auto config = parse_arguments({"--nested_flag"}, master_config);
 
-	const Config_object expected(YAML::Load("{object: {nested_flag: true}}"));
+	const Config_object expected(parse_yaml("{object: {nested_flag: true}}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, boolean_with_explicit_value) {
 	const auto config = parse_arguments({"--enabled_flag", "false", "--flag", "true"}, master_config);
 
-	const Config_object expected(YAML::Load("{enabled_flag: false, flag: true}"));
+	const Config_object expected(parse_yaml("{enabled_flag: false, flag: true}"));
 	compare_config_objects(expected, config);
 }
 
@@ -93,7 +93,7 @@ TEST(Command_line_parser, unknown_argument_throws) {
 TEST(Command_line_parser, default_allowed_arguments_are_skipped) {
 	const auto config = parse_arguments({"--help", "--flag", "--version"}, master_config);
 
-	const Config_object expected(YAML::Load("{flag: true}"));
+	const Config_object expected(parse_yaml("{flag: true}"));
 	compare_config_objects(expected, config);
 }
 
@@ -105,19 +105,19 @@ TEST(Command_line_parser, allowed_arguments_are_skipped) {
 		{"local_config", "dry_run"}
 	);
 
-	const Config_object expected(YAML::Load("{number: 5}"));
+	const Config_object expected(parse_yaml("{number: 5}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, positional_arguments_are_ignored) {
 	const auto config = parse_arguments({"positional", "--number", "5", "-s", "another"}, master_config);
 
-	const Config_object expected(YAML::Load("{number: 5}"));
+	const Config_object expected(parse_yaml("{number: 5}"));
 	compare_config_objects(expected, config);
 }
 
 TEST(Command_line_parser, ambiguous_key_throws) {
-	const Config_object ambiguous_config(YAML::Load(
+	const Config_object ambiguous_config(parse_yaml(
 		R"({
 		key: 1,
 		unique: 2,
@@ -133,7 +133,7 @@ TEST(Command_line_parser, ambiguous_key_throws) {
 
 	// unique keys in the same config still work
 	const auto config = parse_arguments({"--unique", "7"}, ambiguous_config);
-	const Config_object expected(YAML::Load("{unique: 7}"));
+	const Config_object expected(parse_yaml("{unique: 7}"));
 	compare_config_objects(expected, config);
 }
 

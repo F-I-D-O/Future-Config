@@ -43,7 +43,7 @@ const Config_object& get_network(const Config_object& config) {
 	return config.get<Config_object&>("server").get<Config_object&>("network");
 }
 
-const Config_object hierarchy_config(YAML::Load("{key: 1, object: {inner_object: {inner_key: 2}, scalar: 3}}"));
+const Config_object hierarchy_config(parse_yaml("{key: 1, object: {inner_object: {inner_key: 2}, scalar: 3}}"));
 
 } // namespace
 
@@ -51,7 +51,7 @@ const Config_object hierarchy_config(YAML::Load("{key: 1, object: {inner_object:
 // bind_config
 
 TEST(Binding, bind_config_to_root) {
-	const Config_object config(YAML::Load("{key: value}"));
+	const Config_object config(parse_yaml("{key: value}"));
 
 	const auto bound_config = bind_config(config, "");
 
@@ -59,20 +59,20 @@ TEST(Binding, bind_config_to_root) {
 }
 
 TEST(Binding, bind_config_to_object) {
-	const Config_object config(YAML::Load("{key: value}"));
+	const Config_object config(parse_yaml("{key: value}"));
 
 	const auto bound_config = bind_config(config, "object");
 
-	const Config_object expected(YAML::Load("{object: {key: value}}"));
+	const Config_object expected(parse_yaml("{object: {key: value}}"));
 	compare_config_objects(expected, bound_config);
 }
 
 TEST(Binding, bind_config_to_nested_object) {
-	const Config_object config(YAML::Load("{key: value, inner: {inner_key: inner_value}}"));
+	const Config_object config(parse_yaml("{key: value, inner: {inner_key: inner_value}}"));
 
 	const auto bound_config = bind_config(config, "object.nested.deep");
 
-	const Config_object expected(YAML::Load(
+	const Config_object expected(parse_yaml(
 		"{object: {nested: {deep: {key: value, inner: {inner_key: inner_value}}}}}"
 	));
 	compare_config_objects(expected, bound_config);
@@ -90,7 +90,7 @@ TEST(Binding, get_bound_object_root) {
 TEST(Binding, get_bound_object_nested) {
 	const auto& bound_object = get_bound_object(hierarchy_config, "object.inner_object", "test source");
 
-	const Config_object expected(YAML::Load("{inner_key: 2}"));
+	const Config_object expected(parse_yaml("{inner_key: 2}"));
 	compare_config_objects(expected, bound_object);
 }
 
@@ -313,7 +313,7 @@ TEST(Binding, dependency_config_bound_to_key_in_main_config) {
 	const auto config = load_config_for_builder(config_definitions);
 
 	// the dependency config is placed to the bound object, where it is merged with the main config
-	const Config_object expected(YAML::Load(
+	const Config_object expected(parse_yaml(
 		"{main_var: 1, parent_config: {var: dependency_var, extra: main_value}}"
 	));
 	compare_config_objects(expected, config);
@@ -329,7 +329,7 @@ TEST(Binding, dependency_config_bound_to_nested_object) {
 
 	const auto config = load_config_for_builder(config_definitions);
 
-	const Config_object expected(YAML::Load("{libraries: {parent_config: {var: dependency_var}}}"));
+	const Config_object expected(parse_yaml("{libraries: {parent_config: {var: dependency_var}}}"));
 	compare_config_objects(expected, config);
 }
 

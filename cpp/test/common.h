@@ -17,6 +17,11 @@ struct CommandResult {
 
 void compare_config_objects(const Config_object& expected, const Config_object& actual);
 
+/**
+ * Creates a config object from a YAML string.
+ */
+Config_object parse_yaml(const std::string& yaml_content);
+
 CommandResult run_command(const std::string& command);
 
 } // namespace fc

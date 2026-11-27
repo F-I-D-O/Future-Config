@@ -17,5 +17,5 @@ Both the smoke tests and the usage tests use Vcpkg to get the library dependenci
 
 Note that so far, the usage tests do not install the dependencies. Be sure to install them manually if you want to run all the tests without errors:
 ```bash
-vcpkg install yaml-cpp inja spdlog tclap
+vcpkg install fkyaml inja spdlog tclap
 ```

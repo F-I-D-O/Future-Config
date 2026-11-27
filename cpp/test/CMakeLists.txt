@@ -71,7 +71,7 @@ target_compile_definitions(test_run PRIVATE FUTURE_CONFIG_STATIC_DEFINE) # stati
 # configuration.h is found by all compilers (only MSVC searches the directories of the including files).
 target_include_directories(test_run PRIVATE ${FCONFIG_SRC_DIR} ${PROJECT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(test_run PRIVATE ${YAML_CPP_TARGET})
+target_link_libraries(test_run PRIVATE fkYAML::fkYAML)
 target_link_libraries(test_run PRIVATE pantor::inja)
 target_link_libraries(test_run PRIVATE GTest::gtest_main)
 target_link_libraries(test_run PRIVATE spdlog::spdlog)

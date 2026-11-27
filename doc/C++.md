@@ -1,5 +1,5 @@
 For using the Future Config in C++, you need to install the future-config package first. Note that the package has dependencies, namely:
-- [yaml-cpp](https://github.com/jbeder/yaml-cpp)
+- [fkYAML](https://github.com/fktn-k/fkYAML)
 - [inja](https://github.com/pantor/inja)
 - [spdlog](https://github.com/gabime/spdlog)
 

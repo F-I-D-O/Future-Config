@@ -4,7 +4,13 @@
 
 #include "common.h"
 
+#include "Parser.h"
+
 namespace fc {
+
+Config_object parse_yaml(const std::string& yaml_content) {
+	return Parser().parse(yaml_content);
+}
 
 void compare_config_objects(const Config_object& expected, const Config_object& actual) {
 	ASSERT_EQ(expected.size(), actual.size());

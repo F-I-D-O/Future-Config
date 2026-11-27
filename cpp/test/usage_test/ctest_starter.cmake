@@ -35,7 +35,7 @@ file(REMOVE_RECURSE "${CTEST_BINARY_DIRECTORY}")
 
 if(FCONFIG_VCPKG_INSTALL)
 	# vcpkg install future-config and dependencies
-	set(FCONFIG_VCPKG_INSTALL_COMMAND vcpkg install yaml-cpp inja spdlog tclap future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
+	set(FCONFIG_VCPKG_INSTALL_COMMAND vcpkg install fkyaml inja spdlog tclap future-config --triplet ${FCONFIG_VCPKG_TRIPLET} --overlay-ports=${FCONFIG_PORT_DIR} --binarysource=clear)
 	if(FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR)
 		list(APPEND FCONFIG_VCPKG_INSTALL_COMMAND --overlay-triplets=${FCONFIG_VCPKG_TEST_OVERLAY_TRIPLET_DIR})
 	endif()

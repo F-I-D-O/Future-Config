@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 
 #include "Builder.h"
+#include "./common.h"
 #include "future-config/format.h"
 #include "future-config/loading.h"
 #include "future-config/resources.h"
@@ -77,17 +78,17 @@ void check_generated_config(const Config_object& config, const fs::path& expecte
 }
 
 TEST(Builder, test_one_var) {
-	YAML::Node config = YAML::Load("{var: test_var}");
+	Config_object config = parse_yaml("{var: test_var}");
 	check_generated_config(config, TEST_DATA_DIR / "one_var.h");
 }
 
 TEST(Builder, test_array) {
-	YAML::Node config = YAML::Load("{array: [1, 2, 3]}");
+	Config_object config = parse_yaml("{array: [1, 2, 3]}");
 	check_generated_config(config, TEST_DATA_DIR / "array.h");
 }
 
 TEST(Builder, test_string_array_in_object) {
-	YAML::Node config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({comparison:
 					{
 						experiment_names: ['IH-constraint4min-capacity1', 'IH-constraint4min', 'vga-constraint4min']
@@ -99,13 +100,13 @@ TEST(Builder, test_string_array_in_object) {
 }
 
 TEST(Builder, test_hyphen_in_key) {
-	YAML::Node config = YAML::Load("{test-var: 123}");
+	Config_object config = parse_yaml("{test-var: 123}");
 	check_generated_config(config, TEST_DATA_DIR / "hyphen_in_key.h");
 }
 
 // not supported yet
 // TEST(Builder, test_array_of_objects) {
-// 	YAML::Node config = YAML::Load(
+// 	Config_object config = parse_yaml(
 // 		R"({array_of_objects:
 // 					[
 // 						{property: "object's 1 property"},
@@ -118,7 +119,7 @@ TEST(Builder, test_hyphen_in_key) {
 // }
 
 TEST(Builder, test_parent_config) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({parent_config:
 					{
 						var: test_var
@@ -134,7 +135,7 @@ TEST(Builder, test_parent_config) {
 }
 
 TEST(Builder, test_nested_parent_config) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({libraries:
 					{
 						parent_config: {var: test_var}
@@ -151,7 +152,7 @@ TEST(Builder, test_nested_parent_config) {
 }
 
 TEST(Builder, test_parent_config_key_outside_bind_path) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({parent_config:
 					{
 						var: test_var
@@ -194,7 +195,7 @@ TEST(Builder, test_parent_config_from_definitions) {
 }
 
 TEST(Builder, test_root_object_name_sanitize) {
-	Config_object config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({var: test_var})"
 	);
 

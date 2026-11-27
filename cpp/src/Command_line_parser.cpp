@@ -8,7 +8,6 @@
 #include <string>
 #include <memory> // For std::unique_ptr and std::make_unique
 #include <stdexcept>
-#include <yaml-cpp/yaml.h> // For YAML::Node
 
 // Anonymous namespace for helper functions
 namespace {

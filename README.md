@@ -60,7 +60,7 @@ The C++ implementation of Future Config requires C++20 support. The library is a
 1. Install the Future Config package:
 	- vcpkg: `vcpkg install future-config`
 	- cmake:
-		1. Install the dependencies: `yaml-cpp`, `spdlog`, `inja` and `tclap`
+		1. Install the dependencies: `fkYAML`, `spdlog`, `inja` and `tclap`
 		1. Clone the repository
 		1. Configure: `cmake <project directory>/cpp`
 		1. Build: `cmake --build . --target install`

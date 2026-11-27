@@ -40,7 +40,7 @@ set(FCONFIG_JINJA_TEMPLATE_BUILD_PATH $<TARGET_FILE_DIR:fconfig_builder>/data/co
 
 # DEPENDENCIES
 # packages
-find_package(yaml-cpp CONFIG REQUIRED)
+find_package(fkYAML CONFIG REQUIRED)
 find_package(inja CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 if(FCONFIG_USE_FMT)
@@ -143,14 +143,9 @@ target_include_directories(fconfig_builder PRIVATE ${TCLAP_INCLUDE_DIRS})
 # for enabling includes relative to src root (instead of relative to the file dir)
 
 # LINKING
-#message(STATUS "yaml-cpp version: ${yaml-cpp_VERSION}")
-if(${yaml-cpp_VERSION} VERSION_LESS 0.8.0)
-	set(YAML_CPP_TARGET yaml-cpp)
-else()
-	set(YAML_CPP_TARGET yaml-cpp::yaml-cpp)
-endif()
-target_link_libraries(future-config PUBLIC ${YAML_CPP_TARGET})
-target_link_libraries(future-config-static PUBLIC ${YAML_CPP_TARGET})
+# the YAML library is only used in the implementation, it is not a part of the public API
+target_link_libraries(future-config PRIVATE fkYAML::fkYAML)
+target_link_libraries(future-config-static PRIVATE fkYAML::fkYAML)
 
 # we need to expose the spdlog headers as they are used in the public API
 target_link_libraries(future-config PRIVATE spdlog::spdlog)
@@ -160,7 +155,7 @@ if(FCONFIG_USE_FMT)
 	target_link_libraries(future-config-static PRIVATE fmt::fmt)
 endif()
 
-target_link_libraries(fconfig_builder PRIVATE ${YAML_CPP_TARGET})
+target_link_libraries(fconfig_builder PRIVATE fkYAML::fkYAML)
 target_link_libraries(fconfig_builder PRIVATE pantor::inja)
 target_link_libraries(fconfig_builder PRIVATE spdlog::spdlog)
 if(FCONFIG_USE_FMT)

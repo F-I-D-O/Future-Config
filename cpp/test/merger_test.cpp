@@ -10,7 +10,7 @@ static_assert(std::is_default_constructible_v<std::allocator<Config_object>>);
 
 TEST(Merger, single_config) {
 	Merger merger;
-	YAML::Node config = YAML::Load(
+	Config_object config = parse_yaml(
 		R"({
 		key1: value1,
 		key2: value2,
@@ -27,7 +27,7 @@ TEST(Merger, single_config) {
 
 TEST(Merger, two_configs) {
 	Merger merger;
-	YAML::Node config1 = YAML::Load(
+	Config_object config1 = parse_yaml(
 		R"({
 		key1: value1,
 		key2: value2,
@@ -35,14 +35,14 @@ TEST(Merger, two_configs) {
 	})"
 	);
 
-	YAML::Node config2 = YAML::Load(
+	Config_object config2 = parse_yaml(
 		R"({
 		key1: value1_new,
 		key3: {key4: value4_new}
 	})"
 	);
 
-	YAML::Node expected_merged_config_yaml = YAML::Load(
+	Config_object expected_merged_config_yaml = parse_yaml(
 		R"({
 		key1: value1_new,
 		key2: value2,

@@ -5,18 +5,17 @@
 #include "gtest/gtest.h"
 
 #include "future-config/Config_object.h"
+#include "./common.h"
 
 
 TEST(Config_object, object_in_object) {
-	YAML::Node yaml_config = YAML::Load(R"(
-		{
+	// the document starts right with the flow mapping: tabs are not allowed as an indentation in YAML
+	fc::Config_object config = fc::parse_yaml(R"({
 			test: {
 				test2: 3
 			}
 		}
 	)");
-
-	fc::Config_object config(yaml_config);
 
 	auto& test = config.get<fc::Config_object&>("test");
 	auto test2 = test.get<int>("test2");
