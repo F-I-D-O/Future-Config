@@ -62,6 +62,7 @@ set(future_config_lib_files
 	src/Resolver.cpp
 	src/resources.cpp
 	src/command_line_loading.cpp
+	src/typing.cpp
 	src/variable_processing.cpp
 )
 
@@ -93,7 +94,10 @@ add_executable(fconfig_builder
 	src/Parser.cpp
 	src/Config_object.cpp
 	src/builder_runner.cpp
+	src/Resolver.cpp
 	src/resources.cpp
+	src/typing.cpp
+	src/variable_processing.cpp
 )
 set_target_properties(
 	fconfig_builder

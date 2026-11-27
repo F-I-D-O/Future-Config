@@ -2,10 +2,13 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include "future-config/loading.h"
 #include "Parser.h"
 #include "./common.h"
 
@@ -230,6 +233,336 @@ TEST(Typing, get_integer_out_of_range_throws) {
 	EXPECT_THROW(config.get<unsigned>("negative"), std::runtime_error);
 	EXPECT_THROW(config.get<std::int8_t>("big"), std::runtime_error);
 	EXPECT_EQ(config.get<std::int8_t>("small"), 100);
+}
+
+// conversion to the types determined by the master config
+
+namespace {
+
+const std::string master_yaml = R"(
+name: app
+port: 8080
+ratio: 1.5
+debug: false
+tags: [a, b]
+limits: [1, 2]
+server:
+  host: localhost
+  timeout: 10
+port_copy: ${port}
+url: "http://${server.host}:${port}"
+)";
+
+// type name and text representation of the scalar property
+std::string get_typed_property(const Config_object& config, const std::string& key) {
+	const auto& scalar = std::get<Config_scalar>(config[key]);
+	return get_type_name(scalar) + " " + to_string(scalar);
+}
+
+// Converts the config to the types of the master config and returns the error message, or an empty string
+std::string get_conversion_error(const std::string& yaml) {
+	const auto type_reference = get_type_reference(parse_yaml(master_yaml));
+	auto config = parse_yaml(yaml);
+	try {
+		convert_types(config, type_reference, "test source");
+	} catch(const std::runtime_error& e) {
+		return e.what();
+	}
+	return "";
+}
+
+/**
+ * Creates config files in a temporary directory, so that the whole config loading can be tested.
+ */
+class Typing_loading: public ::testing::Test {
+protected:
+	fs::path directory;
+
+	void SetUp() override {
+		directory = fs::temp_directory_path() / "fconfig_typing_test";
+		fs::remove_all(directory);
+		fs::create_directories(directory);
+	}
+
+	void TearDown() override {
+		fs::remove_all(directory);
+	}
+
+	[[nodiscard]] fs::path write_config(const std::string& file_name, const std::string& content) const {
+		const auto path = directory / file_name;
+		std::ofstream(path) << content;
+		return path;
+	}
+
+	// loads the master config, the local config (if not empty), and the command line arguments (if not empty)
+	[[nodiscard]] Config_object load(const std::string& local_yaml, const std::vector<const char*>& arguments = {}) const {
+		Config_definitions config_definitions;
+		config_definitions.add(std::make_unique<Config_definition>(write_config("master.yaml", master_yaml)));
+		if(!local_yaml.empty()) {
+			config_definitions.add(std::make_unique<Config_definition>(
+				Config_type::LOCAL,
+				write_config("local.yaml", local_yaml)
+			));
+		}
+		std::vector<const char*> argv{"program_name"};
+		argv.insert(argv.end(), arguments.begin(), arguments.end());
+		if(!arguments.empty()) {
+			config_definitions.add(std::make_unique<Command_line_config_definition>(
+				static_cast<int>(argv.size()),
+				argv.data()
+			));
+		}
+		return load_config(config_definitions.config_definitions);
+	}
+
+	[[nodiscard]] std::string get_load_error(
+		const std::string& local_yaml,
+		const std::vector<const char*>& arguments = {}
+	) const {
+		try {
+			load(local_yaml, arguments);
+		} catch(const std::runtime_error& e) {
+			return e.what();
+		}
+		return "";
+	}
+};
+
+} // namespace
+
+TEST(Typing, type_reference_resolves_variables) {
+	const auto type_reference = get_type_reference(parse_yaml(master_yaml));
+
+	// the type of a value with variables is determined from the resolved value
+	EXPECT_EQ(get_typed_property(type_reference, "port_copy"), "int 8080");
+	EXPECT_EQ(get_typed_property(type_reference, "url"), "string http://localhost:8080");
+	EXPECT_EQ(get_typed_property(type_reference, "port"), "int 8080");
+}
+
+TEST(Typing, convert_same_types) {
+	auto config = parse_yaml("{name: other, port: 1, ratio: 2.5, debug: true, tags: [x], limits: [5], server: {timeout: 3}}");
+
+	convert_types(config, get_type_reference(parse_yaml(master_yaml)), "test source");
+
+	const auto expected = parse_yaml(
+		"{name: other, port: 1, ratio: 2.5, debug: true, tags: [x], limits: [5], server: {timeout: 3}}"
+	);
+	compare_config_objects(expected, config);
+}
+
+TEST(Typing, convert_any_scalar_to_string) {
+	auto config = parse_yaml("{name: 123, tags: [1, true, 2.5, text]}");
+
+	convert_types(config, get_type_reference(parse_yaml(master_yaml)), "test source");
+
+	EXPECT_EQ(get_typed_property(config, "name"), "string 123");
+	EXPECT_EQ(config.get_array<std::string>("tags"), (std::vector<std::string>{"1", "true", "2.5", "text"}));
+}
+
+TEST(Typing, convert_int_to_float) {
+	auto config = parse_yaml("{ratio: 2}");
+
+	convert_types(config, get_type_reference(parse_yaml(master_yaml)), "test source");
+
+	EXPECT_EQ(get_typed_property(config, "ratio"), "float 2.0");
+}
+
+TEST(Typing, convert_unknown_property_keeps_type) {
+	auto config = parse_yaml("{extra: 5, extra_object: {port: text}, server: {extra: true}}");
+
+	convert_types(config, get_type_reference(parse_yaml(master_yaml)), "test source");
+
+	EXPECT_EQ(get_typed_property(config, "extra"), "int 5");
+	EXPECT_EQ(get_typed_property(config.get<Config_object&>("extra_object"), "port"), "string text");
+	EXPECT_EQ(get_typed_property(config.get<Config_object&>("server"), "extra"), "bool true");
+}
+
+TEST(Typing, convert_value_with_variable_is_skipped) {
+	auto config = parse_yaml("{port: \"${other_port}\", debug: \"${flag}\"}");
+
+	convert_types(config, get_type_reference(parse_yaml(master_yaml)), "test source");
+
+	EXPECT_EQ(get_typed_property(config, "port"), "string ${other_port}");
+	EXPECT_EQ(get_typed_property(config, "debug"), "string ${flag}");
+}
+
+TEST(Typing, convert_wrong_scalar_type_throws) {
+	EXPECT_NE(get_conversion_error("{port: abc}"), "");
+	EXPECT_NE(get_conversion_error("{port: 1.5}"), "");
+	EXPECT_NE(get_conversion_error("{port: true}"), "");
+	EXPECT_NE(get_conversion_error("{port: \"8080\"}"), "");
+	EXPECT_NE(get_conversion_error("{ratio: abc}"), "");
+	EXPECT_NE(get_conversion_error("{ratio: true}"), "");
+	EXPECT_NE(get_conversion_error("{debug: 1}"), "");
+	EXPECT_NE(get_conversion_error("{debug: yes}"), "");
+	EXPECT_NE(get_conversion_error("{server: {timeout: abc}}"), "");
+	EXPECT_NE(get_conversion_error("{limits: [1, x]}"), "");
+	EXPECT_NE(get_conversion_error("{limits: [1.5]}"), "");
+
+	// the type of the port_copy property is determined from the resolved variable
+	EXPECT_NE(get_conversion_error("{port_copy: abc}"), "");
+	EXPECT_EQ(get_conversion_error("{port_copy: 5}"), "");
+}
+
+TEST(Typing, convert_wrong_structure_throws) {
+	EXPECT_NE(get_conversion_error("{server: 5}"), "");
+	EXPECT_NE(get_conversion_error("{server: [1, 2]}"), "");
+	EXPECT_NE(get_conversion_error("{port: {a: 1}}"), "");
+	EXPECT_NE(get_conversion_error("{port: [1, 2]}"), "");
+	EXPECT_NE(get_conversion_error("{tags: x}"), "");
+	EXPECT_NE(get_conversion_error("{tags: {a: 1}}"), "");
+}
+
+TEST(Typing, conversion_error_message) {
+	const auto message = get_conversion_error("{server: {timeout: abc}}");
+
+	// the property, the source, the value and both types are mentioned
+	EXPECT_NE(message.find("server.timeout"), std::string::npos) << message;
+	EXPECT_NE(message.find("test source"), std::string::npos) << message;
+	EXPECT_NE(message.find("'abc'"), std::string::npos) << message;
+	EXPECT_NE(message.find("string"), std::string::npos) << message;
+	EXPECT_NE(message.find("int"), std::string::npos) << message;
+}
+
+TEST(Typing, master_array_with_different_types_throws) {
+	EXPECT_THROW(check_master_types(parse_yaml("{array: [1, two]}"), "test source"), std::runtime_error);
+	EXPECT_THROW(check_master_types(parse_yaml("{array: [1, 2.5]}"), "test source"), std::runtime_error);
+	EXPECT_THROW(check_master_types(parse_yaml("{object: {array: [a, true]}}"), "test source"), std::runtime_error);
+	EXPECT_NO_THROW(check_master_types(parse_yaml("{array: [1, 2], other: [a, b]}"), "test source"));
+}
+
+TEST(Typing, variables_are_replaced_by_text_of_typed_values) {
+	auto config = parse_yaml(
+		"{integer: 42, float: 1.5, boolean: true, text: \"${integer}-${float}-${boolean}\", copy: \"${float}\"}"
+	);
+
+	process_variables(config, nullptr);
+
+	EXPECT_EQ(get_typed_property(config, "text"), "string 42-1.5-true");
+	// without a type reference, the type is determined from the resolved value
+	EXPECT_EQ(get_typed_property(config, "copy"), "float 1.5");
+}
+
+
+// whole config loading
+
+TEST_F(Typing_loading, master_only) {
+	const auto config = load("");
+
+	EXPECT_EQ(get_typed_property(config, "port"), "int 8080");
+	EXPECT_EQ(get_typed_property(config, "port_copy"), "int 8080");
+	EXPECT_EQ(get_typed_property(config, "url"), "string http://localhost:8080");
+	EXPECT_EQ(get_typed_property(config, "ratio"), "float 1.5");
+	EXPECT_EQ(get_typed_property(config, "debug"), "bool false");
+}
+
+TEST_F(Typing_loading, local_config_values_are_converted) {
+	const auto config = load("name: 123\nratio: 2\ntags: [1, true]\nextra: 5\nserver:\n  timeout: 30\n");
+
+	EXPECT_EQ(get_typed_property(config, "name"), "string 123");
+	EXPECT_EQ(get_typed_property(config, "ratio"), "float 2.0");
+	EXPECT_EQ(config.get_array<std::string>("tags"), (std::vector<std::string>{"1", "true"}));
+	EXPECT_EQ(get_typed_property(config, "extra"), "int 5");
+	EXPECT_EQ(get_typed_property(config.get<Config_object&>("server"), "timeout"), "int 30");
+}
+
+TEST_F(Typing_loading, local_config_wrong_type_throws) {
+	const auto message = get_load_error("port: abc\n");
+
+	EXPECT_NE(message.find("'port'"), std::string::npos) << message;
+	EXPECT_NE(message.find("local.yaml"), std::string::npos) << message;
+
+	EXPECT_NE(get_load_error("debug: 1\n"), "");
+	EXPECT_NE(get_load_error("server: 5\n"), "");
+	EXPECT_NE(get_load_error("limits: [a]\n"), "");
+}
+
+TEST_F(Typing_loading, local_config_variables_are_converted) {
+	// the variables in the overriding values are resolved and converted to the type of the property
+	const auto config = load("server:\n  timeout: \"${port}\"\nname: \"${port}\"\nport: 9000\n");
+
+	EXPECT_EQ(get_typed_property(config.get<Config_object&>("server"), "timeout"), "int 9000");
+	EXPECT_EQ(get_typed_property(config, "name"), "string 9000");
+	EXPECT_EQ(get_typed_property(config, "port_copy"), "int 9000");
+}
+
+TEST_F(Typing_loading, local_config_variable_with_wrong_type_throws) {
+	const auto message = get_load_error("debug: \"${name}\"\n");
+
+	EXPECT_NE(message.find("'debug'"), std::string::npos) << message;
+	EXPECT_NE(message.find("variable"), std::string::npos) << message;
+}
+
+TEST_F(Typing_loading, command_line_values_are_converted) {
+	const auto config = load("", {"--name", "123", "--port", "9000", "--ratio", "2", "--debug", "--timeout", "5"});
+
+	// the value for a string property is not changed
+	EXPECT_EQ(get_typed_property(config, "name"), "string 123");
+	EXPECT_EQ(get_typed_property(config, "port"), "int 9000");
+	EXPECT_EQ(get_typed_property(config, "ratio"), "float 2.0");
+	EXPECT_EQ(get_typed_property(config, "debug"), "bool true");
+	EXPECT_EQ(get_typed_property(config.get<Config_object&>("server"), "timeout"), "int 5");
+}
+
+TEST_F(Typing_loading, command_line_string_value_is_kept_as_written) {
+	EXPECT_EQ(get_typed_property(load("", {"--name", "1.50"}), "name"), "string 1.50");
+	EXPECT_EQ(get_typed_property(load("", {"--name", "True"}), "name"), "string True");
+	EXPECT_EQ(get_typed_property(load("", {"--name", "0x1F"}), "name"), "string 0x1F");
+	EXPECT_EQ(get_typed_property(load("", {"--host", "10"}).get<Config_object&>("server"), "host"), "string 10");
+}
+
+TEST_F(Typing_loading, command_line_wrong_type_throws) {
+	const auto message = get_load_error("", {"--port", "abc"});
+
+	EXPECT_NE(message.find("'port'"), std::string::npos) << message;
+	EXPECT_NE(message.find("command line"), std::string::npos) << message;
+
+	EXPECT_NE(get_load_error("", {"--port", "1.5"}), "");
+	EXPECT_NE(get_load_error("", {"--debug", "1"}), "");
+	EXPECT_NE(get_load_error("", {"--ratio", "abc"}), "");
+	// switch for a property that is not boolean
+	EXPECT_NE(get_load_error("", {"--port"}), "");
+	EXPECT_NE(get_load_error("", {"--name"}), "");
+}
+
+TEST_F(Typing_loading, command_line_value_for_property_with_variable) {
+	// the type of the properties with variables is determined from the resolved master config
+	EXPECT_EQ(get_typed_property(load("", {"--port_copy", "7"}), "port_copy"), "int 7");
+	EXPECT_EQ(get_typed_property(load("", {"--url", "7"}), "url"), "string 7");
+	EXPECT_NE(get_load_error("", {"--port_copy", "abc"}), "");
+}
+
+TEST_F(Typing_loading, later_master_config_is_converted) {
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(write_config("master.yaml", master_yaml)));
+	config_definitions.add(std::make_unique<Config_definition>(write_config("master_2.yaml", "ratio: 3\nnew: 1\n")));
+
+	const auto config = load_config(config_definitions.config_definitions);
+
+	EXPECT_EQ(get_typed_property(config, "ratio"), "float 3.0");
+	EXPECT_EQ(get_typed_property(config, "new"), "int 1");
+
+	// the types are determined by the first master config
+	config_definitions.add(std::make_unique<Config_definition>(write_config("master_3.yaml", "port: abc\n")));
+	EXPECT_THROW(load_config(config_definitions.config_definitions), std::runtime_error);
+}
+
+TEST_F(Typing_loading, master_array_with_different_types_throws) {
+	Config_definitions config_definitions;
+	config_definitions.add(std::make_unique<Config_definition>(write_config("master.yaml", "array: [1, two]\n")));
+
+	EXPECT_THROW(load_config(config_definitions.config_definitions), std::runtime_error);
+}
+
+TEST_F(Typing_loading, builder_config_has_resolved_variables) {
+	std::vector<std::unique_ptr<Config_definition>> config_definitions;
+	config_definitions.emplace_back(std::make_unique<Config_definition>(write_config("master.yaml", master_yaml)));
+
+	const auto config = load_config_for_builder(config_definitions);
+
+	// the types of the generated config class members are determined from the resolved values
+	EXPECT_EQ(get_typed_property(config, "port_copy"), "int 8080");
+	EXPECT_EQ(get_typed_property(config, "url"), "string http://localhost:8080");
 }
 
 } // namespace fc

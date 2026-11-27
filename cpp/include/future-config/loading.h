@@ -24,6 +24,47 @@ Config_object FUTURE_CONFIG_EXPORT merge_configs(Config_object& result_config, C
 void FUTURE_CONFIG_EXPORT process_variables(Config_object& config);
 
 /**
+ * Resolves the variables in the config and determines the types of the values with the resolved variables.
+ * @param config config with variables
+ * @param type_reference config that determines the types of the properties (see `get_type_reference`). The properties
+ * that are not present in the reference, and all properties if the reference is null, get the type determined from
+ * the resolved value.
+ * @throws std::runtime_error if a resolved value cannot be converted to the type of the property
+ */
+void FUTURE_CONFIG_EXPORT process_variables(Config_object& config, const Config_object* type_reference);
+
+/**
+ * @return description of the config source for error messages
+ */
+FUTURE_CONFIG_EXPORT std::string get_source_description(const Config_definition_base& config_definition);
+
+/**
+ * Checks that the master config can be used for determining the types of the properties.
+ * @throws std::runtime_error if some array has items of different types
+ */
+void FUTURE_CONFIG_EXPORT check_master_types(const Config_object& config, const std::string& source_description);
+
+/**
+ * Creates the config that determines the types of the properties: the master config with resolved variables.
+ * @param master_config master config (merged main and dependency configs)
+ */
+Config_object FUTURE_CONFIG_EXPORT get_type_reference(const Config_object& master_config);
+
+/**
+ * Converts the values in the config to the types of the same properties in the type reference. The properties that are
+ * not present in the reference keep their types. The values with variables are skipped, they are converted when
+ * the variables are resolved.
+ *
+ * Any scalar can be converted to a string, and an integer can be converted to a floating point number.
+ * @throws std::runtime_error if a value cannot be converted to the type of the property
+ */
+void FUTURE_CONFIG_EXPORT convert_types(
+	Config_object& config,
+	const Config_object& type_reference,
+	const std::string& source_description
+);
+
+/**
  * Finds the object a config source is bound to.
  * @param config config object in which the bound object is searched
  * @param bind_path path to the bound object, with keys separated by dots. An empty path is the root object.
@@ -138,6 +179,21 @@ Config_object load_config(const I& config_definitions, Config_log_level log_leve
 
 	unsigned counter = 1;
 	std::optional<Config_object> result_config;
+
+	// The master config (main and dependency configs) determines the types of the properties. The type reference is
+	// the master config with resolved variables, it is created when it is needed for the first time.
+	std::optional<Config_object> master_config;
+	std::optional<Config_object> type_reference;
+	const auto get_current_type_reference = [&master_config, &type_reference]() -> const Config_object* {
+		if(!master_config) {
+			return nullptr;
+		}
+		if(!type_reference) {
+			type_reference = get_type_reference(master_config.value());
+		}
+		return &type_reference.value();
+	};
+
 	for(const auto& config_definition: config_definitions) {
 		Config_object config;
 
@@ -192,6 +248,23 @@ Config_object load_config(const I& config_definitions, Config_log_level log_leve
 			}
 			config = bind_config(std::move(config), file_config.bind_path);
 		}
+
+		// the values are converted to the types determined by the master config loaded so far
+		const auto source_description = get_source_description(*config_definition);
+		if(const auto* current_type_reference = get_current_type_reference()) {
+			convert_types(config, *current_type_reference, source_description);
+		}
+		if(config_definition->type == Config_type::MAIN || config_definition->type == Config_type::DEPENDENCY) {
+			check_master_types(config, source_description);
+			if(master_config) {
+				master_config = merge_configs(master_config.value(), config);
+			}
+			else {
+				master_config = config;
+			}
+			type_reference.reset();
+		}
+
 		load_log.add_values(counter, config);
 
 		if(result_config){
@@ -203,7 +276,7 @@ Config_object load_config(const I& config_definitions, Config_log_level log_leve
 		++counter;
 	}
 
-	process_variables(result_config.value());
+	process_variables(result_config.value(), get_current_type_reference());
 
 	load_log.log_values(result_config.value());
 
@@ -234,13 +307,20 @@ Config_object load_config_for_builder(const I& config_definitions) {
 		// dependency configs are placed into the object they are bound to
 		config = bind_config(std::move(config), file_config.bind_path);
 
+		// all the configs are master configs here: the types are determined by the configs loaded so far
+		const auto source_description = get_source_description(*config_definition);
+		check_master_types(config, source_description);
 		if(result_config){
+			convert_types(config, get_type_reference(result_config.value()), source_description);
 			result_config = merge_configs(result_config.value(), config);
 		}
 		else{
 			result_config = config;
 		}
 	}
+
+	// the types of the values with variables are determined from the resolved values
+	process_variables(result_config.value(), nullptr);
 
 	return result_config.value();
 }

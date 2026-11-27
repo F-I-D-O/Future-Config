@@ -45,6 +45,7 @@ add_executable(test_run
 	${FCONFIG_SRC_DIR}/Parser.cpp
 	${FCONFIG_SRC_DIR}/Resolver.cpp
 	${FCONFIG_SRC_DIR}/resources.cpp
+	${FCONFIG_SRC_DIR}/typing.cpp
 	${FCONFIG_SRC_DIR}/variable_processing.cpp
 	binding_test.cpp
 	bulider_tests.cpp

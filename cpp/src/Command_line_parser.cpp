@@ -4,6 +4,7 @@
 
 #include "Command_line_parser.h"
 #include "Parser.h"
+#include "Resolver.h"
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -114,6 +115,19 @@ bool is_boolean_property(const fc::config_property_value& property) {
         && std::holds_alternative<bool>(std::get<fc::Config_scalar>(property));
 }
 
+// Checks if the values of the property should be taken from the command line as they are, without determining
+// their type: strings (unless they contain a variable, then the type of the property is not known) and paths
+bool is_text_property(const fc::config_property_value& property) {
+    if (!std::holds_alternative<fc::Config_scalar>(property)) {
+        return false;
+    }
+    const auto& scalar = std::get<fc::Config_scalar>(property);
+    if (std::holds_alternative<std::string>(scalar)) {
+        return !fc::Resolver::contains_variable(std::get<std::string>(scalar));
+    }
+    return std::holds_alternative<std::filesystem::path>(scalar);
+}
+
 } // end anonymous namespace
 
 fc::Config_object Command_line_parser::parse(
@@ -162,8 +176,15 @@ fc::Config_object Command_line_parser::parse(
                 value = true;
             }
             else {
-                // the type of the value is determined in the same way as for the values in the config files
-                value = fc::Parser().parse_scalar(argv[i + 1]);
+                // The value is kept as a text for the string and path properties. Otherwise, its type is determined
+                // in the same way as for the values in the config files.
+                const std::string value_text = argv[i + 1];
+                if (is_text_property(get_property_at_path(master_config, path_in_master))) {
+                    value = value_text;
+                }
+                else {
+                    value = fc::Parser().parse_scalar(value_text);
+                }
                 i++; // Consume the value argument, so the next iteration skips it
             }
 

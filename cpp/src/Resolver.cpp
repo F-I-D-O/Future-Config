@@ -15,6 +15,11 @@ namespace fc {
 
     
 
+bool Resolver::contains_variable(const std::string& text) {
+	static const std::regex regex(R"regex(\$\{([^\}]+)\})regex");
+	return std::regex_search(text, regex);
+}
+
 void Resolver::resolve() {
 	add_all_variables_to_queue(config_object);
 	process_queue();

@@ -36,6 +36,11 @@ public:
 		config_object(config)
 	{}
 
+	/**
+	 * @return true if the text contains a variable (`${variable}`)
+	 */
+	static bool contains_variable(const std::string& text);
+
 	void resolve();
 
 	void add_all_variables_to_queue(Config_object& config_object);

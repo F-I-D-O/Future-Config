@@ -9,7 +9,7 @@
 namespace fc {
 
 void process_variables(Config_object& config) {
-    Resolver(config).resolve();
+    process_variables(config, nullptr);
 }
 
 } // namespace fc 
